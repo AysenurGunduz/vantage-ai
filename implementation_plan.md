@@ -16,6 +16,7 @@ Bu doküman, Vantage'ın mimari kararlarını, teknik altyapısını ve 20 günl
 8. [Test Stratejisi](#8-test-stratejisi)
 9. [Riskler ve Önlemler](#9-riskler-ve-önlemler)
 10. [Sonraki Adım](#10-sonraki-adım)
+11. [API Uç Noktaları](#11-api-uç-noktaları-taslak)
 
 ---
 
@@ -110,7 +111,7 @@ vantage/
 │   └── adr/                    # önemli kararlar (gerektikçe)
 ├── .github/workflows/          # CI (ileride)
 ├── implementation_plan.md
-└── readme.md
+└── README.md
 ```
 
 ---
@@ -191,3 +192,57 @@ vantage/
 ## 10. Sonraki Adım
 
 Gün 2'den itibaren repo iskeleti (frontend/backend) kurulmaya başlanacak; ilerleyen günlerin maddeleri bu doküman üzerinden güncellenecek.
+
+---
+
+## 11. API Uç Noktaları (Taslak)
+
+Backend, Supabase'in üzerine iş kuralları uygulayan tek katman olduğu için frontend tüm veri işlemlerini bu REST API üzerinden yapar (Auth hariç — o doğrudan Supabase Auth ile yürütülür). Aşağıdaki uç noktalar kesinleşmiş bir sözleşme değil, geliştirme sırasında küçük değişiklikler olabilir.
+
+**Profil**
+
+| Method | Endpoint | Açıklama |
+|--------|----------|----------|
+| GET | `/api/me` | Giriş yapmış kullanıcının profili + üyesi olduğu organizasyonlar |
+
+**Organizasyonlar**
+
+| Method | Endpoint | Açıklama |
+|--------|----------|----------|
+| POST | `/api/organizations` | Yeni organizasyon oluştur |
+| GET | `/api/organizations` | Kullanıcının organizasyonlarını listele |
+| POST | `/api/organizations/:orgId/members` | Organizasyona üye davet et |
+
+**Projeler**
+
+| Method | Endpoint | Açıklama |
+|--------|----------|----------|
+| POST | `/api/organizations/:orgId/projects` | Yeni proje oluştur |
+| GET | `/api/organizations/:orgId/projects` | Organizasyonun projelerini listele |
+| GET | `/api/projects/:id` | Proje detayı |
+| PATCH | `/api/projects/:id` | Proje bilgilerini güncelle |
+| POST | `/api/projects/:id/members` | Projeye üye ekle |
+| GET | `/api/projects/:id/dashboard` | Durum istatistikleri, geciken görev sayısı vb. |
+
+**Görevler**
+
+| Method | Endpoint | Açıklama |
+|--------|----------|----------|
+| GET | `/api/projects/:id/tasks` | Projenin görevlerini listele (Kanban için) |
+| POST | `/api/projects/:id/tasks` | Yeni görev oluştur |
+| PATCH | `/api/tasks/:id` | Görev güncelle (durum, öncelik, atama, deadline vb.) |
+| PATCH | `/api/tasks/:id/order` | Kanban sürükle-bırak sonrası sıralamayı güncelle |
+| DELETE | `/api/tasks/:id` | Görevi sil |
+| POST | `/api/tasks/:id/comments` | Göreve yorum ekle |
+| GET | `/api/tasks/:id/activity` | Görevin aktivite geçmişi |
+| GET | `/api/tasks/:id/risk` | Gecikme riski skoru + LLM açıklaması |
+
+**Yapay Zeka**
+
+| Method | Endpoint | Açıklama |
+|--------|----------|----------|
+| POST | `/api/projects/:id/ai/breakdown` | Proje açıklamasından görev önerisi üret |
+| POST | `/api/ai/suggestions/:id/accept` | Önerilen görevleri gerçek task'lara dönüştür |
+| POST | `/api/ai/suggestions/:id/reject` | Öneriyi reddet |
+| GET | `/api/users/:id/work-style` | Çalışma tarzı / karakter analizi profili |
+| GET | `/api/projects/:id/progress-summary` | En güncel otomatik ilerleme özeti |
