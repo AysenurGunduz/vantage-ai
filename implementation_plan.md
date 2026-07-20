@@ -61,7 +61,7 @@ Bu VRAM bütçesiyle 7B+ modeller GPU'ya tam sığmayabilir (kısmi CPU offload 
 
 ## 4. Veritabanı Şeması
 
-Aşağıdaki şema bir taslaktır, geliştirme ilerledikçe değişebilir.
+Aşağıda özet bir genel bakış yer alıyor. Kesinleşmiş halleri: görsel ilişki diyagramı için [docs/erd.md](./docs/erd.md), doğrudan çalıştırılabilir tablo tanımları için [backend/src/db/schema.sql](./backend/src/db/schema.sql).
 
 ```
 profiles                 (id, full_name, avatar_url, title, created_at)
