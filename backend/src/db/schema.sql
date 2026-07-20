@@ -1,0 +1,138 @@
+-- Vantage veritabanı şeması (Supabase / Postgres)
+-- Görsel diyagram: docs/erd.md
+-- Bu dosya Supabase projesinin SQL Editor'ünde çalıştırılarak tabloları oluşturur.
+
+create extension if not exists "pgcrypto";
+
+create type member_role as enum ('owner', 'admin', 'member');
+create type task_status as enum ('backlog', 'todo', 'in_progress', 'review', 'done');
+create type task_priority as enum ('low', 'medium', 'high', 'urgent');
+create type suggestion_status as enum ('pending', 'accepted', 'rejected');
+create type risk_level as enum ('low', 'medium', 'high');
+
+create table profiles (
+  id uuid primary key references auth.users (id) on delete cascade,
+  full_name text,
+  avatar_url text,
+  title text,
+  created_at timestamptz not null default now()
+);
+
+create table organizations (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  slug text not null unique,
+  owner_id uuid not null references profiles (id),
+  created_at timestamptz not null default now()
+);
+
+create table organization_members (
+  organization_id uuid not null references organizations (id) on delete cascade,
+  user_id uuid not null references profiles (id) on delete cascade,
+  role member_role not null default 'member',
+  joined_at timestamptz not null default now(),
+  primary key (organization_id, user_id)
+);
+
+create table projects (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references organizations (id) on delete cascade,
+  name text not null,
+  description text,
+  status text not null default 'active',
+  start_date date,
+  end_date date,
+  created_by uuid not null references profiles (id),
+  created_at timestamptz not null default now()
+);
+create index idx_projects_organization_id on projects (organization_id);
+
+create table project_members (
+  project_id uuid not null references projects (id) on delete cascade,
+  user_id uuid not null references profiles (id) on delete cascade,
+  role_in_project member_role not null default 'member',
+  joined_at timestamptz not null default now(),
+  primary key (project_id, user_id)
+);
+
+create table tasks (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null references projects (id) on delete cascade,
+  parent_task_id uuid references tasks (id) on delete cascade,
+  title text not null,
+  description text,
+  status task_status not null default 'backlog',
+  priority task_priority not null default 'medium',
+  assignee_id uuid references profiles (id),
+  estimated_hours numeric(6, 2),
+  due_date date,
+  order_index integer not null default 0,
+  ai_generated boolean not null default false,
+  created_by uuid not null references profiles (id),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index idx_tasks_project_id on tasks (project_id);
+create index idx_tasks_assignee_id on tasks (assignee_id);
+create index idx_tasks_due_date on tasks (due_date);
+
+create table task_comments (
+  id uuid primary key default gen_random_uuid(),
+  task_id uuid not null references tasks (id) on delete cascade,
+  user_id uuid not null references profiles (id),
+  content text not null,
+  created_at timestamptz not null default now()
+);
+create index idx_task_comments_task_id on task_comments (task_id);
+
+create table task_activity_log (
+  id uuid primary key default gen_random_uuid(),
+  task_id uuid not null references tasks (id) on delete cascade,
+  user_id uuid not null references profiles (id),
+  action_type text not null,
+  from_value text,
+  to_value text,
+  created_at timestamptz not null default now()
+);
+create index idx_task_activity_log_task_id on task_activity_log (task_id);
+
+create table ai_task_suggestions (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null references projects (id) on delete cascade,
+  source_description text not null,
+  suggested_tasks jsonb not null,
+  status suggestion_status not null default 'pending',
+  created_by uuid not null references profiles (id),
+  created_at timestamptz not null default now()
+);
+
+create table work_style_profiles (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references profiles (id) on delete cascade,
+  traits jsonb not null,
+  summary text,
+  model_used text,
+  generated_at timestamptz not null default now()
+);
+create index idx_work_style_profiles_user_id on work_style_profiles (user_id);
+
+create table progress_summaries (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null references projects (id) on delete cascade,
+  period_start date not null,
+  period_end date not null,
+  summary text not null,
+  model_used text,
+  generated_at timestamptz not null default now()
+);
+create index idx_progress_summaries_project_id on progress_summaries (project_id);
+
+create table delay_risk_scores (
+  id uuid primary key default gen_random_uuid(),
+  task_id uuid not null references tasks (id) on delete cascade,
+  risk_score numeric(5, 2) not null,
+  risk_level risk_level not null,
+  explanation text,
+  computed_at timestamptz not null default now()
+);
+create index idx_delay_risk_scores_task_id on delay_risk_scores (task_id);
