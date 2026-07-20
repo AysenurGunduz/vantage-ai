@@ -6,7 +6,6 @@
 
 Vantage, ekiplerin proje ve görev süreçlerini planlayıp Kanban panosu üzerinden takip edebildiği; buna ek olarak yapay zeka desteğiyle proje açıklamasından otomatik görev üretimi, öncelik/gecikme riski analizi, ekip üyesi çalışma tarzı analizi ve otomatik ilerleme özetleri sunan modüler bir web platformudur.
 
-> Bu proje bir yazılım stajı kapsamında, 20 iş günü boyunca aşamalı olarak geliştirilmektedir. Danışman: Ümit Bey.
 > Detaylı teknik plan ve 20 günlük takvim için: [implementation_plan.md](./implementation_plan.md)
 
 ---

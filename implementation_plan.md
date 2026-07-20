@@ -1,7 +1,6 @@
 # Vantage — Geliştirme Planı
 
 > Yapay Zeka Destekli Proje Yönetim Platformu
-> Staj süresi: 20 iş günü (4 hafta) · Danışman: Ümit Bey
 
 Bu doküman, Vantage'ın mimari kararlarını, teknik altyapısını ve 20 günlük geliştirme takvimini içerir. Proje ilerledikçe güncellenecektir.
 
