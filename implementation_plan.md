@@ -1,9 +1,22 @@
-# Vantage — Implementation Plan
+# Vantage — Geliştirme Planı
 
 > Yapay Zeka Destekli Proje Yönetim Platformu
 > Staj süresi: 20 iş günü (4 hafta) · Danışman: Ümit Bey
 
-Bu doküman, Vantage projesinin mimari kararlarını, teknik altyapısını ve 20 günlük geliştirme takvimini içerir. Yaşayan bir dokümandır — proje ilerledikçe güncellenecektir. Değişiklik geçmişi için Git history yeterlidir, bu dosya her zaman güncel durumu yansıtır.
+Bu doküman, Vantage'ın mimari kararlarını, teknik altyapısını ve 20 günlük geliştirme takvimini içerir. Proje ilerledikçe güncellenecektir.
+
+## İçindekiler
+
+1. [Proje Özeti](#1-proje-özeti)
+2. [Mimari Kararlar](#2-mimari-kararlar)
+3. [Local LLM Stratejisi](#3-local-llm-stratejisi)
+4. [Veritabanı Şeması](#4-veritabanı-şeması)
+5. [Klasör Yapısı](#5-klasör-yapısı)
+6. [20 Günlük Takvim](#6-20-günlük-takvim)
+7. [Git ve GitHub Akışı](#7-git-ve-github-akışı)
+8. [Test Stratejisi](#8-test-stratejisi)
+9. [Riskler ve Önlemler](#9-riskler-ve-önlemler)
+10. [Sonraki Adım](#10-sonraki-adım)
 
 ---
 
@@ -11,43 +24,45 @@ Bu doküman, Vantage projesinin mimari kararlarını, teknik altyapısını ve 2
 
 Vantage; ekiplerin proje/görev yönetimi yapabildiği (Kanban, deadline, atama) **ve** yapay zeka desteğiyle proje açıklamasından otomatik görev üretimi, öncelik/gecikme riski analizi, ekip üyesi çalışma tarzı analizi ve otomatik ilerleme özetleri sunan modüler bir web platformudur.
 
-**Tasarım ilkesi:** Tek senaryoya kilitli bir uygulama değil; PM çekirdeği ile AI katmanı birbirinden ayrık, AI sağlayıcısı değiştirilebilir (bugün local LLM, yarın istenirse cloud API) şekilde tasarlanacak.
+**Tasarım ilkesi:** Tek senaryoya kilitli bir uygulama değil; PM çekirdeği ile AI katmanı birbirinden ayrık, AI sağlayıcısı değiştirilebilir (bugün local LLM, ileride istenirse cloud API) şekilde tasarlanacak.
 
 ---
 
-## 2. Mimari Kararlar (ADR özeti)
+## 2. Mimari Kararlar
 
 | # | Karar | Gerekçe |
 |---|-------|---------|
-| 1 | **Frontend:** React + TypeScript + Vite | Hızlı DX, geniş ekosistem, staj sonunda taşınabilir bilgi |
+| 1 | **Frontend:** React + TypeScript + Vite | Hızlı geliştirme deneyimi, geniş ekosistem |
 | 2 | **UI katmanı:** TailwindCSS + shadcn/ui + dnd-kit (Kanban) + Recharts (grafikler) | Hızlı, tutarlı, erişilebilir bileşenler; dnd-kit sürükle-bırak için endüstri standardı |
-| 3 | **Backend:** Node.js + Express + TypeScript (ayrı servis) | Supabase'in üzerine iş kuralları + AI orkestrasyonu için tam kontrol sağlayan ayrı katman (kullanıcı kararı) |
-| 4 | **Veritabanı / Auth / Storage / Realtime:** Supabase (Postgres) | Auth, RLS, realtime subscriptions hazır; Kanban canlı senkron için realtime kritik |
-| 5 | **AI çalıştırma:** **Local LLM (Ollama)** | Kullanıcı kararı — maliyetsiz, veri gizliliği, staj boyunca sınırsız deneme. Aşağıda detaylı. |
-| 6 | **Repo yapısı:** Monorepo (`/frontend`, `/backend`, `/docs`) | Tek repo üzerinden PR akışı, staj takibi için sade |
-| 7 | **AI soyutlama:** `AIProvider` interface (backend `src/ai/`) | Local model → ileride cloud API'ye geçiş tek dosya değişikliği ile mümkün olsun |
+| 3 | **Backend:** Node.js + Express + TypeScript (ayrı servis) | Supabase'in üzerine iş kuralları ve AI orkestrasyonu için tam kontrol sağlayan ayrı katman |
+| 4 | **Veritabanı / Auth / Storage / Realtime:** Supabase (Postgres) | Auth, RLS, realtime subscriptions hazır geliyor; Kanban'da canlı senkronizasyon için realtime kritik |
+| 5 | **AI çalıştırma:** Local LLM (Ollama) | Maliyetsiz, veri gizliliği sağlıyor, sınırsız deneme imkânı sunuyor — detaylar Bölüm 3'te |
+| 6 | **Repo yapısı:** Monorepo (`/frontend`, `/backend`, `/docs`) | Tek repo üzerinden PR akışı, sade takip |
+| 7 | **AI soyutlama:** `AIProvider` interface (backend `src/ai/`) | Local model → ileride cloud API'ye geçiş tek dosya değişikliğiyle mümkün olsun |
 
 ---
 
 ## 3. Local LLM Stratejisi
 
-**Tespit edilen donanım:** NVIDIA RTX 3050 Laptop GPU (4GB VRAM), 16GB sistem RAM.
+**Geliştirme makinesi:** NVIDIA RTX 3050 Laptop GPU (4GB VRAM), 16GB sistem RAM.
 
-Bu VRAM bütçesiyle 7B+ modeller GPU'ya tam sığmayabilir (kısmi CPU offload gerekir → yavaşlar). Bu yüzden **fazlara göre farklı model** stratejisi öneriyorum:
+Bu VRAM bütçesiyle 7B+ modeller GPU'ya tam sığmayabilir (kısmi CPU offload gerekir → yavaşlar). Bu yüzden fazlara göre farklı model stratejisi izlenecek:
 
-| Faz | Kullanım | Önerilen model | Neden |
-|-----|----------|----------------|-------|
-| Runtime | Tüm fazlar | **Ollama** (Windows native, OpenAI-uyumlu `localhost:11434` API, `format: json` desteği) | Kurulumu en basit, model değişimi `ollama pull` kadar kolay |
-| Faz 2 — Görev bölme, önceliklendirme (interaktif, hızlı yanıt gerekir) | `qwen2.5:3b-instruct-q4_K_M` (alternatif: `llama3.2:3b`) | ~2GB, VRAM'e tam sığar, JSON üretiminde tutarlı, hızlı |
-| Faz 3 — Karakter analizi, ilerleme özeti (arka planda/zamanlanmış, gecikme tolere edilir) | `qwen2.5:7b-instruct-q4_K_M` (VRAM yetmezse fallback: aynı 3B model) | Daha nüanslı metin üretimi; gerçek zamanlı olmadığı için CPU offload kabul edilebilir |
+| Faz | Kullanım Senaryosu | Önerilen Model | Neden |
+|-----|---------------------|-----------------|-------|
+| — | Runtime (tüm fazlar) | **Ollama** (Windows native, OpenAI uyumlu `localhost:11434` API, `format: json` desteği) | Kurulumu en basit, model değişimi `ollama pull` kadar kolay |
+| Hafta 3 | İnteraktif özellikler: görev bölme, önceliklendirme (hızlı yanıt gerekir) | `qwen2.5:3b-instruct-q4_K_M` (alternatif: `llama3.2:3b`) | ~2GB, VRAM'e tam sığar, JSON üretiminde tutarlı, hızlı |
+| Hafta 4 | Arka plan işleri: karakter analizi, ilerleme özeti (gecikme tolere edilir) | `qwen2.5:7b-instruct-q4_K_M` (VRAM yetmezse fallback: 3B model) | Daha nüanslı metin üretimi; gerçek zamanlı olmadığı için CPU offload kabul edilebilir |
 
 **Gün 11'de** her iki model gerçek promptlarla (JSON şema uyumu, yanıt süresi, Türkçe kalite) benchmark edilip karar kesinleştirilecek. Model seçimi `.env` üzerinden konfigüre edilecek, kod değişikliği gerektirmeyecek.
 
-**Kritik tasarım notu:** Gecikme riski tahmini gibi sayısal/istatistiksel işler LLM'e bırakılmayacak — bunun için basit kural tabanlı bir skor motoru (deadline yakınlığı, ilerleme yüzdesi, geçmiş hız) yazılacak; LLM sadece bu skoru **doğal dilde açıklamak** için kullanılacak. Saf LLM ile sayısal tahmin güvenilmez.
+**Önemli not:** Gecikme riski tahmini gibi sayısal/istatistiksel işler LLM'e bırakılmayacak — bunun için basit kural tabanlı bir skor motoru (deadline yakınlığı, ilerleme yüzdesi, geçmiş hız) yazılacak; LLM sadece bu skoru **doğal dilde açıklamak** için kullanılacak. Saf LLM ile sayısal tahmin güvenilir değildir.
 
 ---
 
-## 4. Veritabanı Şeması (taslak)
+## 4. Veritabanı Şeması
+
+Aşağıdaki şema bir taslaktır, geliştirme ilerledikçe değişebilir.
 
 ```
 profiles                 (id, full_name, avatar_url, title, created_at)
@@ -95,8 +110,8 @@ vantage/
 ├── docs/
 │   └── adr/                    # önemli kararlar (gerektikçe)
 ├── .github/workflows/          # CI (ileride)
-├── IMPLEMENTATION_PLAN.md
-└── README.md
+├── implementation_plan.md
+└── readme.md
 ```
 
 ---
@@ -106,7 +121,7 @@ vantage/
 ### Hafta 1 — Temel Altyapı (Gün 1-5)
 | Gün | Hedef |
 |-----|-------|
-| 1 | Implementation plan + README ✅, Supabase projesi kurulumu, ERD netleştirme, repo iskeleti |
+| 1 | Implementation plan + README (tamamlandı), Supabase projesi kurulumu, ERD netleştirme, repo iskeleti |
 | 2 | Backend iskeleti (Express+TS, health-check), Frontend iskeleti (Vite+React+TS+Tailwind), Supabase client bağlantısı |
 | 3 | Auth akışı uçtan uca (kayıt/giriş/çıkış), korumalı route'lar, Organization/Project oluşturma |
 | 4 | Task modeli + CRUD API + liste görünümü (henüz drag-drop yok) |
@@ -141,15 +156,15 @@ vantage/
 
 ---
 
-## 7. Git / GitHub Akışı
+## 7. Git ve GitHub Akışı
 
 - **`main`'e asla doğrudan push yok.** Tüm değişiklikler `feat/<konu>` / `fix/<konu>` branch'lerinde yapılır ve push edilir; main'e girişi yalnızca PR ile olur.
-- **PR zamanlaması:** PR'lar her commit'te değil, bir iş parçası tamamlandığında (staj sonunda toparlanacak şekilde) açılır — ara aşamada branch'e push yeterli.
+- **PR zamanlaması:** PR'lar her commit'te değil, bir iş parçası tamamlandığında açılır — ara aşamada branch'e push yeterli.
 - **Branch stratejisi:** `main` (her zaman demo edilebilir, sadece PR merge ile güncellenir) + `feat/<konu>` / `fix/<konu>` feature branch'leri
 - **Commit formatı:** [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`)
 - **Commit dili:** Commit mesajları her zaman İngilizce; doküman içerikleri (README, plan) Türkçe kalabilir.
 - **Günlük ritim:** her gün en az bir anlamlı commit, ilgili branch'e push
-- **GitHub Issues:** yukarıdaki 20 günlük takvim, her gün için bir Issue olarak açılabilir (opsiyonel ama önerilir — ilerleme takibi + Ümit Bey'e şeffaflık için)
+- **GitHub Issues:** 20 günlük takvimdeki her gün bir Issue olarak açılabilir; ilerleme takibini kolaylaştırır.
 - **Secrets:** `.env` asla commit edilmeyecek; `.env.example` şablonları tutulacak (Supabase URL/anon key, backend service role key, `OLLAMA_HOST`)
 
 ---
@@ -162,7 +177,7 @@ vantage/
 
 ---
 
-## 9. Riskler & Önlemler
+## 9. Riskler ve Önlemler
 
 | Risk | Önlem |
 |------|-------|
@@ -176,4 +191,4 @@ vantage/
 
 ## 10. Sonraki Adım
 
-Bu plan onaylandıktan sonra: `README.md` yazılacak, ardından Gün 2'den itibaren repo iskeleti (frontend/backend) kurulmaya başlanacak.
+Gün 2'den itibaren repo iskeleti (frontend/backend) kurulmaya başlanacak; ilerleyen günlerin maddeleri bu doküman üzerinden güncellenecek.

@@ -1,3 +1,5 @@
+<!-- Logo eklenince: <p align="center"><img src="./docs/logo.png" width="120" alt="Vantage logo" /></p> -->
+
 # Vantage
 
 **Yapay Zeka Destekli Proje Yönetim Platformu**
@@ -5,7 +7,7 @@
 Vantage, ekiplerin proje ve görev süreçlerini planlayıp Kanban panosu üzerinden takip edebildiği; buna ek olarak yapay zeka desteğiyle proje açıklamasından otomatik görev üretimi, öncelik/gecikme riski analizi, ekip üyesi çalışma tarzı analizi ve otomatik ilerleme özetleri sunan modüler bir web platformudur.
 
 > Bu proje bir yazılım stajı kapsamında, 20 iş günü boyunca aşamalı olarak geliştirilmektedir. Danışman: Ümit Bey.
-> Detaylı teknik plan ve 20 günlük takvim için: [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md)
+> Detaylı teknik plan ve 20 günlük takvim için: [implementation_plan.md](./implementation_plan.md)
 
 ---
 
@@ -39,7 +41,7 @@ vantage/
 ├── frontend/     # React + Vite istemci uygulaması
 ├── backend/      # Express API + AI orkestrasyonu
 ├── docs/         # Mimari kararlar ve ek dokümantasyon
-└── IMPLEMENTATION_PLAN.md
+└── implementation_plan.md
 ```
 
 ## Kurulum
@@ -48,7 +50,7 @@ vantage/
 
 ## Geliştirme Durumu
 
-Proje aktif geliştirme aşamasındadır. Güncel ilerleme ve gün gün plan için [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md) dosyasına bakınız.
+Proje aktif geliştirme aşamasındadır. Güncel ilerleme ve gün gün plan için [implementation_plan.md](./implementation_plan.md) dosyasına bakınız.
 
 ## Lisans
 
