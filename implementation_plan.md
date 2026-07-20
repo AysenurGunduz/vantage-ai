@@ -16,6 +16,7 @@ Bu doküman, Vantage'ın mimari kararlarını, teknik altyapısını ve 20 günl
 8. [Test Stratejisi](#8-test-stratejisi)
 9. [Riskler ve Önlemler](#9-riskler-ve-önlemler)
 10. [API Uç Noktaları](#10-api-uç-noktaları)
+11. [Teslim Edilecekler](#11-teslim-edilecekler)
 
 ---
 
@@ -278,3 +279,17 @@ Yanıt:
 }
 ```
 Kullanıcı bu öneriyi `/api/ai/suggestions/b3f1.../accept` ile onaylayana kadar hiçbir gerçek görev oluşmaz.
+
+---
+
+## 11. Teslim Edilecekler
+
+Gün 20 sonunda elde bulunacak somut çıktılar:
+
+- **Çalışır durumda Vantage web uygulaması** — frontend ve backend local'de ayağa kaldırılabilir, uçtan uca kullanılabilir durumda
+- **Çekirdek proje yönetimi:** organizasyon → proje → görev hiyerarşisi, rol tabanlı üyelik, Kanban panosu (sürükle-bırak, canlı senkron), deadline/öncelik/etiket
+- **Çalışan AI özellikleri** (local LLM ile): doğal dilden otomatik görev bölme, kural tabanlı gecikme riski skoru + LLM açıklaması, ekip üyesi çalışma tarzı analizi, zamanlanmış otomatik ilerleme özeti
+- **Kurulu ve şeması uygulanmış bir Supabase projesi** (Auth, Postgres tabloları, Realtime)
+- **Temel test kapsamı** — Bölüm 8'de tanımlanan birim testleri ve kritik senaryolar
+- **GitHub reposu:** kaynak kod, implementation_plan.md, README.md, ERD (docs/erd.md), çalıştırılabilir SQL şeması (backend/src/db/schema.sql), UI mockup'ları (docs/mockups/)
+- **Gün 20 demo senaryosu ve sunum**
