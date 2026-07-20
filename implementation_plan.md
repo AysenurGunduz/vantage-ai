@@ -15,8 +15,7 @@ Bu doküman, Vantage'ın mimari kararlarını, teknik altyapısını ve 20 günl
 7. [Git ve GitHub Akışı](#7-git-ve-github-akışı)
 8. [Test Stratejisi](#8-test-stratejisi)
 9. [Riskler ve Önlemler](#9-riskler-ve-önlemler)
-10. [Sonraki Adım](#10-sonraki-adım)
-11. [API Uç Noktaları](#11-api-uç-noktaları-taslak)
+10. [API Uç Noktaları](#10-api-uç-noktaları)
 
 ---
 
@@ -189,31 +188,38 @@ vantage/
 
 ---
 
-## 10. Sonraki Adım
+## 10. API Uç Noktaları
 
-Gün 2'den itibaren repo iskeleti (frontend/backend) kurulmaya başlanacak; ilerleyen günlerin maddeleri bu doküman üzerinden güncellenecek.
+Bu bölümün amacı, backend'in tam olarak neyi üstleneceğini kodlamaya başlamadan önce netleştirmektir.
 
----
+**Neden her şey Express üzerinden geçiyor, Supabase'e doğrudan bağlanmıyoruz?**
+Frontend, veri okuma/yazma işlemlerinin tamamı için Express backend'ine konuşur; Supabase'e doğrudan bağlanan tek yer, kullanıcı girişi/kaydı (Auth) akışıdır — bunun için frontend doğrudan Supabase'in kendi client kütüphanesini kullanır. Bunun dışındaki her şeyin (görev oluşturma, proje güncelleme, AI çağrıları vb.) Express üzerinden geçmesinin sebebi: iş kurallarının (örn. "bir görev tamamlandı işaretlenmeden önce tüm alt görevlerinin tamamlanmış olması gerekir" gibi) ve AI orkestrasyonunun (LLM'e prompt gönderme, yanıtı doğrulama, hataları yönetme) tek, test edilebilir bir yerde toplanmasıdır. Eğer frontend tablolara doğrudan erişseydi, bu kuralların her yerde (ve güvenilmez şekilde) tekrar yazılması gerekirdi.
 
-## 11. API Uç Noktaları (Taslak)
+**Genel kurallar:**
+- Her istek `Authorization: Bearer <supabase-jwt>` header'ı taşır; Express middleware bu token'ı Supabase'in JWKS'i üzerinden doğrular ve isteği atan kullanıcıyı belirler
+- Taban adres: `/api` (örn. geliştirmede `http://localhost:4000/api`)
+- Hatalar tek tip bir zarfla döner: `{ "error": { "code": "...", "message": "..." } }`
 
-Backend, Supabase'in üzerine iş kuralları uygulayan tek katman olduğu için frontend tüm veri işlemlerini bu REST API üzerinden yapar (Auth hariç — o doğrudan Supabase Auth ile yürütülür). Aşağıdaki uç noktalar kesinleşmiş bir sözleşme değil, geliştirme sırasında küçük değişiklikler olabilir.
+Aşağıdaki tablolar, her kaynak grubunun *neden* var olduğunu kısa bir açıklamayla birlikte veriyor. Bunlar kesinleşmiş bir sözleşme değil — geliştirme sırasında küçük değişiklikler olabilir, ama genel kapsamı ve yaklaşımı baştan netleştirmek amacıyla buradalar.
 
-**Profil**
+### Profil
+Kullanıcı Supabase Auth ile giriş yaptıktan sonra, arayüzün ilk açılışta "bu kullanıcı kim, hangi organizasyonlara üye" bilgisini tek istekte alması gerekir.
 
 | Method | Endpoint | Açıklama |
 |--------|----------|----------|
 | GET | `/api/me` | Giriş yapmış kullanıcının profili + üyesi olduğu organizasyonlar |
 
-**Organizasyonlar**
+### Organizasyonlar
+Bir organizasyon, birden fazla projeyi ve ekip üyesini bir arada tutan en üst seviye birimdir (örn. bir şirket ya da takım). Kullanıcılar önce bir organizasyona, sonra o organizasyon içindeki projelere üye olur.
 
 | Method | Endpoint | Açıklama |
 |--------|----------|----------|
 | POST | `/api/organizations` | Yeni organizasyon oluştur |
-| GET | `/api/organizations` | Kullanıcının organizasyonlarını listele |
+| GET | `/api/organizations` | Kullanıcının üyesi olduğu organizasyonları listele |
 | POST | `/api/organizations/:orgId/members` | Organizasyona üye davet et |
 
-**Projeler**
+### Projeler
+Vantage'ın çekirdek birimi projedir; her proje bir organizasyona bağlıdır ve kendi görevlerine, üyelerine ve dashboard'una sahiptir.
 
 | Method | Endpoint | Açıklama |
 |--------|----------|----------|
@@ -224,7 +230,8 @@ Backend, Supabase'in üzerine iş kuralları uygulayan tek katman olduğu için 
 | POST | `/api/projects/:id/members` | Projeye üye ekle |
 | GET | `/api/projects/:id/dashboard` | Durum istatistikleri, geciken görev sayısı vb. |
 
-**Görevler**
+### Görevler
+Kanban panosunun ve günlük kullanımın merkezinde görevler var; sürükle-bırak sıralaması ve aktivite geçmişi de burada, çünkü ikisi de doğrudan bir görevin durumuna bağlı.
 
 | Method | Endpoint | Açıklama |
 |--------|----------|----------|
@@ -237,7 +244,8 @@ Backend, Supabase'in üzerine iş kuralları uygulayan tek katman olduğu için 
 | GET | `/api/tasks/:id/activity` | Görevin aktivite geçmişi |
 | GET | `/api/tasks/:id/risk` | Gecikme riski skoru + LLM açıklaması |
 
-**Yapay Zeka**
+### Yapay Zeka
+Bu grup, projenin ayırt edici özelliklerini karşılıyor. Görev bölme iki adımlı: önce LLM bir öneri üretir (`ai_task_suggestions` tablosuna kaydedilir), kullanıcı bunu inceleyip kabul/red eder — LLM çıktısı hiçbir zaman doğrudan gerçek bir göreve dönüşmez, aradaki onay adımı hatalı/absürt önerilerin projeye karışmasını engeller.
 
 | Method | Endpoint | Açıklama |
 |--------|----------|----------|
@@ -246,3 +254,27 @@ Backend, Supabase'in üzerine iş kuralları uygulayan tek katman olduğu için 
 | POST | `/api/ai/suggestions/:id/reject` | Öneriyi reddet |
 | GET | `/api/users/:id/work-style` | Çalışma tarzı / karakter analizi profili |
 | GET | `/api/projects/:id/progress-summary` | En güncel otomatik ilerleme özeti |
+
+**Örnek: görev bölme isteği/yanıtı**
+
+İstek:
+```json
+POST /api/projects/42/ai/breakdown
+{
+  "description": "Kullanıcıların profil fotoğrafı yükleyip düzenleyebileceği bir ekran istiyoruz."
+}
+```
+
+Yanıt:
+```json
+{
+  "suggestionId": "b3f1...",
+  "status": "pending",
+  "suggestedTasks": [
+    { "title": "Profil fotoğrafı yükleme UI'ı", "priority": "medium", "estimatedHours": 4 },
+    { "title": "Supabase Storage entegrasyonu", "priority": "high", "estimatedHours": 3 },
+    { "title": "Görsel kırpma/düzenleme bileşeni", "priority": "low", "estimatedHours": 5 }
+  ]
+}
+```
+Kullanıcı bu öneriyi `/api/ai/suggestions/b3f1.../accept` ile onaylayana kadar hiçbir gerçek görev oluşmaz.
