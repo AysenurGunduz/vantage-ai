@@ -143,9 +143,12 @@ vantage/
 
 ## 7. Git / GitHub Akışı
 
-- **Branch stratejisi:** `main` (her zaman demo edilebilir) + `feat/<konu>` / `fix/<konu>` feature branch'leri
+- **`main`'e asla doğrudan push yok.** Tüm değişiklikler `feat/<konu>` / `fix/<konu>` branch'lerinde yapılır ve push edilir; main'e girişi yalnızca PR ile olur.
+- **PR zamanlaması:** PR'lar her commit'te değil, bir iş parçası tamamlandığında (staj sonunda toparlanacak şekilde) açılır — ara aşamada branch'e push yeterli.
+- **Branch stratejisi:** `main` (her zaman demo edilebilir, sadece PR merge ile güncellenir) + `feat/<konu>` / `fix/<konu>` feature branch'leri
 - **Commit formatı:** [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`)
-- **Günlük ritim:** her gün en az bir anlamlı commit/PR; PR açıklamasında o günün plan maddesine referans
+- **Commit dili:** Commit mesajları her zaman İngilizce; doküman içerikleri (README, plan) Türkçe kalabilir.
+- **Günlük ritim:** her gün en az bir anlamlı commit, ilgili branch'e push
 - **GitHub Issues:** yukarıdaki 20 günlük takvim, her gün için bir Issue olarak açılabilir (opsiyonel ama önerilir — ilerleme takibi + Ümit Bey'e şeffaflık için)
 - **Secrets:** `.env` asla commit edilmeyecek; `.env.example` şablonları tutulacak (Supabase URL/anon key, backend service role key, `OLLAMA_HOST`)
 
