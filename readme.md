@@ -1,4 +1,4 @@
-<p align="center"><img src="./docs/logo.svg" width="280" alt="Vantage logo" /></p>
+<p align="center"><img src="./docs/logo.png" width="280" alt="Vantage logo" /></p>
 
 <h1 align="center">Vantage</h1>
 <p align="center"><strong>Yapay Zeka Destekli Proje Yönetim Platformu</strong></p>
