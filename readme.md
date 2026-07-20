@@ -1,4 +1,4 @@
-<p align="center"><img src="./docs/logo.png" width="280" alt="Vantage logo" /></p>
+<p align="center"><img src="./docs/logo.svg" width="280" alt="Vantage logo" /></p>
 
 <h1 align="center">Vantage</h1>
 <p align="center"><strong>Yapay Zeka Destekli Proje Yönetim Platformu</strong></p>
@@ -37,6 +37,18 @@ Vantage, ekiplerin proje ve görev süreçlerini planlayıp Kanban panosu üzeri
 - **Çalışma tarzı analizi:** Ekip üyelerinin görev geçmişine dayalı kişiye özel profil çıkarımı, atama önerilerinde kullanılır
 - **Otomatik ilerleme özetleri:** Belirli aralıklarla proje durumunun özetlenmesi
 
+## Mimari
+
+```mermaid
+flowchart LR
+    FE["React + Vite\n(Frontend)"] -->|REST API| BE["Node.js + Express\n(Backend)"]
+    BE --> DB[("Supabase\nPostgres · Auth · Realtime")]
+    BE --> AI["Ollama\n(Local LLM)"]
+    DB -.->|canlı güncellemeler| FE
+```
+
+Frontend ve backend birbirinden bağımsız iki uygulama; backend hem Supabase ile hem de local LLM ile konuşan tek katman. AI sağlayıcısı `AIProvider` arayüzü arkasında soyutlandığı için Ollama'nın yerine ileride başka bir sağlayıcı geçebilir.
+
 ## Teknoloji Yığını
 
 | Katman | Teknoloji |
@@ -52,9 +64,20 @@ Vantage, ekiplerin proje ve görev süreçlerini planlayıp Kanban panosu üzeri
 vantage/
 ├── frontend/     # React + Vite istemci uygulaması
 ├── backend/      # Express API + AI orkestrasyonu
-├── docs/         # Mimari kararlar ve ek dokümantasyon
+├── docs/         # ERD, logo ve ek dokümantasyon
 └── implementation_plan.md
 ```
+
+## Yol Haritası
+
+20 iş günü, 4 haftalık faz halinde ilerliyor. Gün gün detaylar için [implementation_plan.md](./implementation_plan.md).
+
+| Hafta | Odak |
+|-------|------|
+| 1 | Temel altyapı — auth, proje/görev CRUD, Kanban panosu |
+| 2 | Çekirdek proje yönetimi özelliklerinin tamamlanması — roller, dashboard, realtime senkron |
+| 3 | AI katmanı — local LLM entegrasyonu, otomatik görev bölme, gecikme riski skoru |
+| 4 | İleri AI özellikleri — çalışma tarzı analizi, otomatik ilerleme özetleri, teslim |
 
 ## Kurulum
 
