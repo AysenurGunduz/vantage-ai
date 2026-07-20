@@ -1,14 +1,27 @@
-<!-- Logo eklenince: <p align="center"><img src="./docs/logo.png" width="120" alt="Vantage logo" /></p> -->
+<!-- Logo eklenince: <p align="center"><img src="./docs/logo.png" width="160" alt="Vantage logo" /></p> -->
 
-# Vantage
+<h1 align="center">Vantage</h1>
+<p align="center"><strong>Yapay Zeka Destekli Proje Yönetim Platformu</strong></p>
 
-**Yapay Zeka Destekli Proje Yönetim Platformu**
+<p align="center">
+  <img alt="Frontend" src="https://img.shields.io/badge/Frontend-React%20%2B%20TypeScript-61DAFB?style=flat-square&logo=react&logoColor=white">
+  <img alt="Backend" src="https://img.shields.io/badge/Backend-Node.js%20%2B%20Express-339933?style=flat-square&logo=node.js&logoColor=white">
+  <img alt="Database" src="https://img.shields.io/badge/Database-Supabase-3FCF8E?style=flat-square&logo=supabase&logoColor=white">
+  <img alt="AI" src="https://img.shields.io/badge/AI-Local%20LLM%20(Ollama)-1E293B?style=flat-square">
+  <img alt="Status" src="https://img.shields.io/badge/Durum-Geli%C5%9Ftirme%20A%C5%9Famas%C4%B1nda-F59E0B?style=flat-square">
+</p>
 
 Vantage, ekiplerin proje ve görev süreçlerini planlayıp Kanban panosu üzerinden takip edebildiği; buna ek olarak yapay zeka desteğiyle proje açıklamasından otomatik görev üretimi, öncelik/gecikme riski analizi, ekip üyesi çalışma tarzı analizi ve otomatik ilerleme özetleri sunan modüler bir web platformudur.
 
 > Detaylı teknik plan ve 20 günlük takvim için: [implementation_plan.md](./implementation_plan.md)
 
 ---
+
+## Neden Vantage?
+
+- **Tek platformda hem planlama hem yürütme** — organizasyon/proje/görev hiyerarşisi, Kanban, deadline ve atama; klasik bir proje yönetimi aracının sunduğu her şey
+- **Yapay zeka gerçek bir asistan gibi çalışır** — proje açıklamasını görevlere böler, gecikme riskini önceden haber verir, ekip üyesinin çalışma tarzına göre atama önerir
+- **Modüler ve genişletilebilir** — AI katmanı çekirdek platformdan tamamen ayrık; sağlayıcı değişse (local LLM → cloud API) bile geri kalan sistem etkilenmez
 
 ## Özellikler
 
