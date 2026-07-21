@@ -37,6 +37,32 @@ Vantage, ekiplerin proje ve görev süreçlerini planlayıp Kanban panosu üzeri
 - **Çalışma tarzı analizi:** Ekip üyelerinin görev geçmişine dayalı kişiye özel profil çıkarımı, atama önerilerinde kullanılır
 - **Otomatik ilerleme özetleri:** Belirli aralıklarla proje durumunun özetlenmesi
 
+## Kullanıcı Akışı
+
+Aşağıdaki akış, bir kullanıcının Vantage üzerinde bir projeyi baştan sona nasıl yürüttüğünü ve yapay zekânın bu sürece hangi noktalarda dahil olduğunu gösterir.
+
+```mermaid
+flowchart TD
+    A[Giriş yap] --> B[Organizasyon oluştur / katıl]
+    B --> C[Yeni proje oluştur]
+    C --> D[Proje açıklamasını yaz]
+    D --> E{{AI açıklamayı analiz eder}}
+    E --> F{{AI görevleri otomatik oluşturur}}
+    F --> G[Kullanıcı görevleri düzenler ve onaylar]
+    G --> H[Görevler Kanban panosuna eklenir]
+    H --> I[Takım üyelerine atanır]
+    I --> J{{AI gecikme riskini analiz eder}}
+    I --> K{{AI çalışma tarzını analiz eder}}
+    J --> L{{AI otomatik ilerleme özeti oluşturur}}
+    K --> L
+    L --> M[Proje tamamlanır]
+
+    classDef ai fill:#1E293B,stroke:#1E293B,color:#ffffff;
+    class E,F,J,K,L ai;
+```
+
+Koyu renkli adımlar (altıgen şekiller), yapay zekânın sürece dahil olduğu noktaları temsil eder — geri kalanı kullanıcının doğrudan yönettiği adımlardır.
+
 ## Mimari
 
 ```mermaid
@@ -48,6 +74,17 @@ flowchart LR
 ```
 
 Frontend ve backend birbirinden bağımsız iki uygulama; backend hem Supabase ile hem de local LLM ile konuşan tek katman. AI sağlayıcısı `AIProvider` arayüzü arkasında soyutlandığı için Ollama'nın yerine ileride başka bir sağlayıcı geçebilir.
+
+## Neden Ollama?
+
+Vantage'ın yapay zeka katmanı, bulut tabanlı bir API yerine bilinçli olarak local bir LLM'in (Ollama) üzerine kuruldu. Bu tercih yalnızca "internet olmadan da çalışsın" kolaylığından değil, bir dizi teknik ve stratejik gerekçeden geliyor:
+
+- **Veri gizliliği:** Proje açıklamaları, görev geçmişi ve çalışma tarzı verileri hiçbir zaman üçüncü taraf bir servise gönderilmez, tamamen yerelde kalır
+- **Sıfır API maliyeti:** Model çağrısı başına ücretlendirme yok; geliştirme ve test sürecinde sınırsız deneme yapılabilir
+- **İnternet bağımsızlığı:** Model bir kez indirildikten sonra tamamen çevrimdışı çalışabilir
+- **Hızlı iterasyon:** Prompt ve model değişiklikleri anında test edilebilir; dış servis gecikmesi veya rate limit derdi yok
+- **Sağlayıcıdan bağımsız mimari:** AI katmanı `AIProvider` arayüzü arkasında soyutlandığı için Ollama nihai bir karar değil, bilinçli bir başlangıç noktası — ileride OpenAI, Gemini veya başka bir sağlayıcıya geçmek tek bir dosya değişikliğiyle mümkün
+- **Kolay yerel test:** Ekstra kurulum veya API anahtarı gerekmeden, geliştirme ortamında uçtan uca test edilebilir
 
 ## Teknoloji Yığını
 
