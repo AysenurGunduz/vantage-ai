@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
 import { supabase } from "./lib/supabaseClient.js";
+import { organizationsRouter } from "./routes/organizations.js";
+import { projectsRouter } from "./routes/projects.js";
 
 export const app = express();
 
@@ -15,3 +17,6 @@ app.get("/api/health", async (_req, res) => {
     supabase: error ? "unreachable" : "connected",
   });
 });
+
+app.use("/api/organizations", organizationsRouter);
+app.use("/api/organizations/:orgId/projects", projectsRouter);
