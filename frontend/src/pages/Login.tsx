@@ -1,6 +1,10 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/AuthContext";
+import { AuthLayout } from "@/components/auth/AuthLayout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function Login() {
   const { signIn } = useAuth();
@@ -26,46 +30,51 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4 rounded-lg bg-white p-8 shadow">
-        <h1 className="text-2xl font-bold text-slate-800">Giriş Yap</h1>
+    <AuthLayout
+      headline="Projelerini tek bir yerden yönet"
+      subtitle="Ekibinin işlerini planla, önceliklendir ve yapay zeka desteğiyle bir adım önde kal."
+    >
+      <h2 className="text-2xl font-bold tracking-tight">Tekrar hoş geldin</h2>
+      <p className="mt-1 text-sm text-muted-foreground">Devam etmek için hesabına giriş yap</p>
 
-        {error && <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
+      <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+        {error && (
+          <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
+        )}
 
-        <div>
-          <label className="block text-sm font-medium text-slate-700">E-posta</label>
-          <input
+        <div className="space-y-1.5">
+          <Label htmlFor="email">E-posta</Label>
+          <Input
+            id="email"
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 w-full rounded border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none"
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-slate-700">Şifre</label>
-          <input
+        <div className="space-y-1.5">
+          <Label htmlFor="password">Şifre</Label>
+          <Input
+            id="password"
             type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 w-full rounded border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none"
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full rounded bg-slate-800 px-4 py-2 font-medium text-white hover:bg-slate-700 disabled:opacity-50"
-        >
+        <Button type="submit" size="lg" disabled={submitting} className="w-full">
           {submitting ? "Giriş yapılıyor..." : "Giriş Yap"}
-        </button>
+        </Button>
 
-        <p className="text-center text-sm text-slate-500">
-          Hesabın yok mu? <Link to="/signup" className="text-slate-800 underline">Kayıt ol</Link>
+        <p className="text-center text-sm text-muted-foreground">
+          Hesabın yok mu?{" "}
+          <Link to="/signup" className="font-medium text-foreground underline underline-offset-4">
+            Kayıt ol
+          </Link>
         </p>
       </form>
-    </div>
+    </AuthLayout>
   );
 }

@@ -1,19 +1,17 @@
 import { useAuth } from "../lib/AuthContext";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const { user, signOut } = useAuth();
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-muted/40 to-background px-4">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-slate-800">Vantage</h1>
-        <p className="mt-2 text-slate-500">Giriş yapıldı: {user?.email}</p>
-        <button
-          onClick={() => signOut()}
-          className="mt-4 rounded bg-slate-800 px-4 py-2 font-medium text-white hover:bg-slate-700"
-        >
+        <img src="/logo.png" alt="Vantage" className="mx-auto mb-6 h-10" />
+        <p className="text-muted-foreground">Giriş yapıldı: {user?.email}</p>
+        <Button onClick={() => signOut()} className="mt-4">
           Çıkış Yap
-        </button>
+        </Button>
       </div>
     </div>
   );
