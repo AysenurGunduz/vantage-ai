@@ -26,7 +26,7 @@ export default function Login() {
       setError(error);
       return;
     }
-    navigate("/");
+    navigate("/dashboard");
   }
 
   return (

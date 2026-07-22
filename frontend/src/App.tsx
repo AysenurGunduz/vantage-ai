@@ -1,4 +1,5 @@
 import { Routes, Route } from "react-router-dom";
+import Landing from "./pages/Landing";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -8,8 +9,9 @@ import { GuestRoute } from "./components/auth/GuestRoute";
 function App() {
   return (
     <Routes>
+      <Route path="/" element={<Landing />} />
       <Route
-        path="/"
+        path="/dashboard"
         element={
           <ProtectedRoute>
             <Home />

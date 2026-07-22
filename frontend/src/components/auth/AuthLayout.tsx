@@ -17,9 +17,9 @@ export function AuthLayout({
   children: ReactNode;
 }) {
   return (
-    <div className="auth-editorial flex min-h-screen bg-[#f3f2f2] text-[#201e1d]">
+    <div className="editorial-theme flex min-h-screen bg-[#f3f2f2] text-[#201e1d]">
       <div className="relative hidden w-1/2 flex-col justify-between border-r border-[#201e1d]/10 p-12 lg:flex">
-        <span className="text-lg font-semibold">Vantage</span>
+        <img src="/logo.png" alt="Vantage" className="h-10 w-fit" />
 
         <div className="max-w-md space-y-8">
           <h1 className="cmyk-head text-5xl leading-[1.1] font-semibold tracking-tight text-balance">
@@ -55,7 +55,7 @@ export function AuthLayout({
 
       <div className="flex w-full flex-col justify-center px-6 py-12 sm:px-12 lg:w-1/2 lg:px-20">
         <div className="mx-auto w-full max-w-sm">
-          <span className="mb-10 block text-lg font-semibold lg:hidden">Vantage</span>
+          <img src="/logo.png" alt="Vantage" className="mb-10 h-10 w-fit lg:hidden" />
           {children}
         </div>
       </div>
