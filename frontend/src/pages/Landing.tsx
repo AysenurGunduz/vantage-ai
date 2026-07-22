@@ -34,23 +34,15 @@ export default function Landing() {
   return (
     <div className="editorial-theme min-h-screen bg-[#f3f2f2] text-[#201e1d]">
       <nav className="sticky top-0 z-20 border-b border-[#201e1d]/10 bg-[#f3f2f2]/95 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 sm:px-10">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 sm:px-10">
           <img src="/logo.png" alt="Vantage" className="h-10 w-fit" />
-          <div className="hidden items-center gap-8 text-sm sm:flex">
-            <a href="#neden" className="hover:text-[#0088b0]">
-              Neden Vantage
-            </a>
-            <a href="#ozellikler" className="hover:text-[#0088b0]">
-              Özellikler
-            </a>
-          </div>
           <div className="flex items-center gap-4">
-            <Link to="/login" className="text-sm">
+            <Link to="/login" className="text-base hover:text-[#0088b0]">
               Giriş yap
             </Link>
             <Link
               to="/signup"
-              className="rounded-[3px] bg-[#0088b0] px-4 py-2 text-sm font-semibold text-[#f3f2f2] hover:bg-[#1186ac]"
+              className="rounded-[3px] border border-[#0088b0] px-4 py-2 text-sm font-semibold text-[#0088b0] hover:bg-[#0088b0]/10"
             >
               Kayıt ol
             </Link>
@@ -58,60 +50,59 @@ export default function Landing() {
         </div>
       </nav>
 
-      <div className="mx-auto max-w-6xl px-6 sm:px-10">
-        <section className="py-16 sm:py-20">
-          <h1 className="cmyk-head text-4xl leading-[1.05] font-semibold tracking-tight text-balance sm:text-6xl lg:text-7xl">
-            <span className="paper">Ekibiniz nereye odaklanmalı, siz belirleyin.</span>
-            <span className="plate plate-c" aria-hidden="true">
-              Ekibiniz nereye odaklanmalı, siz belirleyin.
-            </span>
-            <span className="plate plate-m" aria-hidden="true">
-              Ekibiniz nereye odaklanmalı, siz belirleyin.
-            </span>
-            <span className="plate plate-y" aria-hidden="true">
-              Ekibiniz nereye odaklanmalı, siz belirleyin.
-            </span>
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-[#201e1d]/80">
-            Ekibiniz projelerini Kanban panosunda planlasın, görevleri atasın ve ilerlemeyi tek yerden
-            takip etsin — yapay zeka görev üretir, gecikme riskini önceden haber verir.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center gap-4">
-            <Link
-              to="/signup"
-              className="rounded-[3px] bg-[#0088b0] px-5 py-2.5 text-sm font-semibold text-[#f3f2f2] hover:bg-[#1186ac]"
-            >
-              Ücretsiz başla
-            </Link>
-            <Link to="/login" className="text-sm underline underline-offset-4">
-              Zaten hesabınız var mı? Giriş yapın
-            </Link>
-          </div>
-        </section>
+      <section className="mx-auto max-w-7xl px-6 py-16 sm:px-10 sm:py-24">
+        <h1 className="cmyk-head text-4xl leading-[1.05] font-semibold tracking-tight text-balance sm:text-6xl lg:text-7xl">
+          <span className="paper">Ekibiniz nereye odaklanmalı, siz belirleyin.</span>
+          <span className="plate plate-c" aria-hidden="true">
+            Ekibiniz nereye odaklanmalı, siz belirleyin.
+          </span>
+          <span className="plate plate-m" aria-hidden="true">
+            Ekibiniz nereye odaklanmalı, siz belirleyin.
+          </span>
+          <span className="plate plate-y" aria-hidden="true">
+            Ekibiniz nereye odaklanmalı, siz belirleyin.
+          </span>
+        </h1>
+        <p className="mt-6 max-w-2xl text-lg leading-relaxed text-[#201e1d]/80">
+          Ekibiniz projelerini Kanban panosunda planlasın, görevleri atasın ve ilerlemeyi tek yerden
+          takip etsin — yapay zeka görev üretir, gecikme riskini önceden haber verir.
+        </p>
+        <div className="mt-8 flex flex-wrap items-center gap-4">
+          <Link
+            to="/signup"
+            className="rounded-[3px] border border-[#0088b0] px-5 py-2.5 text-sm font-semibold text-[#0088b0] hover:bg-[#0088b0]/10"
+          >
+            Ücretsiz başla
+          </Link>
+          <Link to="/login" className="text-sm text-[#0088b0] hover:text-[#1186ac]">
+            Zaten hesabınız var mı? Giriş yapın
+          </Link>
+        </div>
+      </section>
 
-        <section id="neden" className="scroll-mt-20 border-t border-[#201e1d]/10 py-14">
-          <span className="mb-4 block text-xs font-semibold tracking-[0.08em] text-[#201e1d]/60 uppercase">
+      <section className="border-t border-[#201e1d]/10 bg-[#eae9e9]/50">
+        <div className="mx-auto max-w-7xl px-6 py-16 sm:px-10">
+          <span className="mb-5 block text-sm font-semibold tracking-[0.1em] text-[#201e1d]/60 uppercase">
             Neden Vantage
           </span>
           <div>
             {whyCards.map((card) => (
-              <details key={card.title} className="group border-b border-[#201e1d]/10 py-5">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-xl font-semibold tracking-tight marker:content-none [&::-webkit-details-marker]:hidden">
+              <details key={card.title} className="group border-b border-[#201e1d]/10 py-6">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-2xl font-semibold tracking-tight marker:content-none [&::-webkit-details-marker]:hidden">
                   {card.title}
-                  <ChevronDown className="size-5 shrink-0 text-[#201e1d]/50 transition-transform duration-200 group-open:rotate-180" />
+                  <ChevronDown className="size-6 shrink-0 text-[#201e1d]/50 transition-transform duration-200 group-open:rotate-180" />
                 </summary>
                 <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-[#201e1d]/75">{card.body}</p>
               </details>
             ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section
-          id="ozellikler"
-          className="grid scroll-mt-20 gap-10 border-t border-[#201e1d]/10 py-14 lg:grid-cols-2 lg:gap-16"
-        >
+      <section className="border-t border-[#201e1d]/10">
+        <div className="mx-auto grid max-w-7xl gap-10 px-6 py-16 sm:px-10 lg:grid-cols-2 lg:gap-16">
           <div>
-            <span className="mb-4 block text-xs font-semibold tracking-[0.08em] text-[#201e1d]/60 uppercase">
+            <span className="mb-5 block text-sm font-semibold tracking-[0.1em] text-[#201e1d]/60 uppercase">
               Özellikler
             </span>
             <h2 className="text-3xl font-semibold tracking-tight">
@@ -150,10 +141,12 @@ export default function Landing() {
               className="block w-full"
             />
           </figure>
-        </section>
+        </div>
+      </section>
 
-        <section className="border-t border-[#201e1d]/10 py-14">
-          <h3 className="text-2xl font-semibold tracking-tight">Ekibinizle hemen başlayın</h3>
+      <section className="border-t border-[#201e1d]/10 bg-[#eae9e9]/50">
+        <div className="mx-auto max-w-7xl px-6 py-16 sm:px-10">
+          <h3 className="text-3xl font-semibold tracking-tight">Ekibinizle hemen başlayın</h3>
           <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-[#201e1d]/75">
             Kayıt olun, organizasyonunuzu kurun ve ilk projenizi dakikalar içinde oluşturun.
           </p>
@@ -162,21 +155,23 @@ export default function Landing() {
               type="email"
               placeholder="isim@sirket.com"
               aria-label="İş e-postası"
-              className="min-h-9 flex-1 rounded-[3px] border border-[#201e1d]/15 bg-[#eae9e9] px-3 text-sm focus:border-[#0088b0] focus:outline-none"
+              className="min-h-9 flex-1 rounded-[3px] border border-[#201e1d]/15 bg-[#f3f2f2] px-3 text-sm focus:border-[#0088b0] focus:outline-none"
             />
             <Link
               to="/signup"
-              className="flex min-h-9 items-center rounded-[3px] bg-[#0088b0] px-4 text-sm font-semibold text-[#f3f2f2] hover:bg-[#1186ac]"
+              className="flex min-h-9 items-center rounded-[3px] border border-[#0088b0] px-4 text-sm font-semibold text-[#0088b0] hover:bg-[#0088b0]/10"
             >
               Kayıt ol
             </Link>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <footer className="border-t border-[#201e1d]/10 py-10 text-sm text-[#201e1d]/60">
+      <footer className="border-t border-[#201e1d]/10">
+        <div className="mx-auto max-w-7xl px-6 py-8 text-sm text-[#201e1d]/60 sm:px-10">
           © 2026 Vantage.
-        </footer>
-      </div>
+        </div>
+      </footer>
     </div>
   );
 }
