@@ -1,12 +1,41 @@
+import { Routes, Route } from "react-router-dom";
+import Landing from "./pages/Landing";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import { GuestRoute } from "./components/auth/GuestRoute";
+
 function App() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-slate-800">Vantage</h1>
-        <p className="mt-2 text-slate-500">Frontend iskeleti hazır.</p>
-      </div>
-    </div>
-  )
+    <Routes>
+      <Route path="/" element={<Landing />} />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Home />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/login"
+        element={
+          <GuestRoute>
+            <Login />
+          </GuestRoute>
+        }
+      />
+      <Route
+        path="/signup"
+        element={
+          <GuestRoute>
+            <Signup />
+          </GuestRoute>
+        }
+      />
+    </Routes>
+  );
 }
 
-export default App
+export default App;

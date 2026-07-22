@@ -18,6 +18,23 @@ create table profiles (
   created_at timestamptz not null default now()
 );
 
+-- Yeni bir kullanıcı auth.users'a eklendiğinde otomatik bir profiles satırı oluşturur.
+create function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  insert into public.profiles (id, full_name)
+  values (new.id, new.raw_user_meta_data ->> 'full_name');
+  return new;
+end;
+$$;
+
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
+
 create table organizations (
   id uuid primary key default gen_random_uuid(),
   name text not null,
