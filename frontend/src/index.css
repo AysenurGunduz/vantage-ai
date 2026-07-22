@@ -2,6 +2,9 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
+@import "@fontsource/source-serif-4/400.css";
+@import "@fontsource/source-serif-4/600.css";
+@import "@fontsource/source-serif-4/400-italic.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -127,4 +130,38 @@
   html {
     @apply font-sans;
     }
+}
+
+/* Editorial auth theme (Login/Signup) — paper tone + serif type + a static
+   CMYK misregistered-print headline effect, in the style of a print poster. */
+.auth-editorial {
+  font-family: "Source Serif 4", serif;
+}
+
+.cmyk-head {
+  position: relative;
+}
+.cmyk-head .paper {
+  color: #f3f2f2;
+  text-shadow:
+    0.027em 0.0185em 0 #f3f2f2,
+    -0.0245em -0.0175em 0 #f3f2f2;
+}
+.cmyk-head .plate {
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  user-select: none;
+}
+.cmyk-head .plate-c {
+  color: #0088b0;
+}
+.cmyk-head .plate-m {
+  color: #d6006c;
+  translate: 0.018em 0.0125em;
+}
+.cmyk-head .plate-y {
+  color: #edbb00;
+  translate: -0.0155em -0.0115em;
 }
