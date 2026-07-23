@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
 import { KanbanSquare, Sparkles, Users } from "lucide-react";
+import { Logo } from "@/components/Logo";
 
 const features = [
-  { icon: KanbanSquare, text: "Kanban tabanlı proje ve görev yönetimi", accent: "#0088b0" },
-  { icon: Sparkles, text: "Yapay zeka destekli görev bölme ve öncelik analizi", accent: "#d6006c" },
-  { icon: Users, text: "Takım çalışma tarzı ve gecikme riski öngörüleri", accent: "#0088b0" },
+  { icon: KanbanSquare, text: "Kanban tabanlı proje ve görev yönetimi" },
+  { icon: Sparkles, text: "Yapay zeka destekli görev bölme ve öncelik analizi" },
+  { icon: Users, text: "Takım çalışma tarzı ve gecikme riski öngörüleri" },
 ];
 
 export function AuthLayout({
@@ -17,45 +18,33 @@ export function AuthLayout({
   children: ReactNode;
 }) {
   return (
-    <div className="editorial-theme flex min-h-screen bg-[#f3f2f2] text-[#201e1d]">
-      <div className="relative hidden w-1/2 flex-col justify-between border-r border-[#201e1d]/10 p-12 lg:flex">
-        <img src="/logo.png" alt="Vantage" className="h-10 w-fit" />
+    <div className="dark-theme flex min-h-screen bg-[#0d1b3a] text-white">
+      <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden border-r border-white/10 p-12 lg:flex">
+        <div className="pointer-events-none absolute -top-24 -left-24 h-96 w-96 rounded-full bg-[#ff6b5b]/20 blur-3xl" />
+        <div className="pointer-events-none absolute -right-16 bottom-0 h-80 w-80 rounded-full bg-indigo-500/20 blur-3xl" />
 
-        <div className="max-w-md space-y-8">
-          <h1 className="cmyk-head text-5xl leading-[1.1] font-semibold tracking-tight text-balance">
-            <span className="paper">{headline}</span>
-            <span className="plate plate-c" aria-hidden="true">
-              {headline}
-            </span>
-            <span className="plate plate-m" aria-hidden="true">
-              {headline}
-            </span>
-            <span className="plate plate-y" aria-hidden="true">
-              {headline}
-            </span>
-          </h1>
-          <p className="text-lg text-[#201e1d]/70 text-balance">{subtitle}</p>
+        <Logo className="relative z-10" />
+
+        <div className="relative z-10 max-w-md space-y-8">
+          <h1 className="text-4xl leading-tight font-bold text-balance">{headline}</h1>
+          <p className="text-lg text-white/70 text-balance">{subtitle}</p>
 
           <ul className="space-y-4">
-            {features.map(({ icon: Icon, text, accent }) => (
-              <li
-                key={text}
-                className="flex items-start gap-3 border-l-2 pl-4"
-                style={{ borderColor: accent }}
-              >
-                <Icon className="mt-0.5 size-5 shrink-0 text-[#201e1d]/60" />
-                <span className="text-[#201e1d]/80">{text}</span>
+            {features.map(({ icon: Icon, text }) => (
+              <li key={text} className="flex items-start gap-3 text-white/80">
+                <Icon className="mt-0.5 size-5 shrink-0 text-[#ff6b5b]" />
+                <span>{text}</span>
               </li>
             ))}
           </ul>
         </div>
 
-        <span className="text-sm text-[#201e1d]/40">Vantage &mdash; Yapay Zeka Destekli Proje Yönetimi</span>
+        <span className="relative z-10 text-sm text-white/40">Vantage &mdash; Yapay Zeka Destekli Proje Yönetimi</span>
       </div>
 
       <div className="flex w-full flex-col justify-center px-6 py-12 sm:px-12 lg:w-1/2 lg:px-20">
         <div className="mx-auto w-full max-w-sm">
-          <img src="/logo.png" alt="Vantage" className="mb-10 h-10 w-fit lg:hidden" />
+          <Logo className="mb-10 lg:hidden" />
           {children}
         </div>
       </div>

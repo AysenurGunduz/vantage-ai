@@ -35,15 +35,15 @@ export default function Login() {
       subtitle="Ekibiniz projelerini Kanban panosunda planlasın, görevleri atasın ve ilerlemeyi tek yerden takip etsin — yapay zeka görev üretir, gecikme riskini önceden haber verir."
     >
       <h2 className="text-2xl font-semibold tracking-tight">Tekrar hoş geldin</h2>
-      <p className="mt-1 text-sm text-[#201e1d]/60">Devam etmek için hesabına giriş yap</p>
+      <p className="mt-1 text-sm text-white/60">Devam etmek için hesabına giriş yap</p>
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-5">
         {error && (
-          <p className="rounded-[3px] bg-[#d6006c]/10 px-3 py-2 text-sm text-[#d6006c]">{error}</p>
+          <p className="rounded-[3px] bg-[#ff6b5b]/10 px-3 py-2 text-sm text-[#ff6b5b]">{error}</p>
         )}
 
         <div className="space-y-1.5">
-          <Label htmlFor="email" className="text-[#201e1d]/70">
+          <Label htmlFor="email" className="text-white/70">
             E-posta
           </Label>
           <Input
@@ -52,12 +52,12 @@ export default function Login() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="rounded-[3px] border-[#201e1d]/15 bg-[#eae9e9] focus-visible:border-[#0088b0] focus-visible:ring-[#0088b0]/30"
+            className="rounded-[3px] border-white/15 bg-white/5 text-white focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
           />
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="password" className="text-[#201e1d]/70">
+          <Label htmlFor="password" className="text-white/70">
             Şifre
           </Label>
           <Input
@@ -66,7 +66,7 @@ export default function Login() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="rounded-[3px] border-[#201e1d]/15 bg-[#eae9e9] focus-visible:border-[#0088b0] focus-visible:ring-[#0088b0]/30"
+            className="rounded-[3px] border-white/15 bg-white/5 text-white focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
           />
         </div>
 
@@ -74,14 +74,14 @@ export default function Login() {
           type="submit"
           size="lg"
           disabled={submitting}
-          className="w-full rounded-[3px] bg-[#0088b0] font-semibold text-[#f3f2f2] hover:bg-[#1186ac] active:bg-[#006786]"
+          className="w-full rounded-[3px] bg-[#ff6b5b] font-semibold text-[#0d1b3a] hover:bg-[#ff8577] active:bg-[#e85a4a]"
         >
           {submitting ? "Giriş yapılıyor..." : "Giriş Yap"}
         </Button>
 
-        <p className="text-center text-sm text-[#201e1d]/60">
+        <p className="text-center text-sm text-white/60">
           Hesabın yok mu?{" "}
-          <Link to="/signup" className="font-medium text-[#0088b0] underline underline-offset-4">
+          <Link to="/signup" className="font-medium text-[#ff6b5b] underline underline-offset-4">
             Kayıt ol
           </Link>
         </p>
