@@ -14,11 +14,11 @@ function errorMessage(err: unknown): string {
 
 const inputClass =
   "rounded-[3px] border-white/15 bg-white/5 text-white focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30";
-const submitButtonClass = "rounded-[3px] bg-[#ff6b5b] text-[#0a0e1a] hover:bg-[#ff8577]";
+const submitButtonClass = "rounded-[3px] bg-[#ff6b5b] text-[#0d1b3a] hover:bg-[#ff8577]";
 
 function selectableItemClass(selected: boolean) {
   return `w-full rounded-[3px] px-4 py-2.5 text-left text-sm transition-colors ${
-    selected ? "bg-[#ff6b5b] text-[#0a0e1a]" : "bg-white/5 hover:bg-white/10"
+    selected ? "bg-[#ff6b5b] text-[#0d1b3a]" : "bg-white/5 hover:bg-white/10"
   }`;
 }
 
@@ -123,7 +123,7 @@ export default function Workspace() {
   }
 
   return (
-    <div className="dark-theme min-h-screen bg-[#0a0e1a] text-white">
+    <div className="dark-theme min-h-screen bg-[#0d1b3a] text-white">
       <div className="mx-auto max-w-3xl px-6 py-10">
         <div className="mb-8 flex items-center justify-between">
           <div>

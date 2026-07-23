@@ -87,7 +87,7 @@ export default function Signup() {
               type="submit"
               size="lg"
               disabled={submitting}
-              className="w-full rounded-[3px] bg-[#ff6b5b] font-semibold text-[#0a0e1a] hover:bg-[#ff8577] active:bg-[#e85a4a]"
+              className="w-full rounded-[3px] bg-[#ff6b5b] font-semibold text-[#0d1b3a] hover:bg-[#ff8577] active:bg-[#e85a4a]"
             >
               {submitting ? "Kayıt olunuyor..." : "Kayıt Ol"}
             </Button>

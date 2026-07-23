@@ -18,7 +18,7 @@ export function AuthLayout({
   children: ReactNode;
 }) {
   return (
-    <div className="dark-theme flex min-h-screen bg-[#0a0e1a] text-white">
+    <div className="dark-theme flex min-h-screen bg-[#0d1b3a] text-white">
       <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden border-r border-white/10 p-12 lg:flex">
         <div className="pointer-events-none absolute -top-24 -left-24 h-96 w-96 rounded-full bg-[#ff6b5b]/20 blur-3xl" />
         <div className="pointer-events-none absolute -right-16 bottom-0 h-80 w-80 rounded-full bg-indigo-500/20 blur-3xl" />

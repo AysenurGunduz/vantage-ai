@@ -46,8 +46,8 @@ function WaveBars({ count = 80 }: { count?: number }) {
 
 export default function Landing() {
   return (
-    <div className="dark-theme min-h-screen bg-[#0a0e1a] text-white">
-      <nav className="sticky top-0 z-20 border-b border-white/10 bg-[#0a0e1a]/95 backdrop-blur">
+    <div className="dark-theme min-h-screen bg-[#0d1b3a] text-white">
+      <nav className="sticky top-0 z-20 border-b border-white/10 bg-[#0d1b3a]/95 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 sm:px-10">
           <Logo />
           <div className="flex items-center gap-4">
@@ -79,7 +79,7 @@ export default function Landing() {
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <Link
               to="/signup"
-              className="rounded-[3px] bg-[#ff6b5b] px-5 py-2.5 text-sm font-semibold text-[#0a0e1a] hover:bg-[#ff8577]"
+              className="rounded-[3px] bg-[#ff6b5b] px-5 py-2.5 text-sm font-semibold text-[#0d1b3a] hover:bg-[#ff8577]"
             >
               Ücretsiz başla
             </Link>
@@ -173,7 +173,7 @@ export default function Landing() {
             />
             <Link
               to="/signup"
-              className="flex min-h-9 items-center rounded-[3px] bg-[#ff6b5b] px-4 text-sm font-semibold text-[#0a0e1a] hover:bg-[#ff8577]"
+              className="flex min-h-9 items-center rounded-[3px] bg-[#ff6b5b] px-4 text-sm font-semibold text-[#0d1b3a] hover:bg-[#ff8577]"
             >
               Kayıt ol
             </Link>
