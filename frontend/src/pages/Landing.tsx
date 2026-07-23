@@ -1,5 +1,7 @@
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
+import { Logo } from "@/components/Logo";
 
 const whyCards = [
   {
@@ -30,79 +32,91 @@ const aiFeatures = [
   "Belirli aralıklarla otomatik ilerleme özetleri",
 ];
 
+function WaveBars({ count = 80 }: { count?: number }) {
+  const heights = useMemo(() => Array.from({ length: count }, () => 20 + Math.random() * 80), [count]);
+
+  return (
+    <div className="wave-bars h-32 w-full sm:h-40">
+      {heights.map((h, i) => (
+        <span key={i} style={{ height: `${h}%` }} />
+      ))}
+    </div>
+  );
+}
+
 export default function Landing() {
   return (
-    <div className="editorial-theme min-h-screen bg-[#f3f2f2] text-[#201e1d]">
-      <nav className="sticky top-0 z-20 border-b border-[#201e1d]/10 bg-[#f3f2f2]/95 backdrop-blur">
+    <div className="dark-theme min-h-screen bg-[#0a0e1a] text-white">
+      <nav className="sticky top-0 z-20 border-b border-white/10 bg-[#0a0e1a]/95 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 sm:px-10">
-          <img src="/logo.png" alt="Vantage" className="h-10 w-fit" />
+          <Logo />
           <div className="flex items-center gap-4">
-            <Link to="/login" className="text-base hover:text-[#0088b0]">
+            <Link to="/login" className="text-base text-white/80 hover:text-[#ff6b5b]">
               Giriş yap
             </Link>
             <Link
               to="/signup"
-              className="rounded-[3px] border border-[#0088b0] px-4 py-2 text-sm font-semibold text-[#0088b0] hover:bg-[#0088b0]/10"
+              className="rounded-[3px] border border-white/20 px-4 py-2 text-sm font-semibold text-white hover:bg-white/5"
             >
-              Kayıt ol
+              Hemen Başla
             </Link>
           </div>
         </div>
       </nav>
 
-      <section className="mx-auto max-w-7xl px-6 py-16 sm:px-10 sm:py-24">
-        <h1 className="cmyk-head text-4xl leading-[1.05] font-semibold tracking-tight text-balance sm:text-6xl lg:text-7xl">
-          <span className="paper">Ekibiniz nereye odaklanmalı, siz belirleyin.</span>
-          <span className="plate plate-c" aria-hidden="true">
+      <section className="relative overflow-hidden">
+        <div className="pointer-events-none absolute -top-24 left-1/4 h-96 w-96 rounded-full bg-[#ff6b5b]/15 blur-3xl" />
+        <div className="pointer-events-none absolute top-0 right-0 h-80 w-80 rounded-full bg-indigo-500/20 blur-3xl" />
+
+        <div className="relative mx-auto max-w-7xl px-6 py-16 sm:px-10 sm:py-24">
+          <h1 className="text-4xl leading-[1.05] font-bold text-balance sm:text-6xl lg:text-7xl">
             Ekibiniz nereye odaklanmalı, siz belirleyin.
-          </span>
-          <span className="plate plate-m" aria-hidden="true">
-            Ekibiniz nereye odaklanmalı, siz belirleyin.
-          </span>
-          <span className="plate plate-y" aria-hidden="true">
-            Ekibiniz nereye odaklanmalı, siz belirleyin.
-          </span>
-        </h1>
-        <p className="mt-6 max-w-2xl text-lg leading-relaxed text-[#201e1d]/80">
-          Ekibiniz projelerini Kanban panosunda planlasın, görevleri atasın ve ilerlemeyi tek yerden
-          takip etsin — yapay zeka görev üretir, gecikme riskini önceden haber verir.
-        </p>
-        <div className="mt-8 flex flex-wrap items-center gap-4">
-          <Link
-            to="/signup"
-            className="rounded-[3px] border border-[#0088b0] px-5 py-2.5 text-sm font-semibold text-[#0088b0] hover:bg-[#0088b0]/10"
-          >
-            Ücretsiz başla
-          </Link>
-          <Link to="/login" className="text-sm text-[#0088b0] hover:text-[#1186ac]">
-            Zaten hesabınız var mı? Giriş yapın
-          </Link>
+          </h1>
+          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/70">
+            Ekibiniz projelerini Kanban panosunda planlasın, görevleri atasın ve ilerlemeyi tek yerden
+            takip etsin — yapay zeka görev üretir, gecikme riskini önceden haber verir.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center gap-4">
+            <Link
+              to="/signup"
+              className="rounded-[3px] bg-[#ff6b5b] px-5 py-2.5 text-sm font-semibold text-[#0a0e1a] hover:bg-[#ff8577]"
+            >
+              Ücretsiz başla
+            </Link>
+            <Link to="/login" className="text-sm text-white/70 hover:text-white">
+              Zaten hesabınız var mı? Giriş yapın
+            </Link>
+          </div>
+        </div>
+
+        <div className="relative px-6 pb-4 sm:px-10">
+          <WaveBars />
         </div>
       </section>
 
-      <section className="border-t border-[#201e1d]/10 bg-[#eae9e9]/50">
+      <section className="border-t border-white/10 bg-white/[0.03]">
         <div className="mx-auto max-w-7xl px-6 py-16 sm:px-10">
-          <span className="mb-5 block text-sm font-semibold tracking-[0.1em] text-[#201e1d]/60 uppercase">
+          <span className="mb-5 block text-sm font-semibold tracking-[0.1em] text-white/50 uppercase">
             Neden Vantage
           </span>
           <div>
             {whyCards.map((card) => (
-              <details key={card.title} className="group border-b border-[#201e1d]/10 py-6">
+              <details key={card.title} className="group border-b border-white/10 py-6">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-2xl font-semibold tracking-tight marker:content-none [&::-webkit-details-marker]:hidden">
                   {card.title}
-                  <ChevronDown className="size-6 shrink-0 text-[#201e1d]/50 transition-transform duration-200 group-open:rotate-180" />
+                  <ChevronDown className="size-6 shrink-0 text-white/40 transition-transform duration-200 group-open:rotate-180" />
                 </summary>
-                <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-[#201e1d]/75">{card.body}</p>
+                <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-white/70">{card.body}</p>
               </details>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="border-t border-[#201e1d]/10">
+      <section className="border-t border-white/10">
         <div className="mx-auto grid max-w-7xl gap-10 px-6 py-16 sm:px-10 lg:grid-cols-2 lg:gap-16">
           <div>
-            <span className="mb-5 block text-sm font-semibold tracking-[0.1em] text-[#201e1d]/60 uppercase">
+            <span className="mb-5 block text-sm font-semibold tracking-[0.1em] text-white/50 uppercase">
               Özellikler
             </span>
             <h2 className="text-3xl font-semibold tracking-tight">
@@ -114,7 +128,7 @@ export default function Landing() {
               {coreFeatures.map((feature) => (
                 <li
                   key={feature}
-                  className="border-l-2 border-[#201e1d]/15 pl-4 text-[15px] leading-relaxed text-[#201e1d]/80"
+                  className="border-l-2 border-white/15 pl-4 text-[15px] leading-relaxed text-white/75"
                 >
                   {feature}
                 </li>
@@ -126,7 +140,7 @@ export default function Landing() {
               {aiFeatures.map((feature) => (
                 <li
                   key={feature}
-                  className="border-l-2 border-[#0088b0] pl-4 text-[15px] leading-relaxed text-[#201e1d]/80"
+                  className="border-l-2 border-[#ff6b5b] pl-4 text-[15px] leading-relaxed text-white/75"
                 >
                   {feature}
                 </li>
@@ -134,7 +148,7 @@ export default function Landing() {
             </ul>
           </div>
 
-          <figure className="m-0 overflow-hidden rounded-[4px]">
+          <figure className="m-0 overflow-hidden rounded-[4px] border border-white/10">
             <img
               src="/mockups/kanban-board.png"
               alt="Vantage Kanban panosu ekran görüntüsü"
@@ -144,10 +158,10 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className="border-t border-[#201e1d]/10 bg-[#eae9e9]/50">
+      <section className="border-t border-white/10 bg-white/[0.03]">
         <div className="mx-auto max-w-7xl px-6 py-16 sm:px-10">
           <h3 className="text-3xl font-semibold tracking-tight">Ekibinizle hemen başlayın</h3>
-          <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-[#201e1d]/75">
+          <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-white/70">
             Kayıt olun, organizasyonunuzu kurun ve ilk projenizi dakikalar içinde oluşturun.
           </p>
           <div className="mt-7 flex max-w-md gap-4">
@@ -155,11 +169,11 @@ export default function Landing() {
               type="email"
               placeholder="isim@sirket.com"
               aria-label="İş e-postası"
-              className="min-h-9 flex-1 rounded-[3px] border border-[#201e1d]/15 bg-[#f3f2f2] px-3 text-sm focus:border-[#0088b0] focus:outline-none"
+              className="min-h-9 flex-1 rounded-[3px] border border-white/15 bg-white/5 px-3 text-sm text-white placeholder:text-white/40 focus:border-[#ff6b5b] focus:outline-none"
             />
             <Link
               to="/signup"
-              className="flex min-h-9 items-center rounded-[3px] border border-[#0088b0] px-4 text-sm font-semibold text-[#0088b0] hover:bg-[#0088b0]/10"
+              className="flex min-h-9 items-center rounded-[3px] bg-[#ff6b5b] px-4 text-sm font-semibold text-[#0a0e1a] hover:bg-[#ff8577]"
             >
               Kayıt ol
             </Link>
@@ -167,10 +181,8 @@ export default function Landing() {
         </div>
       </section>
 
-      <footer className="border-t border-[#201e1d]/10">
-        <div className="mx-auto max-w-7xl px-6 py-8 text-sm text-[#201e1d]/60 sm:px-10">
-          © 2026 Vantage.
-        </div>
+      <footer className="border-t border-white/10">
+        <div className="mx-auto max-w-7xl px-6 py-8 text-sm text-white/50 sm:px-10">© 2026 Vantage.</div>
       </footer>
     </div>
   );

@@ -4,6 +4,7 @@ import { useAuth } from "../lib/AuthContext";
 import { apiFetch } from "../lib/apiClient";
 import type { Organization, Project, Task } from "../types/api";
 import { Trash2 } from "lucide-react";
+import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -12,12 +13,12 @@ function errorMessage(err: unknown): string {
 }
 
 const inputClass =
-  "rounded-[3px] border-[#201e1d]/15 bg-[#f3f2f2] focus-visible:border-[#0088b0] focus-visible:ring-[#0088b0]/30";
-const submitButtonClass = "rounded-[3px] bg-[#0088b0] text-[#f3f2f2] hover:bg-[#1186ac]";
+  "rounded-[3px] border-white/15 bg-white/5 text-white focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30";
+const submitButtonClass = "rounded-[3px] bg-[#ff6b5b] text-[#0a0e1a] hover:bg-[#ff8577]";
 
 function selectableItemClass(selected: boolean) {
   return `w-full rounded-[3px] px-4 py-2.5 text-left text-sm transition-colors ${
-    selected ? "bg-[#0088b0] text-[#f3f2f2]" : "bg-[#f3f2f2] hover:bg-[#0088b0]/10"
+    selected ? "bg-[#ff6b5b] text-[#0a0e1a]" : "bg-white/5 hover:bg-white/10"
   }`;
 }
 
@@ -122,31 +123,31 @@ export default function Workspace() {
   }
 
   return (
-    <div className="editorial-theme min-h-screen bg-[#f3f2f2] text-[#201e1d]">
+    <div className="dark-theme min-h-screen bg-[#0a0e1a] text-white">
       <div className="mx-auto max-w-3xl px-6 py-10">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <img src="/logo.png" alt="Vantage" className="h-9 w-fit" />
-            <p className="mt-2 text-sm text-[#201e1d]/60">Giriş yapıldı: {user?.email}</p>
-            <Link to="/dashboard" className="mt-1 inline-block text-sm text-[#0088b0] hover:text-[#1186ac]">
+            <Logo />
+            <p className="mt-2 text-sm text-white/60">Giriş yapıldı: {user?.email}</p>
+            <Link to="/dashboard" className="mt-1 inline-block text-sm text-[#ff6b5b] hover:text-[#ff8577]">
               ← Panele dön
             </Link>
           </div>
           <Button
             variant="outline"
             onClick={() => signOut()}
-            className="rounded-[3px] border-[#201e1d]/15 text-[#201e1d] hover:bg-[#201e1d]/5"
+            className="rounded-[3px] border-white/20 bg-transparent text-white hover:bg-white/5"
           >
             Çıkış Yap
           </Button>
         </div>
 
         {error && (
-          <p className="mb-6 rounded-[3px] bg-[#d6006c]/10 px-3 py-2 text-sm text-[#d6006c]">{error}</p>
+          <p className="mb-6 rounded-[3px] bg-[#ff6b5b]/10 px-3 py-2 text-sm text-[#ff6b5b]">{error}</p>
         )}
 
         <div className="space-y-6">
-          <section className="space-y-4 rounded-[4px] border border-[#201e1d]/10 bg-[#eae9e9]/50 p-6">
+          <section className="space-y-4 rounded-[4px] border border-white/10 bg-white/[0.03] p-6">
             <h2 className="text-lg font-semibold tracking-tight">Organizasyonlar</h2>
             <ul className="space-y-2">
               {organizations.map((org) => (
@@ -157,7 +158,7 @@ export default function Workspace() {
                 </li>
               ))}
               {organizations.length === 0 && (
-                <p className="text-sm text-[#201e1d]/50">Henüz bir organizasyonun yok.</p>
+                <p className="text-sm text-white/50">Henüz bir organizasyonun yok.</p>
               )}
             </ul>
             <form onSubmit={handleCreateOrg} className="flex gap-2">
@@ -175,7 +176,7 @@ export default function Workspace() {
           </section>
 
           {selectedOrgId && (
-            <section className="space-y-4 rounded-[4px] border border-[#201e1d]/10 bg-[#eae9e9]/50 p-6">
+            <section className="space-y-4 rounded-[4px] border border-white/10 bg-white/[0.03] p-6">
               <h2 className="text-lg font-semibold tracking-tight">Projeler</h2>
               <ul className="space-y-2">
                 {projects.map((project) => (
@@ -189,7 +190,7 @@ export default function Workspace() {
                   </li>
                 ))}
                 {projects.length === 0 && (
-                  <p className="text-sm text-[#201e1d]/50">Bu organizasyonda henüz bir proje yok.</p>
+                  <p className="text-sm text-white/50">Bu organizasyonda henüz bir proje yok.</p>
                 )}
               </ul>
               <form onSubmit={handleCreateProject} className="flex gap-2">
@@ -208,29 +209,29 @@ export default function Workspace() {
           )}
 
           {selectedProjectId && (
-            <section className="space-y-4 rounded-[4px] border border-[#201e1d]/10 bg-[#eae9e9]/50 p-6">
+            <section className="space-y-4 rounded-[4px] border border-white/10 bg-white/[0.03] p-6">
               <h2 className="text-lg font-semibold tracking-tight">Görevler</h2>
               <ul className="space-y-2">
                 {tasks.map((task) => (
                   <li
                     key={task.id}
-                    className="flex items-center justify-between rounded-[3px] bg-[#f3f2f2] px-4 py-2.5 text-sm"
+                    className="flex items-center justify-between rounded-[3px] bg-white/5 px-4 py-2.5 text-sm"
                   >
                     <span>{task.title}</span>
-                    <span className="flex items-center gap-2 text-xs text-[#201e1d]/60">
-                      <span className="rounded-[3px] bg-[#201e1d]/10 px-2 py-0.5">{task.status}</span>
-                      <span className="rounded-[3px] bg-[#201e1d]/10 px-2 py-0.5">{task.priority}</span>
+                    <span className="flex items-center gap-2 text-xs text-white/60">
+                      <span className="rounded-[3px] bg-white/10 px-2 py-0.5">{task.status}</span>
+                      <span className="rounded-[3px] bg-white/10 px-2 py-0.5">{task.priority}</span>
                       <button
                         onClick={() => handleDeleteTask(task.id)}
                         aria-label="Görevi sil"
-                        className="text-[#201e1d]/40 hover:text-[#d6006c]"
+                        className="text-white/40 hover:text-[#ff6b5b]"
                       >
                         <Trash2 className="size-4" />
                       </button>
                     </span>
                   </li>
                 ))}
-                {tasks.length === 0 && <p className="text-sm text-[#201e1d]/50">Bu projede henüz görev yok.</p>}
+                {tasks.length === 0 && <p className="text-sm text-white/50">Bu projede henüz görev yok.</p>}
               </ul>
               <form onSubmit={handleCreateTask} className="flex gap-2">
                 <Input
