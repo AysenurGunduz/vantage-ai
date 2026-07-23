@@ -3,6 +3,7 @@ import cors from "cors";
 import { supabase } from "./lib/supabaseClient.js";
 import { organizationsRouter } from "./routes/organizations.js";
 import { projectsRouter } from "./routes/projects.js";
+import { projectTasksRouter, taskRouter } from "./routes/tasks.js";
 
 export const app = express();
 
@@ -20,3 +21,5 @@ app.get("/api/health", async (_req, res) => {
 
 app.use("/api/organizations", organizationsRouter);
 app.use("/api/organizations/:orgId/projects", projectsRouter);
+app.use("/api/projects/:projectId/tasks", projectTasksRouter);
+app.use("/api/tasks", taskRouter);
