@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Home from "./pages/Home";
+import Workspace from "./pages/Workspace";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
@@ -15,6 +16,14 @@ function App() {
         element={
           <ProtectedRoute>
             <Home />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/workspace"
+        element={
+          <ProtectedRoute>
+            <Workspace />
           </ProtectedRoute>
         }
       />
