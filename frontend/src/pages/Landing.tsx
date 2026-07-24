@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -45,13 +44,29 @@ const aiFeatures = [
 
 const trustChips = ["Kanban panosu", "Yapay zeka görev bölme", "Gerçek zamanlı senkron"];
 
-function WaveBars({ count = 80 }: { count?: number }) {
-  const heights = useMemo(() => Array.from({ length: count }, () => 20 + Math.random() * 80), [count]);
+const previewColumns: { label: string; dot: string; cardWidths: string[] }[] = [
+  { label: "Backlog", dot: "bg-white/30", cardWidths: ["70%", "45%"] },
+  { label: "Todo", dot: "bg-sky-400", cardWidths: ["85%", "60%", "50%"] },
+  { label: "Devam Ediyor", dot: "bg-amber-400", cardWidths: ["65%", "80%"] },
+  { label: "İncelemede", dot: "bg-purple-400", cardWidths: ["55%"] },
+  { label: "Tamamlandı", dot: "bg-emerald-400", cardWidths: ["75%", "40%", "60%"] },
+];
 
+function HeroKanbanPreview() {
   return (
-    <div className="wave-bars h-32 w-full sm:h-40">
-      {heights.map((h, i) => (
-        <span key={i} style={{ height: `${h}%` }} />
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+      {previewColumns.map((column) => (
+        <div key={column.label} className="rounded-[4px] border border-white/10 bg-white/[0.04] p-2.5">
+          <div className="mb-2.5 flex items-center gap-1.5 text-xs font-medium text-white/50">
+            <span className={`size-1.5 rounded-full ${column.dot}`} />
+            {column.label}
+          </div>
+          <div className="space-y-1.5">
+            {column.cardWidths.map((width, i) => (
+              <div key={i} className="h-6 rounded-[3px] bg-white/[0.07]" style={{ width }} />
+            ))}
+          </div>
+        </div>
       ))}
     </div>
   );
@@ -59,7 +74,7 @@ function WaveBars({ count = 80 }: { count?: number }) {
 
 export default function Landing() {
   return (
-    <div className="dark-theme min-h-screen bg-[#0d1b3a] text-white">
+    <div className="dark-theme animated-gradient min-h-screen text-white">
       <nav className="sticky top-0 z-20 border-b border-white/10 bg-[#0d1b3a]/95 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 sm:px-10">
           <Logo />
@@ -123,8 +138,8 @@ export default function Landing() {
           </div>
         </div>
 
-        <div className="relative px-6 pb-4 sm:px-10">
-          <WaveBars />
+        <div className="relative mx-auto max-w-7xl px-6 pb-12 sm:px-10">
+          <HeroKanbanPreview />
         </div>
       </section>
 

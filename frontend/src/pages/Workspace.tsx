@@ -158,14 +158,14 @@ export default function Workspace() {
   }
 
   return (
-    <div className="dark-theme min-h-screen bg-[#0d1b3a] text-white">
+    <div className="dark-theme animated-gradient min-h-screen text-white">
       <div className="page-fade-in mx-auto max-w-7xl px-6 py-8">
         <div className="mb-8 flex items-center justify-between">
           <div>
             <Logo />
             <Link
               to="/dashboard"
-              className="mt-2 inline-block text-sm text-white/50 transition-colors hover:text-[#ff6b5b]"
+              className="mt-2 block text-sm text-white/50 transition-colors hover:text-[#ff6b5b]"
             >
               ← Panele dön
             </Link>
