@@ -68,7 +68,7 @@ export default function Landing() {
         <div className="pointer-events-none absolute -top-24 left-1/4 h-96 w-96 rounded-full bg-[#ff6b5b]/15 blur-3xl" />
         <div className="pointer-events-none absolute top-0 right-0 h-80 w-80 rounded-full bg-indigo-500/20 blur-3xl" />
 
-        <div className="relative mx-auto max-w-7xl px-6 py-16 sm:px-10 sm:py-24">
+        <div className="page-fade-in relative mx-auto max-w-7xl px-6 py-16 sm:px-10 sm:py-24">
           <h1 className="text-4xl leading-[1.05] font-bold text-balance sm:text-6xl lg:text-7xl">
             Ekibiniz nereye odaklanmalı, siz belirleyin.
           </h1>

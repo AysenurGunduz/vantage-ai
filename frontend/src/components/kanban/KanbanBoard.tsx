@@ -14,10 +14,12 @@ export function KanbanBoard({
   tasks,
   onStatusChange,
   onDelete,
+  onOpenTask,
 }: {
   tasks: Task[];
   onStatusChange: (taskId: string, status: TaskStatus) => void;
   onDelete: (taskId: string) => void;
+  onOpenTask: (task: Task) => void;
 }) {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
@@ -48,6 +50,7 @@ export function KanbanBoard({
             label={column.label}
             tasks={tasks.filter((task) => task.status === column.id)}
             onDelete={onDelete}
+            onOpenTask={onOpenTask}
           />
         ))}
       </div>

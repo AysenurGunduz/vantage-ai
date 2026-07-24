@@ -43,7 +43,7 @@ export function AuthLayout({
       </div>
 
       <div className="flex w-full flex-col justify-center px-6 py-12 sm:px-12 lg:w-1/2 lg:px-20">
-        <div className="mx-auto w-full max-w-sm">
+        <div className="page-fade-in mx-auto w-full max-w-sm">
           <Logo className="mb-10 lg:hidden" />
           {children}
         </div>

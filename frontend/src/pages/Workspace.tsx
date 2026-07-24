@@ -8,6 +8,8 @@ import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { KanbanBoard } from "@/components/kanban/KanbanBoard";
+import { TaskDetailModal } from "@/components/kanban/TaskDetailModal";
+import { PanelSkeleton, SidebarListSkeleton } from "@/components/Skeleton";
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : "Beklenmeyen bir hata oluştu";
@@ -40,8 +42,13 @@ export default function Workspace() {
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const [error, setError] = useState<string | null>(null);
+
+  const [orgsLoading, setOrgsLoading] = useState(true);
+  const [projectsLoading, setProjectsLoading] = useState(false);
+  const [tasksLoading, setTasksLoading] = useState(false);
 
   const selectedOrg = organizations.find((org) => org.id === selectedOrgId) ?? null;
   const selectedProject = projects.find((project) => project.id === selectedProjectId) ?? null;
@@ -49,7 +56,8 @@ export default function Workspace() {
   useEffect(() => {
     apiFetch<Organization[]>("/api/organizations")
       .then(setOrganizations)
-      .catch((err: unknown) => setError(errorMessage(err)));
+      .catch((err: unknown) => setError(errorMessage(err)))
+      .finally(() => setOrgsLoading(false));
   }, []);
 
   useEffect(() => {
@@ -58,9 +66,11 @@ export default function Workspace() {
       setSelectedProjectId(null);
       return;
     }
+    setProjectsLoading(true);
     apiFetch<Project[]>(`/api/organizations/${selectedOrgId}/projects`)
       .then(setProjects)
-      .catch((err: unknown) => setError(errorMessage(err)));
+      .catch((err: unknown) => setError(errorMessage(err)))
+      .finally(() => setProjectsLoading(false));
   }, [selectedOrgId]);
 
   useEffect(() => {
@@ -68,9 +78,11 @@ export default function Workspace() {
       setTasks([]);
       return;
     }
+    setTasksLoading(true);
     apiFetch<Task[]>(`/api/projects/${selectedProjectId}/tasks`)
       .then(setTasks)
-      .catch((err: unknown) => setError(errorMessage(err)));
+      .catch((err: unknown) => setError(errorMessage(err)))
+      .finally(() => setTasksLoading(false));
   }, [selectedProjectId]);
 
   async function handleCreateOrg(event: FormEvent) {
@@ -147,7 +159,7 @@ export default function Workspace() {
 
   return (
     <div className="dark-theme min-h-screen bg-[#0d1b3a] text-white">
-      <div className="mx-auto max-w-7xl px-6 py-8">
+      <div className="page-fade-in mx-auto max-w-7xl px-6 py-8">
         <div className="mb-8 flex items-center justify-between">
           <div>
             <Logo />
@@ -181,18 +193,22 @@ export default function Workspace() {
                 <Building2 className="size-4 text-[#ff6b5b]" />
                 Organizasyonlar
               </div>
-              <ul className="space-y-1">
-                {organizations.map((org) => (
-                  <li key={org.id}>
-                    <button onClick={() => setSelectedOrgId(org.id)} className={selectableItemClass(selectedOrgId === org.id)}>
-                      {org.name}
-                    </button>
-                  </li>
-                ))}
-                {organizations.length === 0 && (
-                  <p className="px-1 py-2 text-sm text-white/40">Henüz bir organizasyonun yok.</p>
-                )}
-              </ul>
+              {orgsLoading ? (
+                <SidebarListSkeleton />
+              ) : (
+                <ul className="space-y-1">
+                  {organizations.map((org) => (
+                    <li key={org.id}>
+                      <button onClick={() => setSelectedOrgId(org.id)} className={selectableItemClass(selectedOrgId === org.id)}>
+                        {org.name}
+                      </button>
+                    </li>
+                  ))}
+                  {organizations.length === 0 && (
+                    <p className="px-1 py-2 text-sm text-white/40">Henüz bir organizasyonun yok.</p>
+                  )}
+                </ul>
+              )}
               <form onSubmit={handleCreateOrg} className="mt-3 flex gap-2">
                 <Input
                   placeholder="Yeni organizasyon"
@@ -213,21 +229,25 @@ export default function Workspace() {
                   <FolderKanban className="size-4 text-[#ff6b5b]" />
                   Projeler
                 </div>
-                <ul className="space-y-1">
-                  {projects.map((project) => (
-                    <li key={project.id}>
-                      <button
-                        onClick={() => setSelectedProjectId(project.id)}
-                        className={selectableItemClass(selectedProjectId === project.id)}
-                      >
-                        {project.name}
-                      </button>
-                    </li>
-                  ))}
-                  {projects.length === 0 && (
-                    <p className="px-1 py-2 text-sm text-white/40">Bu organizasyonda henüz bir proje yok.</p>
-                  )}
-                </ul>
+                {projectsLoading ? (
+                  <SidebarListSkeleton />
+                ) : (
+                  <ul className="space-y-1">
+                    {projects.map((project) => (
+                      <li key={project.id}>
+                        <button
+                          onClick={() => setSelectedProjectId(project.id)}
+                          className={selectableItemClass(selectedProjectId === project.id)}
+                        >
+                          {project.name}
+                        </button>
+                      </li>
+                    ))}
+                    {projects.length === 0 && (
+                      <p className="px-1 py-2 text-sm text-white/40">Bu organizasyonda henüz bir proje yok.</p>
+                    )}
+                  </ul>
+                )}
                 <form onSubmit={handleCreateProject} className="mt-3 flex gap-2">
                   <Input
                     placeholder="Yeni proje"
@@ -265,7 +285,16 @@ export default function Workspace() {
                     Ekle
                   </Button>
                 </form>
-                <KanbanBoard tasks={tasks} onStatusChange={handleStatusChange} onDelete={handleDeleteTask} />
+                {tasksLoading ? (
+                  <PanelSkeleton />
+                ) : (
+                  <KanbanBoard
+                    tasks={tasks}
+                    onStatusChange={handleStatusChange}
+                    onDelete={handleDeleteTask}
+                    onOpenTask={setSelectedTask}
+                  />
+                )}
               </section>
             ) : (
               <div className="flex h-72 flex-col items-center justify-center gap-3 rounded-[4px] border border-dashed border-white/15 px-6 text-center">
@@ -278,6 +307,16 @@ export default function Workspace() {
           </main>
         </div>
       </div>
+
+      {selectedTask && (
+        <TaskDetailModal
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+          onSave={(updated) => {
+            setTasks((prev) => prev.map((task) => (task.id === updated.id ? updated : task)));
+          }}
+        />
+      )}
     </div>
   );
 }
