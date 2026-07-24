@@ -1,12 +1,15 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
+import { Building2, ChevronRight, FolderKanban, ListTodo, Plus } from "lucide-react";
 import { useAuth } from "../lib/AuthContext";
 import { apiFetch } from "../lib/apiClient";
-import type { Organization, Project, Task } from "../types/api";
-import { Trash2 } from "lucide-react";
+import type { Organization, Project, Task, TaskStatus } from "../types/api";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { KanbanBoard } from "@/components/kanban/KanbanBoard";
+import { TaskDetailModal } from "@/components/kanban/TaskDetailModal";
+import { PanelSkeleton, SidebarListSkeleton } from "@/components/Skeleton";
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : "Beklenmeyen bir hata oluştu";
@@ -14,11 +17,15 @@ function errorMessage(err: unknown): string {
 
 const inputClass =
   "rounded-[3px] border-white/15 bg-white/5 text-white focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30";
-const submitButtonClass = "rounded-[3px] bg-[#ff6b5b] text-[#0d1b3a] hover:bg-[#ff8577]";
+const submitButtonClass =
+  "rounded-[3px] bg-[#ff6b5b] text-[#0d1b3a] transition-colors hover:bg-[#ff8577]";
+const panelClass = "rounded-[4px] border border-white/10 bg-white/[0.03] p-5 transition-colors";
 
 function selectableItemClass(selected: boolean) {
-  return `w-full rounded-[3px] px-4 py-2.5 text-left text-sm transition-colors ${
-    selected ? "bg-[#ff6b5b] text-[#0d1b3a]" : "bg-white/5 hover:bg-white/10"
+  return `flex w-full items-center gap-2 rounded-[3px] border-l-2 px-3 py-2.5 text-left text-sm transition-colors ${
+    selected
+      ? "border-[#ff6b5b] bg-[#ff6b5b]/10 text-white"
+      : "border-transparent text-white/70 hover:border-white/20 hover:bg-white/5 hover:text-white"
   }`;
 }
 
@@ -35,13 +42,22 @@ export default function Workspace() {
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const [error, setError] = useState<string | null>(null);
+
+  const [orgsLoading, setOrgsLoading] = useState(true);
+  const [projectsLoading, setProjectsLoading] = useState(false);
+  const [tasksLoading, setTasksLoading] = useState(false);
+
+  const selectedOrg = organizations.find((org) => org.id === selectedOrgId) ?? null;
+  const selectedProject = projects.find((project) => project.id === selectedProjectId) ?? null;
 
   useEffect(() => {
     apiFetch<Organization[]>("/api/organizations")
       .then(setOrganizations)
-      .catch((err: unknown) => setError(errorMessage(err)));
+      .catch((err: unknown) => setError(errorMessage(err)))
+      .finally(() => setOrgsLoading(false));
   }, []);
 
   useEffect(() => {
@@ -50,9 +66,11 @@ export default function Workspace() {
       setSelectedProjectId(null);
       return;
     }
+    setProjectsLoading(true);
     apiFetch<Project[]>(`/api/organizations/${selectedOrgId}/projects`)
       .then(setProjects)
-      .catch((err: unknown) => setError(errorMessage(err)));
+      .catch((err: unknown) => setError(errorMessage(err)))
+      .finally(() => setProjectsLoading(false));
   }, [selectedOrgId]);
 
   useEffect(() => {
@@ -60,9 +78,11 @@ export default function Workspace() {
       setTasks([]);
       return;
     }
+    setTasksLoading(true);
     apiFetch<Task[]>(`/api/projects/${selectedProjectId}/tasks`)
       .then(setTasks)
-      .catch((err: unknown) => setError(errorMessage(err)));
+      .catch((err: unknown) => setError(errorMessage(err)))
+      .finally(() => setTasksLoading(false));
   }, [selectedProjectId]);
 
   async function handleCreateOrg(event: FormEvent) {
@@ -122,133 +142,181 @@ export default function Workspace() {
     }
   }
 
+  async function handleStatusChange(taskId: string, status: TaskStatus) {
+    const previousTasks = tasks;
+    setTasks((prev) => prev.map((task) => (task.id === taskId ? { ...task, status } : task)));
+    setError(null);
+    try {
+      await apiFetch<Task>(`/api/tasks/${taskId}`, {
+        method: "PATCH",
+        body: JSON.stringify({ status }),
+      });
+    } catch (err) {
+      setTasks(previousTasks);
+      setError(errorMessage(err));
+    }
+  }
+
   return (
-    <div className="dark-theme min-h-screen bg-[#0d1b3a] text-white">
-      <div className="mx-auto max-w-3xl px-6 py-10">
+    <div className="dark-theme animated-gradient min-h-screen text-white">
+      <div className="page-fade-in mx-auto max-w-7xl px-6 py-8">
         <div className="mb-8 flex items-center justify-between">
           <div>
             <Logo />
-            <p className="mt-2 text-sm text-white/60">Giriş yapıldı: {user?.email}</p>
-            <Link to="/dashboard" className="mt-1 inline-block text-sm text-[#ff6b5b] hover:text-[#ff8577]">
+            <Link
+              to="/dashboard"
+              className="mt-2 block text-sm text-white/50 transition-colors hover:text-[#ff6b5b]"
+            >
               ← Panele dön
             </Link>
           </div>
-          <Button
-            variant="outline"
-            onClick={() => signOut()}
-            className="rounded-[3px] border-white/20 bg-transparent text-white hover:bg-white/5"
-          >
-            Çıkış Yap
-          </Button>
+          <div className="flex items-center gap-4">
+            <span className="hidden text-sm text-white/50 sm:inline">{user?.email}</span>
+            <Button
+              variant="outline"
+              onClick={() => signOut()}
+              className="rounded-[3px] border-white/20 bg-transparent text-white transition-colors hover:bg-white/5"
+            >
+              Çıkış Yap
+            </Button>
+          </div>
         </div>
 
         {error && (
           <p className="mb-6 rounded-[3px] bg-[#ff6b5b]/10 px-3 py-2 text-sm text-[#ff6b5b]">{error}</p>
         )}
 
-        <div className="space-y-6">
-          <section className="space-y-4 rounded-[4px] border border-white/10 bg-white/[0.03] p-6">
-            <h2 className="text-lg font-semibold tracking-tight">Organizasyonlar</h2>
-            <ul className="space-y-2">
-              {organizations.map((org) => (
-                <li key={org.id}>
-                  <button onClick={() => setSelectedOrgId(org.id)} className={selectableItemClass(selectedOrgId === org.id)}>
-                    {org.name}
-                  </button>
-                </li>
-              ))}
-              {organizations.length === 0 && (
-                <p className="text-sm text-white/50">Henüz bir organizasyonun yok.</p>
-              )}
-            </ul>
-            <form onSubmit={handleCreateOrg} className="flex gap-2">
-              <Input
-                placeholder="Yeni organizasyon adı"
-                value={newOrgName}
-                onChange={(e) => setNewOrgName(e.target.value)}
-                required
-                className={inputClass}
-              />
-              <Button type="submit" className={submitButtonClass}>
-                Oluştur
-              </Button>
-            </form>
-          </section>
-
-          {selectedOrgId && (
-            <section className="space-y-4 rounded-[4px] border border-white/10 bg-white/[0.03] p-6">
-              <h2 className="text-lg font-semibold tracking-tight">Projeler</h2>
-              <ul className="space-y-2">
-                {projects.map((project) => (
-                  <li key={project.id}>
-                    <button
-                      onClick={() => setSelectedProjectId(project.id)}
-                      className={selectableItemClass(selectedProjectId === project.id)}
-                    >
-                      {project.name}
-                    </button>
-                  </li>
-                ))}
-                {projects.length === 0 && (
-                  <p className="text-sm text-white/50">Bu organizasyonda henüz bir proje yok.</p>
-                )}
-              </ul>
-              <form onSubmit={handleCreateProject} className="flex gap-2">
-                <Input
-                  placeholder="Yeni proje adı"
-                  value={newProjectName}
-                  onChange={(e) => setNewProjectName(e.target.value)}
-                  required
-                  className={inputClass}
-                />
-                <Button type="submit" className={submitButtonClass}>
-                  Oluştur
-                </Button>
-              </form>
-            </section>
-          )}
-
-          {selectedProjectId && (
-            <section className="space-y-4 rounded-[4px] border border-white/10 bg-white/[0.03] p-6">
-              <h2 className="text-lg font-semibold tracking-tight">Görevler</h2>
-              <ul className="space-y-2">
-                {tasks.map((task) => (
-                  <li
-                    key={task.id}
-                    className="flex items-center justify-between rounded-[3px] bg-white/5 px-4 py-2.5 text-sm"
-                  >
-                    <span>{task.title}</span>
-                    <span className="flex items-center gap-2 text-xs text-white/60">
-                      <span className="rounded-[3px] bg-white/10 px-2 py-0.5">{task.status}</span>
-                      <span className="rounded-[3px] bg-white/10 px-2 py-0.5">{task.priority}</span>
-                      <button
-                        onClick={() => handleDeleteTask(task.id)}
-                        aria-label="Görevi sil"
-                        className="text-white/40 hover:text-[#ff6b5b]"
-                      >
-                        <Trash2 className="size-4" />
+        <div className="flex flex-col gap-6 lg:flex-row">
+          <aside className="flex w-full shrink-0 flex-col gap-6 lg:w-72">
+            <section className={panelClass}>
+              <div className="mb-3 flex items-center gap-2 text-sm font-semibold tracking-tight">
+                <Building2 className="size-4 text-[#ff6b5b]" />
+                Organizasyonlar
+              </div>
+              {orgsLoading ? (
+                <SidebarListSkeleton />
+              ) : (
+                <ul className="space-y-1">
+                  {organizations.map((org) => (
+                    <li key={org.id}>
+                      <button onClick={() => setSelectedOrgId(org.id)} className={selectableItemClass(selectedOrgId === org.id)}>
+                        {org.name}
                       </button>
-                    </span>
-                  </li>
-                ))}
-                {tasks.length === 0 && <p className="text-sm text-white/50">Bu projede henüz görev yok.</p>}
-              </ul>
-              <form onSubmit={handleCreateTask} className="flex gap-2">
+                    </li>
+                  ))}
+                  {organizations.length === 0 && (
+                    <p className="px-1 py-2 text-sm text-white/40">Henüz bir organizasyonun yok.</p>
+                  )}
+                </ul>
+              )}
+              <form onSubmit={handleCreateOrg} className="mt-3 flex gap-2">
                 <Input
-                  placeholder="Yeni görev başlığı"
-                  value={newTaskTitle}
-                  onChange={(e) => setNewTaskTitle(e.target.value)}
+                  placeholder="Yeni organizasyon"
+                  value={newOrgName}
+                  onChange={(e) => setNewOrgName(e.target.value)}
                   required
                   className={inputClass}
                 />
-                <Button type="submit" className={submitButtonClass}>
-                  Ekle
+                <Button type="submit" size="icon" className={`${submitButtonClass} shrink-0`} aria-label="Organizasyon oluştur">
+                  <Plus className="size-4" />
                 </Button>
               </form>
             </section>
-          )}
+
+            {selectedOrgId && (
+              <section className={panelClass}>
+                <div className="mb-3 flex items-center gap-2 text-sm font-semibold tracking-tight">
+                  <FolderKanban className="size-4 text-[#ff6b5b]" />
+                  Projeler
+                </div>
+                {projectsLoading ? (
+                  <SidebarListSkeleton />
+                ) : (
+                  <ul className="space-y-1">
+                    {projects.map((project) => (
+                      <li key={project.id}>
+                        <button
+                          onClick={() => setSelectedProjectId(project.id)}
+                          className={selectableItemClass(selectedProjectId === project.id)}
+                        >
+                          {project.name}
+                        </button>
+                      </li>
+                    ))}
+                    {projects.length === 0 && (
+                      <p className="px-1 py-2 text-sm text-white/40">Bu organizasyonda henüz bir proje yok.</p>
+                    )}
+                  </ul>
+                )}
+                <form onSubmit={handleCreateProject} className="mt-3 flex gap-2">
+                  <Input
+                    placeholder="Yeni proje"
+                    value={newProjectName}
+                    onChange={(e) => setNewProjectName(e.target.value)}
+                    required
+                    className={inputClass}
+                  />
+                  <Button type="submit" size="icon" className={`${submitButtonClass} shrink-0`} aria-label="Proje oluştur">
+                    <Plus className="size-4" />
+                  </Button>
+                </form>
+              </section>
+            )}
+          </aside>
+
+          <main className="min-w-0 flex-1">
+            {selectedProjectId ? (
+              <section className={panelClass}>
+                <div className="mb-4 flex flex-wrap items-center gap-2 text-sm text-white/50">
+                  <span>{selectedOrg?.name}</span>
+                  <ChevronRight className="size-3.5" />
+                  <span className="font-semibold text-white">{selectedProject?.name}</span>
+                </div>
+                <form onSubmit={handleCreateTask} className="mb-5 flex gap-2">
+                  <Input
+                    placeholder="Yeni görev başlığı"
+                    value={newTaskTitle}
+                    onChange={(e) => setNewTaskTitle(e.target.value)}
+                    required
+                    className={inputClass}
+                  />
+                  <Button type="submit" className={submitButtonClass}>
+                    <Plus className="size-4" />
+                    Ekle
+                  </Button>
+                </form>
+                {tasksLoading ? (
+                  <PanelSkeleton />
+                ) : (
+                  <KanbanBoard
+                    tasks={tasks}
+                    onStatusChange={handleStatusChange}
+                    onDelete={handleDeleteTask}
+                    onOpenTask={setSelectedTask}
+                  />
+                )}
+              </section>
+            ) : (
+              <div className="flex h-72 flex-col items-center justify-center gap-3 rounded-[4px] border border-dashed border-white/15 px-6 text-center">
+                <ListTodo className="size-8 text-white/25" />
+                <p className="max-w-xs text-sm text-white/40">
+                  Görevleri görüntülemek için önce sol taraftan bir organizasyon ve proje seç.
+                </p>
+              </div>
+            )}
+          </main>
         </div>
       </div>
+
+      {selectedTask && (
+        <TaskDetailModal
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+          onSave={(updated) => {
+            setTasks((prev) => prev.map((task) => (task.id === updated.id ? updated : task)));
+          }}
+        />
+      )}
     </div>
   );
 }
