@@ -2,11 +2,11 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../lib/AuthContext";
 import { apiFetch } from "../lib/apiClient";
-import type { Organization, Project, Task } from "../types/api";
-import { Trash2 } from "lucide-react";
+import type { Organization, Project, Task, TaskStatus } from "../types/api";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { KanbanBoard } from "@/components/kanban/KanbanBoard";
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : "Beklenmeyen bir hata oluştu";
@@ -122,9 +122,24 @@ export default function Workspace() {
     }
   }
 
+  async function handleStatusChange(taskId: string, status: TaskStatus) {
+    const previousTasks = tasks;
+    setTasks((prev) => prev.map((task) => (task.id === taskId ? { ...task, status } : task)));
+    setError(null);
+    try {
+      await apiFetch<Task>(`/api/tasks/${taskId}`, {
+        method: "PATCH",
+        body: JSON.stringify({ status }),
+      });
+    } catch (err) {
+      setTasks(previousTasks);
+      setError(errorMessage(err));
+    }
+  }
+
   return (
     <div className="dark-theme min-h-screen bg-[#0d1b3a] text-white">
-      <div className="mx-auto max-w-3xl px-6 py-10">
+      <div className="mx-auto max-w-6xl px-6 py-10">
         <div className="mb-8 flex items-center justify-between">
           <div>
             <Logo />
@@ -211,28 +226,6 @@ export default function Workspace() {
           {selectedProjectId && (
             <section className="space-y-4 rounded-[4px] border border-white/10 bg-white/[0.03] p-6">
               <h2 className="text-lg font-semibold tracking-tight">Görevler</h2>
-              <ul className="space-y-2">
-                {tasks.map((task) => (
-                  <li
-                    key={task.id}
-                    className="flex items-center justify-between rounded-[3px] bg-white/5 px-4 py-2.5 text-sm"
-                  >
-                    <span>{task.title}</span>
-                    <span className="flex items-center gap-2 text-xs text-white/60">
-                      <span className="rounded-[3px] bg-white/10 px-2 py-0.5">{task.status}</span>
-                      <span className="rounded-[3px] bg-white/10 px-2 py-0.5">{task.priority}</span>
-                      <button
-                        onClick={() => handleDeleteTask(task.id)}
-                        aria-label="Görevi sil"
-                        className="text-white/40 hover:text-[#ff6b5b]"
-                      >
-                        <Trash2 className="size-4" />
-                      </button>
-                    </span>
-                  </li>
-                ))}
-                {tasks.length === 0 && <p className="text-sm text-white/50">Bu projede henüz görev yok.</p>}
-              </ul>
               <form onSubmit={handleCreateTask} className="flex gap-2">
                 <Input
                   placeholder="Yeni görev başlığı"
@@ -245,6 +238,7 @@ export default function Workspace() {
                   Ekle
                 </Button>
               </form>
+              <KanbanBoard tasks={tasks} onStatusChange={handleStatusChange} onDelete={handleDeleteTask} />
             </section>
           )}
         </div>
