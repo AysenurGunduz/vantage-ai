@@ -159,7 +159,7 @@ export default function Workspace() {
 
   return (
     <div className="dark-theme animated-gradient min-h-screen text-white">
-      <div className="page-fade-in mx-auto max-w-7xl px-6 py-8">
+      <div className="page-fade-in mx-auto max-w-screen-2xl px-8 py-8">
         <div className="mb-8 flex items-center justify-between">
           <div>
             <Logo />
@@ -170,8 +170,13 @@ export default function Workspace() {
               ← Panele dön
             </Link>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="hidden text-sm text-white/50 sm:inline">{user?.email}</span>
+          <div className="flex items-center gap-3">
+            <span
+              title={user?.email}
+              className="flex size-9 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white"
+            >
+              {user?.email?.[0]?.toUpperCase() ?? "?"}
+            </span>
             <Button
               variant="outline"
               onClick={() => signOut()}

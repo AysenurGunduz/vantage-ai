@@ -140,7 +140,7 @@ export default function TeamMembers() {
 
   return (
     <div className="dark-theme animated-gradient min-h-screen text-white">
-      <div className="page-fade-in mx-auto max-w-5xl px-6 py-8">
+      <div className="page-fade-in mx-auto max-w-screen-2xl px-8 py-8">
         <div className="mb-8">
           <Logo />
           <Link
