@@ -151,9 +151,32 @@ describe("tasks routes", () => {
     expect(res.body).toEqual(updatedTask);
   });
 
-  it("deletes a task", async () => {
-    const taskRow = { id: "task-1", project_id: "project-1", title: "Design schema" };
+  it("rejects deleting another member's task for a plain member", async () => {
+    const taskRow = { id: "task-1", project_id: "project-1", title: "Design schema", created_by: "someone-else" };
     membership = { role_in_project: "member" };
+    taskResponses = [chain({ maybeSingle: { data: taskRow, error: null } })];
+
+    const res = await request(app).delete("/api/tasks/task-1").set("Authorization", "Bearer valid-token");
+
+    expect(res.status).toBe(403);
+  });
+
+  it("allows the task creator to delete their own task", async () => {
+    const taskRow = { id: "task-1", project_id: "project-1", title: "Design schema", created_by: "user-1" };
+    membership = { role_in_project: "member" };
+    taskResponses = [
+      chain({ maybeSingle: { data: taskRow, error: null } }),
+      chain({ then: { error: null } }),
+    ];
+
+    const res = await request(app).delete("/api/tasks/task-1").set("Authorization", "Bearer valid-token");
+
+    expect(res.status).toBe(204);
+  });
+
+  it("allows a project admin to delete another member's task", async () => {
+    const taskRow = { id: "task-1", project_id: "project-1", title: "Design schema", created_by: "someone-else" };
+    membership = { role_in_project: "admin" };
     taskResponses = [
       chain({ maybeSingle: { data: taskRow, error: null } }),
       chain({ then: { error: null } }),
