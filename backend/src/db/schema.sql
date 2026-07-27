@@ -9,6 +9,7 @@ create type task_status as enum ('backlog', 'todo', 'in_progress', 'review', 'do
 create type task_priority as enum ('low', 'medium', 'high', 'urgent');
 create type suggestion_status as enum ('pending', 'accepted', 'rejected');
 create type risk_level as enum ('low', 'medium', 'high');
+create type invitation_status as enum ('pending', 'accepted', 'revoked', 'expired');
 
 create table profiles (
   id uuid primary key references auth.users (id) on delete cascade,
@@ -50,6 +51,21 @@ create table organization_members (
   joined_at timestamptz not null default now(),
   primary key (organization_id, user_id)
 );
+
+create table organization_invitations (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references organizations (id) on delete cascade,
+  email text not null,
+  role member_role not null default 'member',
+  token uuid not null default gen_random_uuid(),
+  status invitation_status not null default 'pending',
+  invited_by uuid not null references profiles (id),
+  created_at timestamptz not null default now(),
+  expires_at timestamptz not null default (now() + interval '7 days'),
+  accepted_at timestamptz
+);
+create unique index idx_organization_invitations_token on organization_invitations (token);
+create index idx_organization_invitations_organization_id on organization_invitations (organization_id);
 
 create table projects (
   id uuid primary key default gen_random_uuid(),
