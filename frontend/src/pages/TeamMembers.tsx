@@ -167,21 +167,32 @@ export default function TeamMembers() {
         ) : (
           <div className="space-y-6">
             {canManage && (
-              <section className={panelClass}>
-                <h2 className="mb-4 text-sm font-semibold tracking-tight">E-posta ile davet et</h2>
-                <form onSubmit={handleInvite} className="flex flex-wrap items-center gap-2">
+              <section className="relative overflow-hidden rounded-[4px] border border-[#ff6b5b]/30 bg-[#ff6b5b]/[0.06] p-6">
+                <div className="pointer-events-none absolute -top-12 -right-12 h-48 w-48 rounded-full bg-[#ff6b5b]/20 blur-3xl" />
+
+                <div className="relative mb-4 flex items-center gap-3">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#ff6b5b]/15">
+                    <UserPlus className="size-5 text-[#ff6b5b]" />
+                  </span>
+                  <div>
+                    <h2 className="text-base font-semibold tracking-tight">Ekibine yeni birini davet et</h2>
+                    <p className="text-sm text-white/60">E-posta ve rol seç, davet linkini paylaş.</p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleInvite} className="relative flex flex-wrap items-center gap-2.5">
                   <Input
                     type="email"
                     placeholder="yeni.uye@sirket.com"
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
                     required
-                    className={`${inputClass} min-w-[220px] flex-1`}
+                    className={`${inputClass} min-w-[240px] flex-1 border-white/20 bg-white/10`}
                   />
                   <select
                     value={inviteRole}
                     onChange={(e) => setInviteRole(e.target.value as "admin" | "member")}
-                    className={selectClass}
+                    className={`${selectClass} border-white/20 bg-white/10`}
                   >
                     <option value="member">Üye</option>
                     <option value="admin">Yönetici</option>
@@ -189,7 +200,8 @@ export default function TeamMembers() {
                   <Button
                     type="submit"
                     disabled={inviting}
-                    className="rounded-[3px] bg-[#ff6b5b] font-semibold text-[#0d1b3a] hover:bg-[#ff8577]"
+                    size="lg"
+                    className="rounded-[3px] bg-[#ff6b5b] font-semibold text-[#0d1b3a] shadow-lg shadow-[#ff6b5b]/20 hover:bg-[#ff8577] hover:shadow-xl hover:shadow-[#ff6b5b]/30"
                   >
                     <UserPlus className="size-4" />
                     {inviting ? "Gönderiliyor..." : "Davet Et"}
@@ -197,11 +209,11 @@ export default function TeamMembers() {
                 </form>
 
                 {inviteLink && (
-                  <div className="mt-3 flex items-center gap-2 rounded-[3px] border border-white/10 bg-white/5 px-3 py-2 text-sm">
+                  <div className="relative mt-4 flex items-center gap-2 rounded-[3px] border border-white/15 bg-[#0d1b3a]/60 px-3 py-2.5 text-sm">
                     <span className="truncate text-white/70">{inviteLink}</span>
                     <button
                       onClick={() => navigator.clipboard.writeText(inviteLink)}
-                      className="ml-auto flex shrink-0 items-center gap-1 text-xs text-[#ff6b5b] hover:text-[#ff8577]"
+                      className="ml-auto flex shrink-0 items-center gap-1 text-xs font-medium text-[#ff6b5b] hover:text-[#ff8577]"
                     >
                       <Copy className="size-3.5" />
                       Kopyala

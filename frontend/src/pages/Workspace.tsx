@@ -224,19 +224,23 @@ export default function Workspace() {
             </section>
 
             {selectedOrgId && (
+              <Link
+                to={`/dashboard/organizations/${selectedOrgId}/team`}
+                className="flex items-center justify-between gap-2 rounded-[4px] border border-[#ff6b5b]/30 bg-[#ff6b5b]/10 p-4 text-sm font-semibold text-white transition-colors hover:border-[#ff6b5b]/50 hover:bg-[#ff6b5b]/15"
+              >
+                <span className="flex items-center gap-2">
+                  <Users2 className="size-4 text-[#ff6b5b]" />
+                  Ekip Üyeleri
+                </span>
+                <ChevronRight className="size-4 text-white/50" />
+              </Link>
+            )}
+
+            {selectedOrgId && (
               <section className={panelClass}>
-                <div className="mb-3 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 text-sm font-semibold tracking-tight">
-                    <FolderKanban className="size-4 text-[#ff6b5b]" />
-                    Projeler
-                  </div>
-                  <Link
-                    to={`/dashboard/organizations/${selectedOrgId}/team`}
-                    className="flex items-center gap-1 text-xs text-white/50 transition-colors hover:text-[#ff6b5b]"
-                  >
-                    <Users2 className="size-3.5" />
-                    Ekip
-                  </Link>
+                <div className="mb-3 flex items-center gap-2 text-sm font-semibold tracking-tight">
+                  <FolderKanban className="size-4 text-[#ff6b5b]" />
+                  Projeler
                 </div>
                 {projectsLoading ? (
                   <SidebarListSkeleton />
