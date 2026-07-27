@@ -2,6 +2,15 @@ import { supabase } from "./supabaseClient";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+export class ApiError extends Error {
+  status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.status = status;
+  }
+}
+
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
   const { data } = await supabase.auth.getSession();
   const token = data.session?.access_token;
@@ -22,7 +31,7 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
   const body = await res.json();
 
   if (!res.ok) {
-    throw new Error(body.error ?? "Request failed");
+    throw new ApiError(res.status, body.error ?? "Request failed");
   }
 
   return body as T;
