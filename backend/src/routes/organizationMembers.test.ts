@@ -15,6 +15,12 @@ vi.mock("../lib/supabaseClient.js", () => ({
           ? { data: { user: { id: "user-1", email: "test@vantage.dev" } }, error: null }
           : { data: { user: null }, error: { message: "Invalid token" } }
       ),
+      admin: {
+        getUserById: vi.fn(async (id: string) => ({
+          data: { user: { email: `${id}@vantage.dev` } },
+          error: null,
+        })),
+      },
     },
     from: vi.fn((table: string) => {
       if (table === "organizations") {
@@ -73,14 +79,30 @@ describe("organization members routes", () => {
 
   it("lists members for an organization member", async () => {
     membership = { role: "member" };
-    membersListResult = [{ user_id: "user-1", role: "member", joined_at: "2026-01-01" }];
+    membersListResult = [
+      {
+        user_id: "user-1",
+        role: "member",
+        joined_at: "2026-01-01",
+        profiles: { full_name: "Test User", avatar_url: null },
+      },
+    ];
 
     const res = await request(app)
       .get("/api/organizations/org-1/members")
       .set("Authorization", "Bearer valid-token");
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual(membersListResult);
+    expect(res.body).toEqual([
+      {
+        user_id: "user-1",
+        role: "member",
+        joined_at: "2026-01-01",
+        full_name: "Test User",
+        avatar_url: null,
+        email: "user-1@vantage.dev",
+      },
+    ]);
   });
 
   it("rejects an invalid role", async () => {

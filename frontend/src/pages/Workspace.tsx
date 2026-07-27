@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { Building2, ChevronRight, FolderKanban, ListTodo, Plus } from "lucide-react";
+import { Building2, ChevronRight, FolderKanban, ListTodo, Plus, Users2 } from "lucide-react";
 import { useAuth } from "../lib/AuthContext";
 import { apiFetch } from "../lib/apiClient";
 import type { Organization, Project, Task, TaskStatus } from "../types/api";
@@ -225,9 +225,18 @@ export default function Workspace() {
 
             {selectedOrgId && (
               <section className={panelClass}>
-                <div className="mb-3 flex items-center gap-2 text-sm font-semibold tracking-tight">
-                  <FolderKanban className="size-4 text-[#ff6b5b]" />
-                  Projeler
+                <div className="mb-3 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 text-sm font-semibold tracking-tight">
+                    <FolderKanban className="size-4 text-[#ff6b5b]" />
+                    Projeler
+                  </div>
+                  <Link
+                    to={`/dashboard/organizations/${selectedOrgId}/team`}
+                    className="flex items-center gap-1 text-xs text-white/50 transition-colors hover:text-[#ff6b5b]"
+                  >
+                    <Users2 className="size-3.5" />
+                    Ekip
+                  </Link>
                 </div>
                 {projectsLoading ? (
                   <SidebarListSkeleton />

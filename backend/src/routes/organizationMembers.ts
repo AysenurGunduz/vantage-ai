@@ -30,7 +30,7 @@ organizationMembersRouter.get("/", async (req, res) => {
 
   const { data, error } = await supabase
     .from("organization_members")
-    .select("user_id, role, joined_at")
+    .select("user_id, role, joined_at, profiles(full_name, avatar_url)")
     .eq("organization_id", orgId);
 
   if (error) {
@@ -38,7 +38,23 @@ organizationMembersRouter.get("/", async (req, res) => {
     return;
   }
 
-  res.json(data);
+  const members = await Promise.all(
+    (data ?? []).map(async (row) => {
+      const profile = row.profiles as unknown as { full_name: string | null; avatar_url: string | null } | null;
+      const { data: userData } = await supabase.auth.admin.getUserById(row.user_id);
+
+      return {
+        user_id: row.user_id,
+        role: row.role,
+        joined_at: row.joined_at,
+        full_name: profile?.full_name ?? null,
+        avatar_url: profile?.avatar_url ?? null,
+        email: userData.user?.email ?? null,
+      };
+    }),
+  );
+
+  res.json(members);
 });
 
 organizationMembersRouter.patch("/:userId", async (req, res) => {
