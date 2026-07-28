@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, type Location } from "react-router-dom";
 import { useAuth } from "../lib/AuthContext";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 export default function Login() {
   const { signIn } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +27,8 @@ export default function Login() {
       setError(error);
       return;
     }
-    navigate("/dashboard");
+    const from = (location.state as { from?: Location } | null)?.from;
+    navigate(from ? `${from.pathname}${from.search}` : "/dashboard", { replace: true });
   }
 
   return (

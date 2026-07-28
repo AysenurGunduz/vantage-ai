@@ -31,3 +31,25 @@ export interface Task {
   due_date: string | null;
   created_at: string;
 }
+
+export type OrganizationRole = "owner" | "admin" | "member";
+
+export interface OrganizationMember {
+  user_id: string;
+  role: OrganizationRole;
+  joined_at: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  email: string | null;
+}
+
+export type InvitationStatus = "pending" | "accepted" | "revoked" | "expired";
+
+export interface OrganizationInvitation {
+  id: string;
+  email: string;
+  role: OrganizationRole;
+  status: InvitationStatus;
+  created_at: string;
+  expires_at: string;
+}

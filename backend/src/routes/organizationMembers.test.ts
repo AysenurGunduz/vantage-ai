@@ -2,8 +2,10 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
 
 let membership: { role: string } | null = null;
+let targetMembership: { role: string } | null = null;
 let membersListResult: unknown[] = [];
 let updatedMember: unknown = null;
+let organizationRow: { owner_id: string } | null = null;
 
 vi.mock("../lib/supabaseClient.js", () => ({
   supabase: {
@@ -13,17 +15,40 @@ vi.mock("../lib/supabaseClient.js", () => ({
           ? { data: { user: { id: "user-1", email: "test@vantage.dev" } }, error: null }
           : { data: { user: null }, error: { message: "Invalid token" } }
       ),
+      admin: {
+        getUserById: vi.fn(async (id: string) => ({
+          data: { user: { email: `${id}@vantage.dev` } },
+          error: null,
+        })),
+      },
     },
     from: vi.fn((table: string) => {
+      if (table === "organizations") {
+        const obj: Record<string, unknown> = {
+          select: vi.fn(() => obj),
+          eq: vi.fn(() => obj),
+          maybeSingle: vi.fn(async () => ({ data: organizationRow, error: null })),
+        };
+        return obj;
+      }
+
       if (table !== "organization_members") {
         throw new Error(`Unexpected table: ${table}`);
       }
 
+      let lastUserId: string | undefined;
       const obj: Record<string, unknown> = {
         select: vi.fn(() => obj),
         update: vi.fn(() => obj),
-        eq: vi.fn(() => obj),
-        maybeSingle: vi.fn(async () => ({ data: membership, error: null })),
+        delete: vi.fn(() => obj),
+        eq: vi.fn((column: string, value: string) => {
+          if (column === "user_id") lastUserId = value;
+          return obj;
+        }),
+        maybeSingle: vi.fn(async () => ({
+          data: lastUserId === "user-2" ? targetMembership : membership,
+          error: null,
+        })),
         single: vi.fn(async () => ({ data: updatedMember, error: null })),
         then: (resolve: (value: unknown) => unknown) =>
           Promise.resolve({ data: membersListResult, error: null }).then(resolve),
@@ -37,8 +62,10 @@ const { app } = await import("../app.js");
 
 beforeEach(() => {
   membership = null;
+  targetMembership = null;
   membersListResult = [];
   updatedMember = null;
+  organizationRow = { owner_id: "someone-else" };
 });
 
 describe("organization members routes", () => {
@@ -52,14 +79,30 @@ describe("organization members routes", () => {
 
   it("lists members for an organization member", async () => {
     membership = { role: "member" };
-    membersListResult = [{ user_id: "user-1", role: "member", joined_at: "2026-01-01" }];
+    membersListResult = [
+      {
+        user_id: "user-1",
+        role: "member",
+        joined_at: "2026-01-01",
+        profiles: { full_name: "Test User", avatar_url: null },
+      },
+    ];
 
     const res = await request(app)
       .get("/api/organizations/org-1/members")
       .set("Authorization", "Bearer valid-token");
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual(membersListResult);
+    expect(res.body).toEqual([
+      {
+        user_id: "user-1",
+        role: "member",
+        joined_at: "2026-01-01",
+        full_name: "Test User",
+        avatar_url: null,
+        email: "user-1@vantage.dev",
+      },
+    ]);
   });
 
   it("rejects an invalid role", async () => {
@@ -95,5 +138,69 @@ describe("organization members routes", () => {
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual(updatedMember);
+  });
+
+  it("rejects removing a member from a non-admin/non-owner", async () => {
+    membership = { role: "member" };
+
+    const res = await request(app)
+      .delete("/api/organizations/org-1/members/user-2")
+      .set("Authorization", "Bearer valid-token");
+
+    expect(res.status).toBe(403);
+  });
+
+  it("rejects removing yourself", async () => {
+    membership = { role: "owner" };
+
+    const res = await request(app)
+      .delete("/api/organizations/org-1/members/user-1")
+      .set("Authorization", "Bearer valid-token");
+
+    expect(res.status).toBe(400);
+  });
+
+  it("rejects removing the organization owner", async () => {
+    membership = { role: "owner" };
+    organizationRow = { owner_id: "user-2" };
+
+    const res = await request(app)
+      .delete("/api/organizations/org-1/members/user-2")
+      .set("Authorization", "Bearer valid-token");
+
+    expect(res.status).toBe(400);
+  });
+
+  it("rejects an admin removing another admin", async () => {
+    membership = { role: "admin" };
+    targetMembership = { role: "admin" };
+
+    const res = await request(app)
+      .delete("/api/organizations/org-1/members/user-2")
+      .set("Authorization", "Bearer valid-token");
+
+    expect(res.status).toBe(403);
+  });
+
+  it("removes a plain member when requested by an admin", async () => {
+    membership = { role: "admin" };
+    targetMembership = { role: "member" };
+
+    const res = await request(app)
+      .delete("/api/organizations/org-1/members/user-2")
+      .set("Authorization", "Bearer valid-token");
+
+    expect(res.status).toBe(204);
+  });
+
+  it("removes an admin when requested by an owner", async () => {
+    membership = { role: "owner" };
+    targetMembership = { role: "admin" };
+
+    const res = await request(app)
+      .delete("/api/organizations/org-1/members/user-2")
+      .set("Authorization", "Bearer valid-token");
+
+    expect(res.status).toBe(204);
   });
 });

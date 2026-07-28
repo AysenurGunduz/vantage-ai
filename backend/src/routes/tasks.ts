@@ -177,6 +177,16 @@ taskRouter.delete("/:taskId", async (req, res) => {
     return;
   }
 
+  const canDelete =
+    membership.role_in_project === "owner" ||
+    membership.role_in_project === "admin" ||
+    task.created_by === req.user!.id;
+
+  if (!canDelete) {
+    res.status(403).json({ error: "Only a project admin/owner or the task creator can delete this task" });
+    return;
+  }
+
   const { error } = await supabase.from("tasks").delete().eq("id", taskId);
 
   if (error) {

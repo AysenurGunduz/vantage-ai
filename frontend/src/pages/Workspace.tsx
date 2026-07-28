@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { Building2, ChevronRight, FolderKanban, ListTodo, Plus } from "lucide-react";
+import { Building2, ChevronRight, FolderKanban, ListTodo, Plus, Users2 } from "lucide-react";
 import { useAuth } from "../lib/AuthContext";
 import { apiFetch } from "../lib/apiClient";
 import type { Organization, Project, Task, TaskStatus } from "../types/api";
@@ -159,7 +159,7 @@ export default function Workspace() {
 
   return (
     <div className="dark-theme animated-gradient min-h-screen text-white">
-      <div className="page-fade-in mx-auto max-w-7xl px-6 py-8">
+      <div className="page-fade-in mx-auto max-w-screen-2xl px-8 py-8">
         <div className="mb-8 flex items-center justify-between">
           <div>
             <Logo />
@@ -170,8 +170,13 @@ export default function Workspace() {
               ← Panele dön
             </Link>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="hidden text-sm text-white/50 sm:inline">{user?.email}</span>
+          <div className="flex items-center gap-3">
+            <span
+              title={user?.email}
+              className="flex size-9 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white"
+            >
+              {user?.email?.[0]?.toUpperCase() ?? "?"}
+            </span>
             <Button
               variant="outline"
               onClick={() => signOut()}
@@ -222,6 +227,19 @@ export default function Workspace() {
                 </Button>
               </form>
             </section>
+
+            {selectedOrgId && (
+              <Link
+                to={`/dashboard/organizations/${selectedOrgId}/team`}
+                className="flex items-center justify-between gap-2 rounded-[4px] border border-[#ff6b5b]/30 bg-[#ff6b5b]/10 p-4 text-sm font-semibold text-white transition-colors hover:border-[#ff6b5b]/50 hover:bg-[#ff6b5b]/15"
+              >
+                <span className="flex items-center gap-2">
+                  <Users2 className="size-4 text-[#ff6b5b]" />
+                  Ekip Üyeleri
+                </span>
+                <ChevronRight className="size-4 text-white/50" />
+              </Link>
+            )}
 
             {selectedOrgId && (
               <section className={panelClass}>
