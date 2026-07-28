@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Reveal } from "@/components/Reveal";
+import { NetworkBackground } from "@/components/NetworkBackground";
 
 const whyCards = [
   {
@@ -93,16 +94,9 @@ export default function Landing() {
       </nav>
 
       <section className="relative overflow-hidden">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.15]"
-          style={{
-            backgroundImage: "radial-gradient(rgba(255,255,255,0.6) 1px, transparent 1px)",
-            backgroundSize: "28px 28px",
-            maskImage: "radial-gradient(ellipse 60% 60% at 50% 0%, black 40%, transparent 100%)",
-          }}
-        />
-        <div className="pointer-events-none absolute -top-24 left-1/4 h-96 w-96 rounded-full bg-[#ff6b5b]/15 blur-3xl" />
-        <div className="pointer-events-none absolute top-0 right-0 h-80 w-80 rounded-full bg-indigo-500/20 blur-3xl" />
+        <NetworkBackground className="opacity-70" />
+        <div className="floating-blob pointer-events-none absolute -top-24 left-1/4 h-96 w-96 rounded-full bg-[#ff6b5b]/15 blur-3xl" />
+        <div className="floating-blob-reverse pointer-events-none absolute top-0 right-0 h-80 w-80 rounded-full bg-indigo-500/20 blur-3xl" />
 
         <div className="page-fade-in relative mx-auto max-w-7xl px-6 py-16 sm:px-10 sm:py-24">
           <span className="mb-6 inline-block rounded-full bg-[#ff6b5b]/10 px-4 py-1.5 text-sm font-medium text-[#ff6b5b]">

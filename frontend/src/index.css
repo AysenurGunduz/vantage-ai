@@ -187,3 +187,34 @@ html {
     background-position: 50% 50%;
   }
 }
+
+@keyframes float-blob {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(24px, -28px) scale(1.08);
+  }
+}
+@keyframes float-blob-reverse {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-20px, 24px) scale(1.06);
+  }
+}
+.floating-blob {
+  animation: float-blob 11s ease-in-out infinite;
+}
+.floating-blob-reverse {
+  animation: float-blob-reverse 14s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .floating-blob,
+  .floating-blob-reverse {
+    animation: none;
+  }
+}
