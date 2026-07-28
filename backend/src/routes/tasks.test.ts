@@ -101,6 +101,26 @@ describe("tasks routes", () => {
     expect(res.body).toEqual(insertedTask);
   });
 
+  it("creates a task with tags", async () => {
+    membership = { role_in_project: "member" };
+    const insertedTask = {
+      id: "task-1",
+      project_id: "project-1",
+      title: "Design schema",
+      priority: "medium",
+      tags: ["backend", "urgent-fix"],
+    };
+    taskResponses = [chain({ single: { data: insertedTask, error: null } })];
+
+    const res = await request(app)
+      .post("/api/projects/project-1/tasks")
+      .set("Authorization", "Bearer valid-token")
+      .send({ title: "Design schema", tags: ["backend", "urgent-fix"] });
+
+    expect(res.status).toBe(201);
+    expect(res.body).toEqual(insertedTask);
+  });
+
   it("returns 404 for a task that doesn't exist", async () => {
     taskResponses = [chain({ maybeSingle: { data: null, error: null } })];
 
@@ -146,6 +166,24 @@ describe("tasks routes", () => {
       .patch("/api/tasks/task-1")
       .set("Authorization", "Bearer valid-token")
       .send({ status: "in_progress" });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual(updatedTask);
+  });
+
+  it("updates a task's tags", async () => {
+    const taskRow = { id: "task-1", project_id: "project-1", title: "Design schema", tags: [] };
+    const updatedTask = { ...taskRow, tags: ["design", "review"] };
+    membership = { role_in_project: "member" };
+    taskResponses = [
+      chain({ maybeSingle: { data: taskRow, error: null } }),
+      chain({ single: { data: updatedTask, error: null } }),
+    ];
+
+    const res = await request(app)
+      .patch("/api/tasks/task-1")
+      .set("Authorization", "Bearer valid-token")
+      .send({ tags: ["design", "review"] });
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual(updatedTask);

@@ -96,6 +96,7 @@ create table tasks (
   description text,
   status task_status not null default 'backlog',
   priority task_priority not null default 'medium',
+  tags text[] not null default '{}',
   assignee_id uuid references profiles (id),
   estimated_hours numeric(6, 2),
   due_date date,

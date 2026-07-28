@@ -74,6 +74,15 @@ export function TaskCard({
           </span>
         )}
       </div>
+      {task.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {task.tags.map((tag) => (
+            <span key={tag} className="rounded-full bg-indigo-500/10 px-2 py-0.5 text-xs text-indigo-300">
+              #{tag}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

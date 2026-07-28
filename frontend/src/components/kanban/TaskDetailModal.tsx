@@ -30,8 +30,22 @@ export function TaskDetailModal({
   const [description, setDescription] = useState(task.description ?? "");
   const [dueDate, setDueDate] = useState(task.due_date ? task.due_date.slice(0, 10) : "");
   const [priority, setPriority] = useState<TaskPriority>(task.priority);
+  const [tags, setTags] = useState<string[]>(task.tags);
+  const [tagInput, setTagInput] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function addTag() {
+    const value = tagInput.trim().toLowerCase();
+    if (value && !tags.includes(value)) {
+      setTags((prev) => [...prev, value]);
+    }
+    setTagInput("");
+  }
+
+  function removeTag(tag: string) {
+    setTags((prev) => prev.filter((t) => t !== tag));
+  }
 
   async function handleSave() {
     setSaving(true);
@@ -44,6 +58,7 @@ export function TaskDetailModal({
           description: description.trim() || null,
           due_date: dueDate || null,
           priority,
+          tags,
         }),
       });
       onSave(updated);
@@ -101,6 +116,39 @@ export function TaskDetailModal({
             rows={4}
             placeholder="Görev hakkında detay ekle..."
             className={`${fieldClass} resize-none`}
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-white/50">Etiketler</label>
+          <div className="flex flex-wrap gap-1.5">
+            {tags.map((tag) => (
+              <span
+                key={tag}
+                className="flex items-center gap-1 rounded-full bg-indigo-500/10 px-2.5 py-1 text-xs text-indigo-300"
+              >
+                #{tag}
+                <button
+                  onClick={() => removeTag(tag)}
+                  aria-label={`${tag} etiketini kaldır`}
+                  className="text-indigo-300/60 hover:text-indigo-200"
+                >
+                  <X className="size-3" />
+                </button>
+              </span>
+            ))}
+          </div>
+          <Input
+            value={tagInput}
+            onChange={(e) => setTagInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === ",") {
+                e.preventDefault();
+                addTag();
+              }
+            }}
+            placeholder="Etiket yaz, Enter'a bas"
+            className="rounded-[3px] border-white/15 bg-white/5 text-white focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
           />
         </div>
 

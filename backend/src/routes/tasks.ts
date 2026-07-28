@@ -44,12 +44,13 @@ projectTasksRouter.get("/", async (req, res) => {
 
 projectTasksRouter.post("/", async (req, res) => {
   const { projectId } = req.params as { projectId: string };
-  const { title, description, priority, due_date, assignee_id } = req.body as {
+  const { title, description, priority, due_date, assignee_id, tags } = req.body as {
     title?: string;
     description?: string;
     priority?: string;
     due_date?: string;
     assignee_id?: string;
+    tags?: string[];
   };
 
   if (!title || !title.trim()) {
@@ -72,6 +73,7 @@ projectTasksRouter.post("/", async (req, res) => {
       priority: priority ?? "medium",
       due_date: due_date ?? null,
       assignee_id: assignee_id ?? null,
+      tags: tags ?? [],
       created_by: req.user!.id,
     })
     .select()
@@ -121,6 +123,7 @@ const UPDATABLE_FIELDS = [
   "estimated_hours",
   "due_date",
   "order_index",
+  "tags",
 ] as const;
 
 taskRouter.patch("/:taskId", async (req, res) => {

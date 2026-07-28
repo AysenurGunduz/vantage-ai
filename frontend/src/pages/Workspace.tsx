@@ -46,7 +46,12 @@ export default function Workspace() {
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskPriority, setNewTaskPriority] = useState<TaskPriority>("medium");
   const [newTaskDueDate, setNewTaskDueDate] = useState("");
+  const [newTaskTags, setNewTaskTags] = useState("");
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+
+  const [filterPriority, setFilterPriority] = useState<TaskPriority | "all">("all");
+  const [filterTag, setFilterTag] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<"created" | "due_date" | "priority">("created");
 
   const [error, setError] = useState<string | null>(null);
 
@@ -56,6 +61,25 @@ export default function Workspace() {
 
   const selectedOrg = organizations.find((org) => org.id === selectedOrgId) ?? null;
   const selectedProject = projects.find((project) => project.id === selectedProjectId) ?? null;
+
+  const availableTags = Array.from(new Set(tasks.flatMap((task) => task.tags))).sort();
+
+  const priorityOrder: Record<TaskPriority, number> = { urgent: 0, high: 1, medium: 2, low: 3 };
+
+  const visibleTasks = tasks
+    .filter((task) => filterPriority === "all" || task.priority === filterPriority)
+    .filter((task) => filterTag === "all" || task.tags.includes(filterTag))
+    .slice()
+    .sort((a, b) => {
+      if (sortBy === "priority") return priorityOrder[a.priority] - priorityOrder[b.priority];
+      if (sortBy === "due_date") {
+        if (!a.due_date && !b.due_date) return 0;
+        if (!a.due_date) return 1;
+        if (!b.due_date) return -1;
+        return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+      }
+      return 0;
+    });
 
   useEffect(() => {
     apiFetch<Organization[]>("/api/organizations")
@@ -131,12 +155,17 @@ export default function Workspace() {
           title: newTaskTitle,
           priority: newTaskPriority,
           due_date: newTaskDueDate || null,
+          tags: newTaskTags
+            .split(",")
+            .map((tag) => tag.trim().toLowerCase())
+            .filter(Boolean),
         }),
       });
       setTasks((prev) => [...prev, task]);
       setNewTaskTitle("");
       setNewTaskPriority("medium");
       setNewTaskDueDate("");
+      setNewTaskTags("");
     } catch (err) {
       setError(errorMessage(err));
     }
@@ -332,16 +361,90 @@ export default function Workspace() {
                     onChange={(e) => setNewTaskDueDate(e.target.value)}
                     className={`${inputClass} w-auto`}
                   />
+                  <Input
+                    placeholder="Etiketler (virgülle ayır)"
+                    value={newTaskTags}
+                    onChange={(e) => setNewTaskTags(e.target.value)}
+                    className={`${inputClass} min-w-[160px]`}
+                  />
                   <Button type="submit" className={submitButtonClass}>
                     <Plus className="size-4" />
                     Ekle
                   </Button>
                 </form>
+
+                {tasks.length > 0 && (
+                  <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
+                    <select
+                      value={filterPriority}
+                      onChange={(e) => setFilterPriority(e.target.value as TaskPriority | "all")}
+                      className={selectClass}
+                    >
+                      <option value="all" className="bg-[#132a52] text-white">
+                        Tüm öncelikler
+                      </option>
+                      <option value="low" className="bg-[#132a52] text-white">
+                        Düşük
+                      </option>
+                      <option value="medium" className="bg-[#132a52] text-white">
+                        Orta
+                      </option>
+                      <option value="high" className="bg-[#132a52] text-white">
+                        Yüksek
+                      </option>
+                      <option value="urgent" className="bg-[#132a52] text-white">
+                        Acil
+                      </option>
+                    </select>
+                    <select
+                      value={filterTag}
+                      onChange={(e) => setFilterTag(e.target.value)}
+                      className={selectClass}
+                    >
+                      <option value="all" className="bg-[#132a52] text-white">
+                        Tüm etiketler
+                      </option>
+                      {availableTags.map((tag) => (
+                        <option key={tag} value={tag} className="bg-[#132a52] text-white">
+                          #{tag}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value as "created" | "due_date" | "priority")}
+                      className={selectClass}
+                    >
+                      <option value="created" className="bg-[#132a52] text-white">
+                        Sırala: Varsayılan
+                      </option>
+                      <option value="due_date" className="bg-[#132a52] text-white">
+                        Sırala: Son tarih
+                      </option>
+                      <option value="priority" className="bg-[#132a52] text-white">
+                        Sırala: Öncelik
+                      </option>
+                    </select>
+                    {(filterPriority !== "all" || filterTag !== "all" || sortBy !== "created") && (
+                      <button
+                        onClick={() => {
+                          setFilterPriority("all");
+                          setFilterTag("all");
+                          setSortBy("created");
+                        }}
+                        className="text-xs text-white/50 underline underline-offset-4 hover:text-[#ff6b5b]"
+                      >
+                        Filtreleri temizle
+                      </button>
+                    )}
+                  </div>
+                )}
+
                 {tasksLoading ? (
                   <PanelSkeleton />
                 ) : (
                   <KanbanBoard
-                    tasks={tasks}
+                    tasks={visibleTasks}
                     onStatusChange={handleStatusChange}
                     onDelete={handleDeleteTask}
                     onOpenTask={setSelectedTask}
