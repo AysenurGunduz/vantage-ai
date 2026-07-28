@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { KanbanSquare, Sparkles, Users } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Reveal } from "@/components/Reveal";
+import { NetworkBackground } from "@/components/NetworkBackground";
 
 const features = [
   { icon: KanbanSquare, text: "Kanban tabanlı proje ve görev yönetimi" },
@@ -20,6 +21,7 @@ export function AuthLayout({
 }) {
   return (
     <div className="dark-theme animated-gradient relative flex min-h-screen overflow-hidden text-white">
+      <NetworkBackground className="opacity-60" />
       <div className="floating-blob pointer-events-none absolute -top-24 -left-24 h-96 w-96 rounded-full bg-[#ff6b5b]/20 blur-3xl" />
       <div className="floating-blob-reverse pointer-events-none absolute top-1/3 -right-16 h-96 w-96 rounded-full bg-indigo-500/25 blur-3xl" />
       <div className="floating-blob pointer-events-none absolute -bottom-24 left-1/3 h-80 w-80 rounded-full bg-[#ff6b5b]/10 blur-3xl" style={{ animationDelay: "-4s" }} />
