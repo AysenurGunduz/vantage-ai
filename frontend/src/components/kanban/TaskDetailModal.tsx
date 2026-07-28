@@ -8,14 +8,14 @@ import { Input } from "@/components/ui/input";
 const PRIORITIES: TaskPriority[] = ["low", "medium", "high", "urgent"];
 
 const priorityPillClass: Record<TaskPriority, string> = {
-  low: "bg-white/10 text-white/60",
-  medium: "bg-indigo-500/20 text-indigo-300",
-  high: "bg-[#ff6b5b]/20 text-[#ff6b5b]",
-  urgent: "bg-[#ff6b5b]/30 text-[#ff6b5b]",
+  low: "bg-[var(--priority-low)]/15 text-[var(--priority-low)]",
+  medium: "bg-[var(--priority-medium)]/15 text-[var(--priority-medium)]",
+  high: "bg-[var(--priority-high)]/15 text-[var(--priority-high)]",
+  urgent: "bg-[var(--priority-urgent)]/20 text-[var(--priority-urgent)]",
 };
 
 const fieldClass =
-  "w-full rounded-[3px] border border-white/15 bg-white/5 px-3 py-2 text-sm text-white outline-none focus-visible:border-[#ff6b5b] focus-visible:ring-2 focus-visible:ring-[#ff6b5b]/30";
+  "w-full rounded-[6px] border border-white/15 bg-white/5 px-3 py-2 text-sm text-white outline-none focus-visible:border-[#ff6b5b] focus-visible:ring-2 focus-visible:ring-[#ff6b5b]/30";
 
 export function TaskDetailModal({
   task,
@@ -77,7 +77,7 @@ export function TaskDetailModal({
     >
       <div
         onClick={(event) => event.stopPropagation()}
-        className="w-full max-w-md space-y-4 rounded-[4px] border border-white/10 bg-[#0f2044] p-6 text-white shadow-2xl shadow-black/50"
+        className="w-full max-w-md space-y-4 rounded-[8px] border border-[var(--surface-border)] bg-[var(--surface)] p-6 text-white shadow-2xl shadow-black/50"
       >
         <div className="flex items-start justify-between gap-3">
           <input
@@ -99,7 +99,7 @@ export function TaskDetailModal({
             <button
               key={option}
               onClick={() => setPriority(option)}
-              className={`rounded-[3px] px-2.5 py-1 text-xs transition-colors ${
+              className={`rounded-[6px] px-2.5 py-1 text-xs transition-colors ${
                 priority === option ? priorityPillClass[option] : "bg-white/5 text-white/40 hover:bg-white/10"
               } ${priority === option ? "ring-1 ring-inset ring-white/20" : ""}`}
             >
@@ -148,7 +148,7 @@ export function TaskDetailModal({
               }
             }}
             placeholder="Etiket yaz, Enter'a bas"
-            className="rounded-[3px] border-white/15 bg-white/5 text-white focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
+            className="rounded-[6px] border-white/15 bg-white/5 text-white focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
           />
         </div>
 
@@ -158,7 +158,7 @@ export function TaskDetailModal({
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className="rounded-[3px] border-white/15 bg-white/5 text-white focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
+            className="rounded-[6px] border-white/15 bg-white/5 text-white focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
           />
         </div>
 
@@ -168,14 +168,14 @@ export function TaskDetailModal({
           <Button
             variant="outline"
             onClick={onClose}
-            className="rounded-[3px] border-white/20 bg-transparent text-white hover:bg-white/5"
+            className="rounded-[6px] border-white/20 bg-transparent text-white hover:bg-white/5"
           >
             Vazgeç
           </Button>
           <Button
             onClick={handleSave}
             disabled={saving}
-            className="rounded-[3px] bg-[#ff6b5b] text-[#0d1b3a] hover:bg-[#ff8577]"
+            className="rounded-[6px] bg-[#ff6b5b] text-[#0d1b3a] hover:bg-[#ff8577]"
           >
             {saving ? "Kaydediliyor..." : "Kaydet"}
           </Button>

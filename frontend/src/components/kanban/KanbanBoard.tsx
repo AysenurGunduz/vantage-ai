@@ -42,7 +42,7 @@ export function KanbanBoard({
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
-      <div className="flex gap-4 overflow-x-auto pb-2">
+      <div className="grid grid-flow-col auto-cols-[minmax(220px,1fr)] gap-3 overflow-x-auto pb-2">
         {COLUMNS.map((column) => (
           <KanbanColumn
             key={column.id}

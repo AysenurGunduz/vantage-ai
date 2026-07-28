@@ -29,8 +29,10 @@ export function KanbanColumn({
   return (
     <div
       ref={setNodeRef}
-      className={`flex w-64 shrink-0 flex-col gap-3 rounded-[4px] border p-3 transition-colors ${
-        isOver ? "border-[#ff6b5b]/50 bg-[#ff6b5b]/5" : "border-white/10 bg-white/[0.03]"
+      className={`flex min-w-0 flex-col gap-3 rounded-[8px] border p-3 transition-colors ${
+        isOver
+          ? "border-[var(--accent)]/50 bg-[var(--accent)]/5"
+          : "border-[var(--surface-border)] bg-[var(--surface)]"
       }`}
     >
       <div className="flex items-center justify-between px-1">
@@ -38,7 +40,9 @@ export function KanbanColumn({
           <span className={`size-1.5 rounded-full ${statusDotClass[id]}`} />
           {label}
         </h3>
-        <span className="rounded-full bg-white/5 px-1.5 py-0.5 text-xs text-white/40">{tasks.length}</span>
+        <span className="rounded-full bg-white/5 px-1.5 py-0.5 text-xs text-[var(--text-muted)]">
+          {tasks.length}
+        </span>
       </div>
 
       <SortableContext items={tasks.map((task) => task.id)} strategy={verticalListSortingStrategy}>

@@ -35,11 +35,11 @@ export default function Home() {
           {user?.email?.[0]?.toUpperCase() ?? "?"}
         </button>
         {menuOpen && (
-          <div className="absolute right-0 mt-2 w-52 rounded-[4px] border border-white/10 bg-[#0f2044] p-1.5 text-left text-sm shadow-2xl shadow-black/50">
+          <div className="absolute right-0 mt-2 w-52 rounded-[8px] border border-white/10 bg-[#0f2044] p-1.5 text-left text-sm shadow-2xl shadow-black/50">
             <p className="truncate px-2.5 py-1.5 text-xs text-white/40">{user?.email}</p>
             <button
               onClick={() => signOut()}
-              className="flex w-full items-center gap-2 rounded-[3px] px-2.5 py-2 text-left text-white/80 transition-colors hover:bg-white/5 hover:text-white"
+              className="flex w-full items-center gap-2 rounded-[6px] px-2.5 py-2 text-left text-white/80 transition-colors hover:bg-white/5 hover:text-white"
             >
               <LogOut className="size-4" />
               Çıkış Yap
@@ -65,7 +65,7 @@ export default function Home() {
       <div className="page-fade-in relative z-10 mt-8">
         <Link
           to="/dashboard/workspace"
-          className="group inline-flex min-h-11 items-center gap-2 rounded-[3px] bg-[#ff6b5b] px-7 text-sm font-semibold text-[#0d1b3a] shadow-lg shadow-[#ff6b5b]/20 transition-all hover:bg-[#ff8577] hover:shadow-xl hover:shadow-[#ff6b5b]/30"
+          className="group inline-flex min-h-11 items-center gap-2 rounded-[6px] bg-[#ff6b5b] px-7 text-sm font-semibold text-[#0d1b3a] shadow-lg shadow-[#ff6b5b]/20 transition-all hover:bg-[#ff8577] hover:shadow-xl hover:shadow-[#ff6b5b]/30"
         >
           Hemen Başla
           <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />

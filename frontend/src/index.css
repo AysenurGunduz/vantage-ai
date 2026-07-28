@@ -135,6 +135,22 @@
 
 .dark-theme {
   font-family: "Poppins", sans-serif;
+  --bg-base: #0b1220;
+  --bg-accent: #13213b;
+  --surface: #121b30;
+  --surface-hover: #16223c;
+  --surface-border: #24304a;
+  --surface-border-hover: #32405e;
+  --text-primary: #f5f7fa;
+  --text-secondary: #9aa5b8;
+  --text-muted: #6b7686;
+  --accent: #ff6b5b;
+  --accent-hover: #ff8a7a;
+  --accent-active: #e85a4a;
+  --priority-low: #94a3b8;
+  --priority-medium: #818cf8;
+  --priority-high: #ff6b5b;
+  --priority-urgent: #ff3b30;
 }
 
 html {
@@ -177,7 +193,7 @@ html {
   }
 }
 .animated-gradient {
-  background: linear-gradient(135deg, #16305e, #1a2350, #0d1b3a, #17264c, #070f24);
+  background: linear-gradient(135deg, #16305e, #13213b, #0b1220, #152036, #060a14);
   background-size: 400% 400%;
   animation: gradient-shift 18s ease infinite;
 }

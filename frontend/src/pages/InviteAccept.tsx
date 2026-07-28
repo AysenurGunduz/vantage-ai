@@ -63,14 +63,14 @@ export default function InviteAccept() {
 
   return (
     <div className="dark-theme animated-gradient flex min-h-screen items-center justify-center px-6 text-center text-white">
-      <div className="page-fade-in w-full max-w-md space-y-6 rounded-[4px] border border-white/10 bg-white/[0.04] p-8">
+      <div className="page-fade-in w-full max-w-md space-y-6 rounded-[8px] border border-white/10 bg-white/[0.04] p-8">
         <Logo className="justify-center" />
 
         {loading && <p className="text-sm text-white/60">Davet kontrol ediliyor...</p>}
 
         {!loading && error && (
           <div className="space-y-4">
-            <p className="rounded-[3px] bg-[#ff6b5b]/10 px-3 py-2 text-sm text-[#ff6b5b]">{error}</p>
+            <p className="rounded-[6px] bg-[#ff6b5b]/10 px-3 py-2 text-sm text-[#ff6b5b]">{error}</p>
             {user && (
               <p className="text-xs text-white/40">
                 Şu an {user.email} ile giriş yapmış durumdasın.{" "}
@@ -98,7 +98,7 @@ export default function InviteAccept() {
             <Button
               onClick={handleAccept}
               disabled={accepting}
-              className="w-full rounded-[3px] bg-[#ff6b5b] font-semibold text-[#0d1b3a] hover:bg-[#ff8577]"
+              className="w-full rounded-[6px] bg-[#ff6b5b] font-semibold text-[#0d1b3a] hover:bg-[#ff8577]"
             >
               {accepting ? "Katılıyorsun..." : "Daveti kabul et"}
             </Button>

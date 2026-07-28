@@ -56,7 +56,7 @@ export default function Signup() {
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             {error && (
-              <p className="rounded-[3px] bg-[#ff6b5b]/10 px-3 py-2 text-sm text-[#ff6b5b]">{error}</p>
+              <p className="rounded-[6px] bg-[#ff6b5b]/10 px-3 py-2 text-sm text-[#ff6b5b]">{error}</p>
             )}
 
             <Reveal delayMs={160} className="space-y-1.5">
@@ -69,7 +69,7 @@ export default function Signup() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="rounded-[3px] border-white/15 bg-white/5 text-white focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
+                className="rounded-[6px] border-white/15 bg-white/5 text-white focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
               />
             </Reveal>
 
@@ -84,7 +84,7 @@ export default function Signup() {
                 minLength={6}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="rounded-[3px] border-white/15 bg-white/5 text-white focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
+                className="rounded-[6px] border-white/15 bg-white/5 text-white focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
               />
             </Reveal>
 
@@ -93,7 +93,7 @@ export default function Signup() {
                 type="submit"
                 size="lg"
                 disabled={submitting}
-                className="w-full rounded-[3px] bg-[#ff6b5b] font-semibold text-[#0d1b3a] transition-transform hover:scale-[1.02] hover:bg-[#ff8577] active:bg-[#e85a4a]"
+                className="w-full rounded-[6px] bg-[#ff6b5b] font-semibold text-[#0d1b3a] transition-transform hover:scale-[1.02] hover:bg-[#ff8577] active:bg-[#e85a4a]"
               >
                 {submitting ? "Kayıt olunuyor..." : "Kayıt Ol"}
               </Button>

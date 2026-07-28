@@ -18,10 +18,10 @@ function errorMessage(err: unknown): string {
 }
 
 const inputClass =
-  "rounded-[3px] border-white/15 bg-white/5 text-white focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30";
-const panelClass = "rounded-[4px] border border-white/10 bg-white/[0.03] p-5";
+  "rounded-[6px] border-[var(--surface-border)] bg-[var(--surface)] text-[var(--text-primary)] focus-visible:border-[var(--accent)] focus-visible:ring-[var(--accent)]/30";
+const panelClass = "rounded-[8px] border border-[var(--surface-border)] bg-[var(--surface)] p-5";
 const selectClass =
-  "rounded-[3px] border border-white/15 bg-white/5 px-2.5 py-1.5 text-sm text-white outline-none focus-visible:border-[#ff6b5b]";
+  "rounded-[6px] border border-[var(--surface-border)] bg-[var(--surface)] px-2.5 py-1.5 text-sm text-[var(--text-primary)] outline-none focus-visible:border-[var(--accent)]";
 
 const roleLabel: Record<OrganizationRole, string> = {
   owner: "Sahip",
@@ -159,7 +159,7 @@ export default function TeamMembers() {
         </div>
 
         {error && (
-          <p className="mb-6 rounded-[3px] bg-[#ff6b5b]/10 px-3 py-2 text-sm text-[#ff6b5b]">{error}</p>
+          <p className="mb-6 rounded-[6px] bg-[#ff6b5b]/10 px-3 py-2 text-sm text-[#ff6b5b]">{error}</p>
         )}
 
         {loading ? (
@@ -167,7 +167,7 @@ export default function TeamMembers() {
         ) : (
           <div className="space-y-6">
             {canManage && (
-              <section className="relative overflow-hidden rounded-[4px] border border-[#ff6b5b]/30 bg-[#ff6b5b]/[0.06] p-6">
+              <section className="relative overflow-hidden rounded-[8px] border border-[#ff6b5b]/30 bg-[#ff6b5b]/[0.06] p-6">
                 <div className="pointer-events-none absolute -top-12 -right-12 h-48 w-48 rounded-full bg-[#ff6b5b]/20 blur-3xl" />
 
                 <div className="relative mb-4 flex items-center gap-3">
@@ -194,10 +194,10 @@ export default function TeamMembers() {
                     onChange={(e) => setInviteRole(e.target.value as "admin" | "member")}
                     className={`${selectClass} border-white/20 bg-white/10`}
                   >
-                    <option value="member" className="bg-[#132a52] text-white">
+                    <option value="member" className="bg-[var(--surface)] text-[var(--text-primary)]">
                       Üye
                     </option>
-                    <option value="admin" className="bg-[#132a52] text-white">
+                    <option value="admin" className="bg-[var(--surface)] text-[var(--text-primary)]">
                       Yönetici
                     </option>
                   </select>
@@ -205,7 +205,7 @@ export default function TeamMembers() {
                     type="submit"
                     disabled={inviting}
                     size="lg"
-                    className="rounded-[3px] bg-[#ff6b5b] font-semibold text-[#0d1b3a] shadow-lg shadow-[#ff6b5b]/20 hover:bg-[#ff8577] hover:shadow-xl hover:shadow-[#ff6b5b]/30"
+                    className="rounded-[6px] bg-[#ff6b5b] font-semibold text-[#0d1b3a] shadow-lg shadow-[#ff6b5b]/20 hover:bg-[#ff8577] hover:shadow-xl hover:shadow-[#ff6b5b]/30"
                   >
                     <UserPlus className="size-4" />
                     {inviting ? "Gönderiliyor..." : "Davet Et"}
@@ -213,7 +213,7 @@ export default function TeamMembers() {
                 </form>
 
                 {inviteLink && (
-                  <div className="relative mt-4 flex items-center gap-2 rounded-[3px] border border-white/15 bg-[#0d1b3a]/60 px-3 py-2.5 text-sm">
+                  <div className="relative mt-4 flex items-center gap-2 rounded-[6px] border border-white/15 bg-[#0d1b3a]/60 px-3 py-2.5 text-sm">
                     <span className="truncate text-white/70">{inviteLink}</span>
                     <button
                       onClick={() => navigator.clipboard.writeText(inviteLink)}
@@ -259,13 +259,13 @@ export default function TeamMembers() {
                               onChange={(e) => handleRoleChange(member.user_id, e.target.value as OrganizationRole)}
                               className={selectClass}
                             >
-                              <option value="owner" className="bg-[#132a52] text-white">
+                              <option value="owner" className="bg-[var(--surface)] text-[var(--text-primary)]">
                                 Sahip
                               </option>
-                              <option value="admin" className="bg-[#132a52] text-white">
+                              <option value="admin" className="bg-[var(--surface)] text-[var(--text-primary)]">
                                 Yönetici
                               </option>
-                              <option value="member" className="bg-[#132a52] text-white">
+                              <option value="member" className="bg-[var(--surface)] text-[var(--text-primary)]">
                                 Üye
                               </option>
                             </select>
@@ -307,7 +307,7 @@ export default function TeamMembers() {
                     .map((invitation) => (
                       <li
                         key={invitation.id}
-                        className="flex items-center justify-between gap-3 rounded-[3px] border border-white/10 bg-white/5 px-3 py-2 text-sm"
+                        className="flex items-center justify-between gap-3 rounded-[6px] border border-white/10 bg-white/5 px-3 py-2 text-sm"
                       >
                         <span>{invitation.email}</span>
                         <span className="text-xs text-white/40">{roleLabel[invitation.role]}</span>
