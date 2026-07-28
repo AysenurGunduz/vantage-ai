@@ -194,8 +194,12 @@ export default function TeamMembers() {
                     onChange={(e) => setInviteRole(e.target.value as "admin" | "member")}
                     className={`${selectClass} border-white/20 bg-white/10`}
                   >
-                    <option value="member">Üye</option>
-                    <option value="admin">Yönetici</option>
+                    <option value="member" className="bg-[#132a52] text-white">
+                      Üye
+                    </option>
+                    <option value="admin" className="bg-[#132a52] text-white">
+                      Yönetici
+                    </option>
                   </select>
                   <Button
                     type="submit"
@@ -255,9 +259,15 @@ export default function TeamMembers() {
                               onChange={(e) => handleRoleChange(member.user_id, e.target.value as OrganizationRole)}
                               className={selectClass}
                             >
-                              <option value="owner">Sahip</option>
-                              <option value="admin">Yönetici</option>
-                              <option value="member">Üye</option>
+                              <option value="owner" className="bg-[#132a52] text-white">
+                                Sahip
+                              </option>
+                              <option value="admin" className="bg-[#132a52] text-white">
+                                Yönetici
+                              </option>
+                              <option value="member" className="bg-[#132a52] text-white">
+                                Üye
+                              </option>
                             </select>
                           ) : (
                             <span className="text-white/70">{roleLabel[member.role] ?? member.role}</span>

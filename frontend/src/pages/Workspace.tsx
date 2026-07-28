@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Building2, ChevronRight, FolderKanban, ListTodo, Plus, Users2 } from "lucide-react";
 import { useAuth } from "../lib/AuthContext";
 import { apiFetch } from "../lib/apiClient";
-import type { Organization, Project, Task, TaskStatus } from "../types/api";
+import type { Organization, Project, Task, TaskPriority, TaskStatus } from "../types/api";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,8 @@ const inputClass =
 const submitButtonClass =
   "rounded-[3px] bg-[#ff6b5b] text-[#0d1b3a] transition-colors hover:bg-[#ff8577]";
 const panelClass = "rounded-[4px] border border-white/10 bg-white/[0.03] p-5 transition-colors";
+const selectClass =
+  "rounded-[3px] border border-white/15 bg-white/5 px-2.5 py-1.5 text-sm text-white outline-none focus-visible:border-[#ff6b5b]";
 
 function selectableItemClass(selected: boolean) {
   return `flex w-full items-center gap-2 rounded-[3px] border-l-2 px-3 py-2.5 text-left text-sm transition-colors ${
@@ -42,6 +44,8 @@ export default function Workspace() {
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [newTaskPriority, setNewTaskPriority] = useState<TaskPriority>("medium");
+  const [newTaskDueDate, setNewTaskDueDate] = useState("");
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const [error, setError] = useState<string | null>(null);
@@ -123,10 +127,16 @@ export default function Workspace() {
     try {
       const task = await apiFetch<Task>(`/api/projects/${selectedProjectId}/tasks`, {
         method: "POST",
-        body: JSON.stringify({ title: newTaskTitle }),
+        body: JSON.stringify({
+          title: newTaskTitle,
+          priority: newTaskPriority,
+          due_date: newTaskDueDate || null,
+        }),
       });
       setTasks((prev) => [...prev, task]);
       setNewTaskTitle("");
+      setNewTaskPriority("medium");
+      setNewTaskDueDate("");
     } catch (err) {
       setError(errorMessage(err));
     }
@@ -290,13 +300,37 @@ export default function Workspace() {
                   <ChevronRight className="size-3.5" />
                   <span className="font-semibold text-white">{selectedProject?.name}</span>
                 </div>
-                <form onSubmit={handleCreateTask} className="mb-5 flex gap-2">
+                <form onSubmit={handleCreateTask} className="mb-5 flex flex-wrap gap-2">
                   <Input
                     placeholder="Yeni görev başlığı"
                     value={newTaskTitle}
                     onChange={(e) => setNewTaskTitle(e.target.value)}
                     required
-                    className={inputClass}
+                    className={`${inputClass} min-w-[200px] flex-1`}
+                  />
+                  <select
+                    value={newTaskPriority}
+                    onChange={(e) => setNewTaskPriority(e.target.value as TaskPriority)}
+                    className={selectClass}
+                  >
+                    <option value="low" className="bg-[#132a52] text-white">
+                      Düşük
+                    </option>
+                    <option value="medium" className="bg-[#132a52] text-white">
+                      Orta
+                    </option>
+                    <option value="high" className="bg-[#132a52] text-white">
+                      Yüksek
+                    </option>
+                    <option value="urgent" className="bg-[#132a52] text-white">
+                      Acil
+                    </option>
+                  </select>
+                  <Input
+                    type="date"
+                    value={newTaskDueDate}
+                    onChange={(e) => setNewTaskDueDate(e.target.value)}
+                    className={`${inputClass} w-auto`}
                   />
                   <Button type="submit" className={submitButtonClass}>
                     <Plus className="size-4" />
