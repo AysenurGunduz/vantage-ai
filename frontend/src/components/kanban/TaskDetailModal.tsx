@@ -168,7 +168,7 @@ export function TaskDetailModal({
           <Button
             variant="outline"
             onClick={onClose}
-            className="rounded-[6px] border-white/20 bg-transparent text-white hover:bg-white/5"
+            className="rounded-[6px] border-white/20 bg-transparent text-white hover:bg-white/5 hover:text-white"
           >
             Vazgeç
           </Button>

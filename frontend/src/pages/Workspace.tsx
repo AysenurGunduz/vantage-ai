@@ -11,6 +11,7 @@ import { KanbanBoard } from "@/components/kanban/KanbanBoard";
 import { TaskDetailModal } from "@/components/kanban/TaskDetailModal";
 import { PanelSkeleton, SidebarListSkeleton } from "@/components/Skeleton";
 import { Reveal } from "@/components/Reveal";
+import { NetworkBackground } from "@/components/NetworkBackground";
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : "Beklenmeyen bir hata oluştu";
@@ -195,6 +196,7 @@ export default function Workspace() {
 
   return (
     <div className="dark-theme animated-gradient relative min-h-screen overflow-hidden text-white">
+      <NetworkBackground className="opacity-40" />
       <div className="floating-blob pointer-events-none absolute -top-32 -left-32 h-96 w-96 rounded-full bg-[#ff6b5b]/8 blur-3xl" />
       <div className="floating-blob-reverse pointer-events-none absolute top-1/2 -right-32 h-96 w-96 rounded-full bg-indigo-500/10 blur-3xl" />
 
@@ -219,7 +221,7 @@ export default function Workspace() {
             <Button
               variant="outline"
               onClick={() => signOut()}
-              className="rounded-[6px] border-white/20 bg-transparent text-white transition-colors hover:bg-white/5"
+              className="rounded-[6px] border-white/20 bg-transparent text-white transition-colors hover:bg-white/5 hover:text-white"
             >
               Çıkış Yap
             </Button>
