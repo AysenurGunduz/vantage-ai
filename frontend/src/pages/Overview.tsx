@@ -1,10 +1,32 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Bar, BarChart, CartesianGrid, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { AlertTriangle, CalendarClock, CheckCircle2, Clock3, FolderKanban, History, ListTodo } from "lucide-react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  LabelList,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import {
+  AlertTriangle,
+  CalendarClock,
+  CheckCircle2,
+  Clock3,
+  FolderKanban,
+  History,
+  ListTodo,
+} from "lucide-react";
 import { useAuth } from "../lib/AuthContext";
 import { apiFetch } from "../lib/apiClient";
-import type { DashboardActivityEntry, DashboardStats, DashboardTaskSummary } from "../types/api";
+import type {
+  DashboardActivityEntry,
+  DashboardStats,
+  DashboardTaskSummary,
+} from "../types/api";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { PanelSkeleton } from "@/components/Skeleton";
@@ -15,7 +37,8 @@ function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : "Beklenmeyen bir hata oluştu";
 }
 
-const panelClass = "rounded-[8px] border border-[var(--surface-border)] bg-[var(--surface)] p-5";
+const panelClass =
+  "rounded-[8px] border border-[var(--surface-border)] bg-[var(--surface)] p-5";
 
 const STATUS_LABELS: Record<string, string> = {
   backlog: "Backlog",
@@ -62,11 +85,19 @@ const tooltipContentStyle = {
 };
 
 function formatDueDate(dueDate: string) {
-  return new Date(dueDate).toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
+  return new Date(dueDate).toLocaleDateString("tr-TR", {
+    day: "numeric",
+    month: "short",
+  });
 }
 
 function formatActivityTime(createdAt: string) {
-  return new Date(createdAt).toLocaleString("tr-TR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  return new Date(createdAt).toLocaleString("tr-TR", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 function describeActivity(entry: DashboardActivityEntry): string {
@@ -78,7 +109,9 @@ function describeActivity(entry: DashboardActivityEntry): string {
     case "priority":
       return `öncelik: ${PRIORITY_LABELS[entry.from_value ?? ""] ?? entry.from_value} → ${PRIORITY_LABELS[entry.to_value ?? ""] ?? entry.to_value}`;
     case "due_date":
-      return entry.to_value ? `son tarih ${formatDueDate(entry.to_value)} olarak ayarlandı` : "son tarih kaldırıldı";
+      return entry.to_value
+        ? `son tarih ${formatDueDate(entry.to_value)} olarak ayarlandı`
+        : "son tarih kaldırıldı";
     case "tags":
       return "etiketler güncellendi";
     case "assignee_id":
@@ -137,7 +170,10 @@ function StatTile({
         {icon}
         <span className="text-sm">{label}</span>
       </div>
-      <p className="mt-2 text-3xl font-semibold" style={accent ? { color: accent } : undefined}>
+      <p
+        className="mt-2 text-3xl font-semibold"
+        style={accent ? { color: accent } : undefined}
+      >
         {value}
       </p>
     </div>
@@ -188,7 +224,10 @@ export default function Overview() {
         <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
           <div>
             <Logo />
-            <Link to="/dashboard" className="mt-2 block text-sm text-white/50 transition-colors hover:text-[#ff6b5b]">
+            <Link
+              to="/dashboard"
+              className="mt-2 block text-sm text-white/50 transition-colors hover:text-[#ff6b5b]"
+            >
               ← Panele dön
             </Link>
           </div>
@@ -211,144 +250,260 @@ export default function Overview() {
 
         <h1 className="mb-6 text-2xl font-semibold">Genel Bakış</h1>
 
-        {error && <p className="mb-6 rounded-[6px] bg-[#ff6b5b]/10 px-3 py-2 text-sm text-[#ff6b5b]">{error}</p>}
+        {error && (
+          <p className="mb-6 rounded-[6px] bg-[#ff6b5b]/10 px-3 py-2 text-sm text-[#ff6b5b]">
+            {error}
+          </p>
+        )}
 
         {loading ? (
           <PanelSkeleton />
         ) : (
           stats && (
-            <div className="space-y-6">
-              <Reveal className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-                <StatTile icon={<ListTodo className="size-4" />} label="Toplam Görev" value={stats.totalTasks} />
-                <StatTile
-                  icon={<Clock3 className="size-4" />}
-                  label="Devam Eden"
-                  value={stats.byStatus.in_progress}
-                />
-                <StatTile
-                  icon={<CheckCircle2 className="size-4" />}
-                  label="Tamamlanan"
-                  value={stats.byStatus.done}
-                />
-                <StatTile
-                  icon={<AlertTriangle className="size-4" style={{ color: CRITICAL_COLOR }} />}
-                  label="Geciken"
-                  value={stats.overdueTasks.length}
-                  accent={stats.overdueTasks.length > 0 ? CRITICAL_COLOR : undefined}
-                />
-              </Reveal>
-
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                <Reveal delayMs={80} as="section" className={panelClass}>
-                  <h2 className="mb-4 text-sm font-semibold text-[var(--text-secondary)]">Duruma Göre Dağılım</h2>
-                  <ResponsiveContainer width="100%" height={240}>
-                    <BarChart data={statusData} margin={{ top: 16, right: 8, left: -8, bottom: 0 }}>
-                      <CartesianGrid vertical={false} stroke="var(--surface-border)" />
-                      <XAxis dataKey="label" tick={chartTickStyle} axisLine={{ stroke: "var(--surface-border)" }} tickLine={false} />
-                      <YAxis allowDecimals={false} tick={chartTickStyle} axisLine={false} tickLine={false} width={28} />
-                      <Tooltip cursor={{ fill: "var(--surface-hover)" }} contentStyle={tooltipContentStyle} />
-                      <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={40}>
-                        {statusData.map((entry) => (
-                          <Cell key={entry.status} fill={STATUS_COLORS[entry.status]} />
-                        ))}
-                        <LabelList dataKey="value" position="top" style={{ fill: "var(--text-secondary)", fontSize: 12 }} />
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </Reveal>
-
-                <Reveal delayMs={140} as="section" className={panelClass}>
-                  <h2 className="mb-4 text-sm font-semibold text-[var(--text-secondary)]">Önceliğe Göre Dağılım</h2>
-                  <ResponsiveContainer width="100%" height={240}>
-                    <BarChart data={priorityData} margin={{ top: 16, right: 8, left: -8, bottom: 0 }}>
-                      <CartesianGrid vertical={false} stroke="var(--surface-border)" />
-                      <XAxis dataKey="label" tick={chartTickStyle} axisLine={{ stroke: "var(--surface-border)" }} tickLine={false} />
-                      <YAxis allowDecimals={false} tick={chartTickStyle} axisLine={false} tickLine={false} width={28} />
-                      <Tooltip cursor={{ fill: "var(--surface-hover)" }} contentStyle={tooltipContentStyle} />
-                      <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={40}>
-                        {priorityData.map((entry) => (
-                          <Cell key={entry.priority} fill={PRIORITY_COLORS[entry.priority]} />
-                        ))}
-                        <LabelList dataKey="value" position="top" style={{ fill: "var(--text-secondary)", fontSize: 12 }} />
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </Reveal>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                <Reveal delayMs={200} as="section" className={panelClass}>
-                  <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-[var(--text-secondary)]">
-                    <AlertTriangle className="size-4" style={{ color: CRITICAL_COLOR }} />
-                    Geciken Görevler
-                  </h2>
-                  <TaskAlertList
-                    tasks={stats.overdueTasks}
-                    color={CRITICAL_COLOR}
-                    emptyText="Gecikmiş görev yok, harika gidiyorsun."
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+              <div className="space-y-6 lg:col-span-2">
+                <Reveal className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                  <StatTile
+                    icon={<ListTodo className="size-4" />}
+                    label="Toplam Görev"
+                    value={stats.totalTasks}
+                  />
+                  <StatTile
+                    icon={<Clock3 className="size-4" />}
+                    label="Devam Eden"
+                    value={stats.byStatus.in_progress}
+                  />
+                  <StatTile
+                    icon={<CheckCircle2 className="size-4" />}
+                    label="Tamamlanan"
+                    value={stats.byStatus.done}
+                  />
+                  <StatTile
+                    icon={
+                      <AlertTriangle
+                        className="size-4"
+                        style={{ color: CRITICAL_COLOR }}
+                      />
+                    }
+                    label="Geciken"
+                    value={stats.overdueTasks.length}
+                    accent={
+                      stats.overdueTasks.length > 0 ? CRITICAL_COLOR : undefined
+                    }
                   />
                 </Reveal>
 
-                <Reveal delayMs={240} as="section" className={panelClass}>
-                  <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-[var(--text-secondary)]">
-                    <CalendarClock className="size-4" style={{ color: WARNING_COLOR }} />
-                    Yaklaşan Görevler (3 gün içinde)
-                  </h2>
-                  <TaskAlertList
-                    tasks={stats.dueSoonTasks}
-                    color={WARNING_COLOR}
-                    emptyText="Önümüzdeki 3 gün içinde son tarihi gelen görev yok."
-                  />
-                </Reveal>
-              </div>
-
-              <Reveal delayMs={280} as="section" className={panelClass}>
-                <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-[var(--text-secondary)]">
-                  <FolderKanban className="size-4 text-[var(--accent)]" />
-                  Proje Bazında Dağılım
-                </h2>
-                {stats.byProject.length === 0 ? (
-                  <p className="text-sm text-white/40">Henüz bir projeye ait görev yok.</p>
-                ) : (
-                  <ul className="space-y-2">
-                    {stats.byProject.map((project) => {
-                      const maxCount = stats.byProject[0]?.count || 1;
-                      const widthPct = Math.max(6, Math.round((project.count / maxCount) * 100));
-                      return (
-                        <li key={project.project_id} className="flex items-center gap-3 text-sm">
-                          <span className="w-40 shrink-0 truncate text-[var(--text-secondary)]">
-                            {project.project_name}
-                          </span>
-                          <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/5">
-                            <div
-                              className="h-full rounded-full bg-[var(--accent)]"
-                              style={{ width: `${widthPct}%` }}
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                  <Reveal delayMs={80} as="section" className={panelClass}>
+                    <h2 className="mb-4 text-sm font-semibold text-[var(--text-secondary)]">
+                      Duruma Göre Dağılım
+                    </h2>
+                    <ResponsiveContainer width="100%" height={240}>
+                      <BarChart
+                        data={statusData}
+                        margin={{ top: 16, right: 8, left: -8, bottom: 0 }}
+                      >
+                        <CartesianGrid
+                          vertical={false}
+                          stroke="var(--surface-border)"
+                        />
+                        <XAxis
+                          dataKey="label"
+                          tick={chartTickStyle}
+                          axisLine={{ stroke: "var(--surface-border)" }}
+                          tickLine={false}
+                        />
+                        <YAxis
+                          allowDecimals={false}
+                          tick={chartTickStyle}
+                          axisLine={false}
+                          tickLine={false}
+                          width={28}
+                        />
+                        <Tooltip
+                          cursor={{ fill: "var(--surface-hover)" }}
+                          contentStyle={tooltipContentStyle}
+                        />
+                        <Bar
+                          dataKey="value"
+                          radius={[4, 4, 0, 0]}
+                          maxBarSize={40}
+                        >
+                          {statusData.map((entry) => (
+                            <Cell
+                              key={entry.status}
+                              fill={STATUS_COLORS[entry.status]}
                             />
-                          </div>
-                          <span className="w-6 shrink-0 text-right text-[var(--text-muted)]">{project.count}</span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </Reveal>
+                          ))}
+                          <LabelList
+                            dataKey="value"
+                            position="top"
+                            style={{
+                              fill: "var(--text-secondary)",
+                              fontSize: 12,
+                            }}
+                          />
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </Reveal>
 
-              <Reveal delayMs={320} as="section" className={panelClass}>
+                  <Reveal delayMs={140} as="section" className={panelClass}>
+                    <h2 className="mb-4 text-sm font-semibold text-[var(--text-secondary)]">
+                      Önceliğe Göre Dağılım
+                    </h2>
+                    <ResponsiveContainer width="100%" height={240}>
+                      <BarChart
+                        data={priorityData}
+                        margin={{ top: 16, right: 8, left: -8, bottom: 0 }}
+                      >
+                        <CartesianGrid
+                          vertical={false}
+                          stroke="var(--surface-border)"
+                        />
+                        <XAxis
+                          dataKey="label"
+                          tick={chartTickStyle}
+                          axisLine={{ stroke: "var(--surface-border)" }}
+                          tickLine={false}
+                        />
+                        <YAxis
+                          allowDecimals={false}
+                          tick={chartTickStyle}
+                          axisLine={false}
+                          tickLine={false}
+                          width={28}
+                        />
+                        <Tooltip
+                          cursor={{ fill: "var(--surface-hover)" }}
+                          contentStyle={tooltipContentStyle}
+                        />
+                        <Bar
+                          dataKey="value"
+                          radius={[4, 4, 0, 0]}
+                          maxBarSize={40}
+                        >
+                          {priorityData.map((entry) => (
+                            <Cell
+                              key={entry.priority}
+                              fill={PRIORITY_COLORS[entry.priority]}
+                            />
+                          ))}
+                          <LabelList
+                            dataKey="value"
+                            position="top"
+                            style={{
+                              fill: "var(--text-secondary)",
+                              fontSize: 12,
+                            }}
+                          />
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </Reveal>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                  <Reveal delayMs={200} as="section" className={panelClass}>
+                    <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-[var(--text-secondary)]">
+                      <AlertTriangle
+                        className="size-4"
+                        style={{ color: CRITICAL_COLOR }}
+                      />
+                      Geciken Görevler
+                    </h2>
+                    <TaskAlertList
+                      tasks={stats.overdueTasks}
+                      color={CRITICAL_COLOR}
+                      emptyText="Gecikmiş görev yok, harika gidiyorsun."
+                    />
+                  </Reveal>
+
+                  <Reveal delayMs={240} as="section" className={panelClass}>
+                    <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-[var(--text-secondary)]">
+                      <CalendarClock
+                        className="size-4"
+                        style={{ color: WARNING_COLOR }}
+                      />
+                      Yaklaşan Görevler (3 gün içinde)
+                    </h2>
+                    <TaskAlertList
+                      tasks={stats.dueSoonTasks}
+                      color={WARNING_COLOR}
+                      emptyText="Önümüzdeki 3 gün içinde son tarihi gelen görev yok."
+                    />
+                  </Reveal>
+                </div>
+
+                <Reveal delayMs={280} as="section" className={panelClass}>
+                  <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-[var(--text-secondary)]">
+                    <FolderKanban className="size-4 text-[var(--accent)]" />
+                    Proje Bazında Dağılım
+                  </h2>
+                  {stats.byProject.length === 0 ? (
+                    <p className="text-sm text-white/40">
+                      Henüz bir projeye ait görev yok.
+                    </p>
+                  ) : (
+                    <ul className="space-y-2">
+                      {stats.byProject.map((project) => {
+                        const maxCount = stats.byProject[0]?.count || 1;
+                        const widthPct = Math.max(
+                          6,
+                          Math.round((project.count / maxCount) * 100),
+                        );
+                        return (
+                          <li
+                            key={project.project_id}
+                            className="flex items-center gap-3 text-sm"
+                          >
+                            <span className="w-40 shrink-0 truncate text-[var(--text-secondary)]">
+                              {project.project_name}
+                            </span>
+                            <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/5">
+                              <div
+                                className="h-full rounded-full bg-[var(--accent)]"
+                                style={{ width: `${widthPct}%` }}
+                              />
+                            </div>
+                            <span className="w-6 shrink-0 text-right text-[var(--text-muted)]">
+                              {project.count}
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </Reveal>
+              </div>
+
+              <Reveal
+                delayMs={320}
+                as="section"
+                className={`${panelClass} h-fit lg:sticky lg:top-8`}
+              >
                 <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-[var(--text-secondary)]">
                   <History className="size-4 text-[var(--accent)]" />
                   Son Aktiviteler
                 </h2>
                 {activity.length === 0 ? (
-                  <p className="text-sm text-white/40">Henüz bir aktivite yok.</p>
+                  <p className="text-sm text-white/40">
+                    Henüz bir aktivite yok.
+                  </p>
                 ) : (
-                  <ul className="space-y-2">
+                  <ul className="max-h-[520px] space-y-2 overflow-y-auto pr-1">
                     {activity.map((entry) => (
-                      <li key={entry.id} className="flex items-center justify-between gap-3 text-sm">
-                        <span className="min-w-0 flex-1 truncate text-[var(--text-primary)]">
-                          <span className="text-[var(--text-secondary)]">{entry.task_title}</span> —{" "}
-                          {describeActivity(entry)}
+                      <li
+                        key={entry.id}
+                        className="flex flex-col gap-0.5 text-sm"
+                      >
+                        <span className="min-w-0 truncate text-[var(--text-primary)]">
+                          <span className="text-[var(--text-secondary)]">
+                            {entry.task_title}
+                          </span>{" "}
+                          — {describeActivity(entry)}
                         </span>
-                        <span className="shrink-0 text-xs text-[var(--text-muted)]">
+                        <span className="text-xs text-[var(--text-muted)]">
                           {formatActivityTime(entry.created_at)}
                         </span>
                       </li>
