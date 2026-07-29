@@ -104,3 +104,61 @@ dashboardRouter.get("/stats", async (req, res) => {
     byProject,
   });
 });
+
+const ACTIVITY_LIMIT = 15;
+
+dashboardRouter.get("/activity", async (req, res) => {
+  const { data: memberships, error: membershipError } = await supabase
+    .from("project_members")
+    .select("project_id")
+    .eq("user_id", req.user!.id);
+
+  if (membershipError) {
+    res.status(500).json({ error: membershipError.message });
+    return;
+  }
+
+  const projectIds = memberships.map((row) => row.project_id);
+
+  if (projectIds.length === 0) {
+    res.json([]);
+    return;
+  }
+
+  const { data: tasks, error: tasksError } = await supabase
+    .from("tasks")
+    .select("id, title")
+    .in("project_id", projectIds);
+
+  if (tasksError) {
+    res.status(500).json({ error: tasksError.message });
+    return;
+  }
+
+  const taskTitles = new Map(tasks.map((task) => [task.id, task.title]));
+  const taskIds = [...taskTitles.keys()];
+
+  if (taskIds.length === 0) {
+    res.json([]);
+    return;
+  }
+
+  const { data: activity, error: activityError } = await supabase
+    .from("task_activity_log")
+    .select("id, task_id, action_type, from_value, to_value, created_at")
+    .in("task_id", taskIds)
+    .order("created_at", { ascending: false })
+    .limit(ACTIVITY_LIMIT);
+
+  if (activityError) {
+    res.status(500).json({ error: activityError.message });
+    return;
+  }
+
+  res.json(
+    activity.map((entry) => ({
+      ...entry,
+      task_title: taskTitles.get(entry.task_id) ?? "Silinmiş görev",
+    }))
+  );
+});

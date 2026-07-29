@@ -42,12 +42,16 @@ vi.mock("../lib/supabaseClient.js", () => ({
       if (table === "tasks") {
         return taskResponses.shift();
       }
+      if (table === "task_activity_log") {
+        return chain({ then: { error: null } });
+      }
       throw new Error(`Unexpected table: ${table}`);
     }),
   },
 }));
 
 const { app } = await import("../app.js");
+const { supabase } = await import("../lib/supabaseClient.js");
 
 beforeEach(() => {
   membership = null;
@@ -99,6 +103,19 @@ describe("tasks routes", () => {
 
     expect(res.status).toBe(201);
     expect(res.body).toEqual(insertedTask);
+  });
+
+  it("logs a 'created' activity entry when a task is made", async () => {
+    membership = { role_in_project: "member" };
+    const insertedTask = { id: "task-1", project_id: "project-1", title: "Design schema", priority: "medium" };
+    taskResponses = [chain({ single: { data: insertedTask, error: null } })];
+
+    await request(app)
+      .post("/api/projects/project-1/tasks")
+      .set("Authorization", "Bearer valid-token")
+      .send({ title: "Design schema" });
+
+    expect(vi.mocked(supabase.from)).toHaveBeenCalledWith("task_activity_log");
   });
 
   it("creates a task with tags", async () => {
@@ -169,6 +186,23 @@ describe("tasks routes", () => {
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual(updatedTask);
+  });
+
+  it("logs a 'status' activity entry when a task's status changes", async () => {
+    const taskRow = { id: "task-1", project_id: "project-1", title: "Design schema", status: "todo" };
+    const updatedTask = { ...taskRow, status: "in_progress" };
+    membership = { role_in_project: "member" };
+    taskResponses = [
+      chain({ maybeSingle: { data: taskRow, error: null } }),
+      chain({ single: { data: updatedTask, error: null } }),
+    ];
+
+    await request(app)
+      .patch("/api/tasks/task-1")
+      .set("Authorization", "Bearer valid-token")
+      .send({ status: "in_progress" });
+
+    expect(vi.mocked(supabase.from)).toHaveBeenCalledWith("task_activity_log");
   });
 
   it("updates a task's tags", async () => {

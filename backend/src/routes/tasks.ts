@@ -8,6 +8,28 @@ export const taskRouter = Router();
 projectTasksRouter.use(requireAuth);
 taskRouter.use(requireAuth);
 
+const LOGGED_FIELDS = ["status", "priority", "due_date", "assignee_id", "tags"] as const;
+
+function stringifyValue(value: unknown): string | null {
+  if (value === null || value === undefined) return null;
+  if (Array.isArray(value)) return JSON.stringify(value);
+  return String(value);
+}
+
+async function logActivity(taskId: string, userId: string, actionType: string, fromValue: unknown, toValue: unknown) {
+  const { error } = await supabase.from("task_activity_log").insert({
+    task_id: taskId,
+    user_id: userId,
+    action_type: actionType,
+    from_value: stringifyValue(fromValue),
+    to_value: stringifyValue(toValue),
+  });
+
+  if (error) {
+    console.error("Failed to log task activity:", error.message);
+  }
+}
+
 async function getProjectMembership(projectId: string, userId: string) {
   const { data } = await supabase
     .from("project_members")
@@ -83,6 +105,8 @@ projectTasksRouter.post("/", async (req, res) => {
     res.status(500).json({ error: error.message });
     return;
   }
+
+  await logActivity(task.id, req.user!.id, "created", null, task.title);
 
   res.status(201).json(task);
 });
@@ -162,6 +186,12 @@ taskRouter.patch("/:taskId", async (req, res) => {
   if (error) {
     res.status(500).json({ error: error.message });
     return;
+  }
+
+  for (const field of LOGGED_FIELDS) {
+    if (field in updates && updates[field] !== task[field]) {
+      await logActivity(taskId, req.user!.id, field, task[field], updates[field]);
+    }
   }
 
   res.json(updated);

@@ -5,7 +5,9 @@ function chain(result: unknown) {
   const obj: Record<string, unknown> = {
     select: vi.fn(() => obj),
     eq: vi.fn(() => obj),
-    in: vi.fn(() => Promise.resolve(result)),
+    in: vi.fn(() => obj),
+    order: vi.fn(() => obj),
+    limit: vi.fn(() => obj),
     then: (resolve: (value: unknown) => unknown) => Promise.resolve(result).then(resolve),
   };
   return obj;
@@ -19,6 +21,14 @@ let taskRows: {
   priority: string;
   due_date: string | null;
   project_id: string;
+}[] = [];
+let activityRows: {
+  id: string;
+  task_id: string;
+  action_type: string;
+  from_value: string | null;
+  to_value: string | null;
+  created_at: string;
 }[] = [];
 
 vi.mock("../lib/supabaseClient.js", () => ({
@@ -37,6 +47,9 @@ vi.mock("../lib/supabaseClient.js", () => ({
       if (table === "tasks") {
         return chain({ data: taskRows, error: null });
       }
+      if (table === "task_activity_log") {
+        return chain({ data: activityRows, error: null });
+      }
       throw new Error(`Unexpected table: ${table}`);
     }),
   },
@@ -53,6 +66,7 @@ function daysFromToday(offset: number) {
 beforeEach(() => {
   membershipRows = [];
   taskRows = [];
+  activityRows = [];
 });
 
 describe("dashboard routes", () => {
@@ -99,5 +113,42 @@ describe("dashboard routes", () => {
     const res = await request(app).get("/api/dashboard/stats").set("Authorization", "Bearer bad-token");
 
     expect(res.status).toBe(401);
+  });
+
+  it("returns an empty activity feed when the user has no projects", async () => {
+    const res = await request(app).get("/api/dashboard/activity").set("Authorization", "Bearer valid-token");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([]);
+  });
+
+  it("returns the recent activity feed with task titles attached", async () => {
+    membershipRows = [{ project_id: "project-1", projects: { name: "Website Yenileme" } }];
+    taskRows = [{ id: "task-1", title: "Design schema", status: "todo", priority: "medium", due_date: null, project_id: "project-1" }];
+    activityRows = [
+      {
+        id: "log-1",
+        task_id: "task-1",
+        action_type: "status",
+        from_value: "todo",
+        to_value: "in_progress",
+        created_at: "2026-07-29T10:00:00.000Z",
+      },
+    ];
+
+    const res = await request(app).get("/api/dashboard/activity").set("Authorization", "Bearer valid-token");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([
+      {
+        id: "log-1",
+        task_id: "task-1",
+        action_type: "status",
+        from_value: "todo",
+        to_value: "in_progress",
+        created_at: "2026-07-29T10:00:00.000Z",
+        task_title: "Design schema",
+      },
+    ]);
   });
 });

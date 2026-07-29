@@ -53,6 +53,16 @@ export interface DashboardTaskSummary {
   project_id: string;
 }
 
+export interface DashboardActivityEntry {
+  id: string;
+  task_id: string;
+  task_title: string;
+  action_type: string;
+  from_value: string | null;
+  to_value: string | null;
+  created_at: string;
+}
+
 export interface DashboardStats {
   totalTasks: number;
   byStatus: Record<TaskStatus, number>;

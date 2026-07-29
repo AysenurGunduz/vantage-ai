@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { AlertTriangle, CalendarClock, CheckCircle2, Clock3, FolderKanban, ListTodo } from "lucide-react";
+import { AlertTriangle, CalendarClock, CheckCircle2, Clock3, FolderKanban, History, ListTodo } from "lucide-react";
 import { useAuth } from "../lib/AuthContext";
 import { apiFetch } from "../lib/apiClient";
-import type { DashboardStats, DashboardTaskSummary } from "../types/api";
+import type { DashboardActivityEntry, DashboardStats, DashboardTaskSummary } from "../types/api";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { PanelSkeleton } from "@/components/Skeleton";
@@ -63,6 +63,29 @@ const tooltipContentStyle = {
 
 function formatDueDate(dueDate: string) {
   return new Date(dueDate).toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
+}
+
+function formatActivityTime(createdAt: string) {
+  return new Date(createdAt).toLocaleString("tr-TR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+
+function describeActivity(entry: DashboardActivityEntry): string {
+  switch (entry.action_type) {
+    case "created":
+      return "oluşturuldu";
+    case "status":
+      return `durum: ${STATUS_LABELS[entry.from_value ?? ""] ?? entry.from_value} → ${STATUS_LABELS[entry.to_value ?? ""] ?? entry.to_value}`;
+    case "priority":
+      return `öncelik: ${PRIORITY_LABELS[entry.from_value ?? ""] ?? entry.from_value} → ${PRIORITY_LABELS[entry.to_value ?? ""] ?? entry.to_value}`;
+    case "due_date":
+      return entry.to_value ? `son tarih ${formatDueDate(entry.to_value)} olarak ayarlandı` : "son tarih kaldırıldı";
+    case "tags":
+      return "etiketler güncellendi";
+    case "assignee_id":
+      return "atanan kişi değişti";
+    default:
+      return entry.action_type;
+  }
 }
 
 function TaskAlertList({
@@ -124,6 +147,7 @@ function StatTile({
 export default function Overview() {
   const { user, signOut } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [activity, setActivity] = useState<DashboardActivityEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -132,6 +156,10 @@ export default function Overview() {
       .then(setStats)
       .catch((err: unknown) => setError(errorMessage(err)))
       .finally(() => setLoading(false));
+
+    apiFetch<DashboardActivityEntry[]>("/api/dashboard/activity")
+      .then(setActivity)
+      .catch((err: unknown) => setError(errorMessage(err)));
   }, []);
 
   const statusData = stats
@@ -301,6 +329,30 @@ export default function Overview() {
                         </li>
                       );
                     })}
+                  </ul>
+                )}
+              </Reveal>
+
+              <Reveal delayMs={320} as="section" className={panelClass}>
+                <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-[var(--text-secondary)]">
+                  <History className="size-4 text-[var(--accent)]" />
+                  Son Aktiviteler
+                </h2>
+                {activity.length === 0 ? (
+                  <p className="text-sm text-white/40">Henüz bir aktivite yok.</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {activity.map((entry) => (
+                      <li key={entry.id} className="flex items-center justify-between gap-3 text-sm">
+                        <span className="truncate text-[var(--text-primary)]">
+                          <span className="text-[var(--text-secondary)]">{entry.task_title}</span> —{" "}
+                          {describeActivity(entry)}
+                        </span>
+                        <span className="shrink-0 text-xs text-[var(--text-muted)]">
+                          {formatActivityTime(entry.created_at)}
+                        </span>
+                      </li>
+                    ))}
                   </ul>
                 )}
               </Reveal>
