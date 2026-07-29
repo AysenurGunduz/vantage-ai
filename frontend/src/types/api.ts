@@ -44,6 +44,20 @@ export interface OrganizationMember {
   email: string | null;
 }
 
+export interface DashboardStats {
+  totalTasks: number;
+  byStatus: Record<TaskStatus, number>;
+  byPriority: Record<TaskPriority, number>;
+  overdueTasks: Array<{
+    id: string;
+    title: string;
+    status: TaskStatus;
+    priority: TaskPriority;
+    due_date: string;
+    project_id: string;
+  }>;
+}
+
 export type InvitationStatus = "pending" | "accepted" | "revoked" | "expired";
 
 export interface OrganizationInvitation {

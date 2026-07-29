@@ -204,12 +204,14 @@ export default function Workspace() {
         <div className="mb-8 flex items-center justify-between">
           <div>
             <Logo />
-            <Link
-              to="/dashboard"
-              className="mt-2 block text-sm text-white/50 transition-colors hover:text-[#ff6b5b]"
-            >
-              ← Panele dön
-            </Link>
+            <div className="mt-2 flex items-center gap-3 text-sm text-white/50">
+              <Link to="/dashboard" className="transition-colors hover:text-[#ff6b5b]">
+                ← Panele dön
+              </Link>
+              <Link to="/dashboard/overview" className="transition-colors hover:text-[#ff6b5b]">
+                Genel Bakış
+              </Link>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <span

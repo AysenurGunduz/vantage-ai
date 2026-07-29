@@ -62,13 +62,19 @@ export default function Home() {
         Hoş geldin, {user?.email}. Ne yapmak istersin?
       </p>
 
-      <div className="page-fade-in relative z-10 mt-8">
+      <div className="page-fade-in relative z-10 mt-8 flex items-center gap-3">
         <Link
           to="/dashboard/workspace"
           className="group inline-flex min-h-11 items-center gap-2 rounded-[6px] bg-[#ff6b5b] px-7 text-sm font-semibold text-[#0d1b3a] shadow-lg shadow-[#ff6b5b]/20 transition-all hover:bg-[#ff8577] hover:shadow-xl hover:shadow-[#ff6b5b]/30"
         >
           Hemen Başla
           <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+        </Link>
+        <Link
+          to="/dashboard/overview"
+          className="inline-flex min-h-11 items-center gap-2 rounded-[6px] border border-white/15 px-6 text-sm font-medium text-white/80 transition-colors hover:border-white/30 hover:text-white"
+        >
+          Genel Bakış
         </Link>
       </div>
     </div>
