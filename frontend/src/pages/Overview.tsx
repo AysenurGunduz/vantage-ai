@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { AlertTriangle, CheckCircle2, Clock3, ListTodo } from "lucide-react";
+import { AlertTriangle, CalendarClock, CheckCircle2, Clock3, FolderKanban, ListTodo } from "lucide-react";
 import { useAuth } from "../lib/AuthContext";
 import { apiFetch } from "../lib/apiClient";
-import type { DashboardStats } from "../types/api";
+import type { DashboardStats, DashboardTaskSummary } from "../types/api";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { PanelSkeleton } from "@/components/Skeleton";
@@ -50,6 +50,7 @@ const PRIORITY_COLORS: Record<string, string> = {
 };
 
 const CRITICAL_COLOR = "#d03b3b";
+const WARNING_COLOR = "#fab219";
 
 const chartTickStyle = { fill: "var(--text-muted)", fontSize: 12 };
 const tooltipContentStyle = {
@@ -62,6 +63,38 @@ const tooltipContentStyle = {
 
 function formatDueDate(dueDate: string) {
   return new Date(dueDate).toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
+}
+
+function TaskAlertList({
+  tasks,
+  color,
+  emptyText,
+}: {
+  tasks: DashboardTaskSummary[];
+  color: string;
+  emptyText: string;
+}) {
+  if (tasks.length === 0) {
+    return <p className="text-sm text-white/40">{emptyText}</p>;
+  }
+
+  return (
+    <ul className="space-y-2">
+      {tasks.map((task) => (
+        <li
+          key={task.id}
+          className="flex items-center justify-between gap-3 rounded-[6px] border-l-2 px-3 py-2 text-sm"
+          style={{ borderColor: color, backgroundColor: `${color}14` }}
+        >
+          <span className="truncate">{task.title}</span>
+          <span className="flex shrink-0 items-center gap-3 text-xs text-[var(--text-muted)]">
+            <span>{PRIORITY_LABELS[task.priority]}</span>
+            <span style={{ color }}>{formatDueDate(task.due_date)}</span>
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 function StatTile({
@@ -215,28 +248,59 @@ export default function Overview() {
                 </Reveal>
               </div>
 
-              <Reveal delayMs={200} as="section" className={panelClass}>
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <Reveal delayMs={200} as="section" className={panelClass}>
+                  <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-[var(--text-secondary)]">
+                    <AlertTriangle className="size-4" style={{ color: CRITICAL_COLOR }} />
+                    Geciken Görevler
+                  </h2>
+                  <TaskAlertList
+                    tasks={stats.overdueTasks}
+                    color={CRITICAL_COLOR}
+                    emptyText="Gecikmiş görev yok, harika gidiyorsun."
+                  />
+                </Reveal>
+
+                <Reveal delayMs={240} as="section" className={panelClass}>
+                  <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-[var(--text-secondary)]">
+                    <CalendarClock className="size-4" style={{ color: WARNING_COLOR }} />
+                    Yaklaşan Görevler (3 gün içinde)
+                  </h2>
+                  <TaskAlertList
+                    tasks={stats.dueSoonTasks}
+                    color={WARNING_COLOR}
+                    emptyText="Önümüzdeki 3 gün içinde son tarihi gelen görev yok."
+                  />
+                </Reveal>
+              </div>
+
+              <Reveal delayMs={280} as="section" className={panelClass}>
                 <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-[var(--text-secondary)]">
-                  <AlertTriangle className="size-4" style={{ color: CRITICAL_COLOR }} />
-                  Geciken Görevler
+                  <FolderKanban className="size-4 text-[var(--accent)]" />
+                  Proje Bazında Dağılım
                 </h2>
-                {stats.overdueTasks.length === 0 ? (
-                  <p className="text-sm text-white/40">Gecikmiş görev yok, harika gidiyorsun.</p>
+                {stats.byProject.length === 0 ? (
+                  <p className="text-sm text-white/40">Henüz bir projeye ait görev yok.</p>
                 ) : (
                   <ul className="space-y-2">
-                    {stats.overdueTasks.map((task) => (
-                      <li
-                        key={task.id}
-                        className="flex items-center justify-between gap-3 rounded-[6px] border-l-2 px-3 py-2 text-sm"
-                        style={{ borderColor: CRITICAL_COLOR, backgroundColor: "rgba(208, 59, 59, 0.08)" }}
-                      >
-                        <span className="truncate">{task.title}</span>
-                        <span className="flex shrink-0 items-center gap-3 text-xs text-[var(--text-muted)]">
-                          <span>{PRIORITY_LABELS[task.priority]}</span>
-                          <span style={{ color: CRITICAL_COLOR }}>{formatDueDate(task.due_date)}</span>
-                        </span>
-                      </li>
-                    ))}
+                    {stats.byProject.map((project) => {
+                      const maxCount = stats.byProject[0]?.count || 1;
+                      const widthPct = Math.max(6, Math.round((project.count / maxCount) * 100));
+                      return (
+                        <li key={project.project_id} className="flex items-center gap-3 text-sm">
+                          <span className="w-40 shrink-0 truncate text-[var(--text-secondary)]">
+                            {project.project_name}
+                          </span>
+                          <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/5">
+                            <div
+                              className="h-full rounded-full bg-[var(--accent)]"
+                              style={{ width: `${widthPct}%` }}
+                            />
+                          </div>
+                          <span className="w-6 shrink-0 text-right text-[var(--text-muted)]">{project.count}</span>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </Reveal>
