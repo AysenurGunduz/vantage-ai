@@ -109,7 +109,7 @@ function TaskAlertList({
           className="flex items-center justify-between gap-3 rounded-[6px] border-l-2 px-3 py-2 text-sm"
           style={{ borderColor: color, backgroundColor: `${color}14` }}
         >
-          <span className="truncate">{task.title}</span>
+          <span className="min-w-0 flex-1 truncate">{task.title}</span>
           <span className="flex shrink-0 items-center gap-3 text-xs text-[var(--text-muted)]">
             <span>{PRIORITY_LABELS[task.priority]}</span>
             <span style={{ color }}>{formatDueDate(task.due_date)}</span>
@@ -185,7 +185,7 @@ export default function Overview() {
       <div className="floating-blob-reverse pointer-events-none absolute top-1/2 -right-32 h-96 w-96 rounded-full bg-indigo-500/10 blur-3xl" />
 
       <div className="page-fade-in relative z-10 mx-auto max-w-screen-2xl px-8 py-8">
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
           <div>
             <Logo />
             <Link to="/dashboard" className="mt-2 block text-sm text-white/50 transition-colors hover:text-[#ff6b5b]">
@@ -344,7 +344,7 @@ export default function Overview() {
                   <ul className="space-y-2">
                     {activity.map((entry) => (
                       <li key={entry.id} className="flex items-center justify-between gap-3 text-sm">
-                        <span className="truncate text-[var(--text-primary)]">
+                        <span className="min-w-0 flex-1 truncate text-[var(--text-primary)]">
                           <span className="text-[var(--text-secondary)]">{entry.task_title}</span> —{" "}
                           {describeActivity(entry)}
                         </span>
