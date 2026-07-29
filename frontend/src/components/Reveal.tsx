@@ -1,7 +1,17 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ElementType, type ReactNode } from "react";
 
-export function Reveal({ children, className = "" }: { children: ReactNode; className?: string }) {
-  const ref = useRef<HTMLDivElement>(null);
+export function Reveal({
+  children,
+  className = "",
+  delayMs = 0,
+  as: Component = "div",
+}: {
+  children: ReactNode;
+  className?: string;
+  delayMs?: number;
+  as?: ElementType;
+}) {
+  const ref = useRef<HTMLElement>(null);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -27,13 +37,14 @@ export function Reveal({ children, className = "" }: { children: ReactNode; clas
   }, []);
 
   return (
-    <div
+    <Component
       ref={ref}
+      style={{ transitionDelay: `${delayMs}ms` }}
       className={`transition-all duration-700 ease-out ${
         visible ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
       } ${className}`}
     >
       {children}
-    </div>
+    </Component>
   );
 }

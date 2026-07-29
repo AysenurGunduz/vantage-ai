@@ -8,14 +8,14 @@ import { Input } from "@/components/ui/input";
 const PRIORITIES: TaskPriority[] = ["low", "medium", "high", "urgent"];
 
 const priorityPillClass: Record<TaskPriority, string> = {
-  low: "bg-white/10 text-white/60",
-  medium: "bg-indigo-500/20 text-indigo-300",
-  high: "bg-[#ff6b5b]/20 text-[#ff6b5b]",
-  urgent: "bg-[#ff6b5b]/30 text-[#ff6b5b]",
+  low: "bg-[var(--priority-low)]/15 text-[var(--priority-low)]",
+  medium: "bg-[var(--priority-medium)]/15 text-[var(--priority-medium)]",
+  high: "bg-[var(--priority-high)]/15 text-[var(--priority-high)]",
+  urgent: "bg-[var(--priority-urgent)]/20 text-[var(--priority-urgent)]",
 };
 
 const fieldClass =
-  "w-full rounded-[3px] border border-white/15 bg-white/5 px-3 py-2 text-sm text-white outline-none focus-visible:border-[#ff6b5b] focus-visible:ring-2 focus-visible:ring-[#ff6b5b]/30";
+  "w-full rounded-[6px] border border-white/15 bg-white/5 px-3 py-2 text-sm text-white outline-none focus-visible:border-[#ff6b5b] focus-visible:ring-2 focus-visible:ring-[#ff6b5b]/30";
 
 export function TaskDetailModal({
   task,
@@ -30,8 +30,22 @@ export function TaskDetailModal({
   const [description, setDescription] = useState(task.description ?? "");
   const [dueDate, setDueDate] = useState(task.due_date ? task.due_date.slice(0, 10) : "");
   const [priority, setPriority] = useState<TaskPriority>(task.priority);
+  const [tags, setTags] = useState<string[]>(task.tags);
+  const [tagInput, setTagInput] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function addTag() {
+    const value = tagInput.trim().toLowerCase();
+    if (value && !tags.includes(value)) {
+      setTags((prev) => [...prev, value]);
+    }
+    setTagInput("");
+  }
+
+  function removeTag(tag: string) {
+    setTags((prev) => prev.filter((t) => t !== tag));
+  }
 
   async function handleSave() {
     setSaving(true);
@@ -44,6 +58,7 @@ export function TaskDetailModal({
           description: description.trim() || null,
           due_date: dueDate || null,
           priority,
+          tags,
         }),
       });
       onSave(updated);
@@ -62,7 +77,7 @@ export function TaskDetailModal({
     >
       <div
         onClick={(event) => event.stopPropagation()}
-        className="w-full max-w-md space-y-4 rounded-[4px] border border-white/10 bg-[#0f2044] p-6 text-white shadow-2xl shadow-black/50"
+        className="w-full max-w-md space-y-4 rounded-[8px] border border-[var(--surface-border)] bg-[var(--surface)] p-6 text-white shadow-2xl shadow-black/50"
       >
         <div className="flex items-start justify-between gap-3">
           <input
@@ -84,7 +99,7 @@ export function TaskDetailModal({
             <button
               key={option}
               onClick={() => setPriority(option)}
-              className={`rounded-[3px] px-2.5 py-1 text-xs transition-colors ${
+              className={`rounded-[6px] px-2.5 py-1 text-xs transition-colors ${
                 priority === option ? priorityPillClass[option] : "bg-white/5 text-white/40 hover:bg-white/10"
               } ${priority === option ? "ring-1 ring-inset ring-white/20" : ""}`}
             >
@@ -105,12 +120,45 @@ export function TaskDetailModal({
         </div>
 
         <div className="space-y-1.5">
+          <label className="text-xs font-medium text-white/50">Etiketler</label>
+          <div className="flex flex-wrap gap-1.5">
+            {tags.map((tag) => (
+              <span
+                key={tag}
+                className="flex items-center gap-1 rounded-full bg-indigo-500/10 px-2.5 py-1 text-xs text-indigo-300"
+              >
+                #{tag}
+                <button
+                  onClick={() => removeTag(tag)}
+                  aria-label={`${tag} etiketini kaldır`}
+                  className="text-indigo-300/60 hover:text-indigo-200"
+                >
+                  <X className="size-3" />
+                </button>
+              </span>
+            ))}
+          </div>
+          <Input
+            value={tagInput}
+            onChange={(e) => setTagInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === ",") {
+                e.preventDefault();
+                addTag();
+              }
+            }}
+            placeholder="Etiket yaz, Enter'a bas"
+            className="rounded-[6px] border-white/15 bg-white/5 text-white focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
+          />
+        </div>
+
+        <div className="space-y-1.5">
           <label className="text-xs font-medium text-white/50">Son tarih</label>
           <Input
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className="rounded-[3px] border-white/15 bg-white/5 text-white focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
+            className="rounded-[6px] border-white/15 bg-white/5 text-white focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
           />
         </div>
 
@@ -120,14 +168,14 @@ export function TaskDetailModal({
           <Button
             variant="outline"
             onClick={onClose}
-            className="rounded-[3px] border-white/20 bg-transparent text-white hover:bg-white/5"
+            className="rounded-[6px] border-white/20 bg-transparent text-white hover:bg-white/5 hover:text-white"
           >
             Vazgeç
           </Button>
           <Button
             onClick={handleSave}
             disabled={saving}
-            className="rounded-[3px] bg-[#ff6b5b] text-[#0d1b3a] hover:bg-[#ff8577]"
+            className="rounded-[6px] bg-[#ff6b5b] text-[#0d1b3a] hover:bg-[#ff8577]"
           >
             {saving ? "Kaydediliyor..." : "Kaydet"}
           </Button>

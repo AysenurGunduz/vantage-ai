@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Reveal } from "@/components/Reveal";
+import { NetworkBackground } from "@/components/NetworkBackground";
 
 const whyCards = [
   {
@@ -56,14 +57,14 @@ function HeroKanbanPreview() {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
       {previewColumns.map((column) => (
-        <div key={column.label} className="rounded-[4px] border border-white/10 bg-white/[0.04] p-2.5">
+        <div key={column.label} className="rounded-[8px] border border-white/10 bg-white/[0.04] p-2.5">
           <div className="mb-2.5 flex items-center gap-1.5 text-xs font-medium text-white/50">
             <span className={`size-1.5 rounded-full ${column.dot}`} />
             {column.label}
           </div>
           <div className="space-y-1.5">
             {column.cardWidths.map((width, i) => (
-              <div key={i} className="h-6 rounded-[3px] bg-white/[0.07]" style={{ width }} />
+              <div key={i} className="h-6 rounded-[6px] bg-white/[0.07]" style={{ width }} />
             ))}
           </div>
         </div>
@@ -84,7 +85,7 @@ export default function Landing() {
             </Link>
             <Link
               to="/signup"
-              className="rounded-[3px] border border-white/20 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/5"
+              className="rounded-[6px] border border-white/20 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/5"
             >
               Hemen Başla
             </Link>
@@ -93,16 +94,9 @@ export default function Landing() {
       </nav>
 
       <section className="relative overflow-hidden">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.15]"
-          style={{
-            backgroundImage: "radial-gradient(rgba(255,255,255,0.6) 1px, transparent 1px)",
-            backgroundSize: "28px 28px",
-            maskImage: "radial-gradient(ellipse 60% 60% at 50% 0%, black 40%, transparent 100%)",
-          }}
-        />
-        <div className="pointer-events-none absolute -top-24 left-1/4 h-96 w-96 rounded-full bg-[#ff6b5b]/15 blur-3xl" />
-        <div className="pointer-events-none absolute top-0 right-0 h-80 w-80 rounded-full bg-indigo-500/20 blur-3xl" />
+        <NetworkBackground className="opacity-70" />
+        <div className="floating-blob pointer-events-none absolute -top-24 left-1/4 h-96 w-96 rounded-full bg-[#ff6b5b]/15 blur-3xl" />
+        <div className="floating-blob-reverse pointer-events-none absolute top-0 right-0 h-80 w-80 rounded-full bg-indigo-500/20 blur-3xl" />
 
         <div className="page-fade-in relative mx-auto max-w-7xl px-6 py-16 sm:px-10 sm:py-24">
           <span className="mb-6 inline-block rounded-full bg-[#ff6b5b]/10 px-4 py-1.5 text-sm font-medium text-[#ff6b5b]">
@@ -118,7 +112,7 @@ export default function Landing() {
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <Link
               to="/signup"
-              className="group flex items-center gap-2 rounded-[3px] bg-[#ff6b5b] px-5 py-2.5 text-sm font-semibold text-[#0d1b3a] shadow-lg shadow-[#ff6b5b]/20 transition-all hover:bg-[#ff8577] hover:shadow-xl hover:shadow-[#ff6b5b]/30"
+              className="group flex items-center gap-2 rounded-[6px] bg-[#ff6b5b] px-5 py-2.5 text-sm font-semibold text-[#0d1b3a] shadow-lg shadow-[#ff6b5b]/20 transition-all hover:bg-[#ff8577] hover:shadow-xl hover:shadow-[#ff6b5b]/30"
             >
               Ücretsiz başla
               <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
@@ -205,7 +199,7 @@ export default function Landing() {
           <Reveal>
             <figure className="relative m-0">
               <div className="pointer-events-none absolute -inset-4 rounded-[8px] bg-[#ff6b5b]/10 blur-2xl" />
-              <div className="relative overflow-hidden rounded-[4px] border border-white/10 bg-[#0a1530] shadow-2xl shadow-black/40">
+              <div className="relative overflow-hidden rounded-[8px] border border-white/10 bg-[#0a1530] shadow-2xl shadow-black/40">
                 <div className="flex items-center gap-1.5 border-b border-white/10 bg-white/[0.02] px-3 py-2.5">
                   <span className="size-2.5 rounded-full bg-[#ff6b5b]/60" />
                   <span className="size-2.5 rounded-full bg-amber-400/60" />
@@ -225,7 +219,7 @@ export default function Landing() {
       <section className="border-t border-white/10 bg-white/[0.03]">
         <div className="mx-auto max-w-7xl px-6 py-16 sm:px-10">
           <Reveal>
-            <div className="relative overflow-hidden rounded-[4px] border border-white/10 bg-white/[0.03] p-10 sm:p-14">
+            <div className="relative overflow-hidden rounded-[8px] border border-white/10 bg-white/[0.03] p-10 sm:p-14">
               <div className="pointer-events-none absolute -top-16 -right-16 h-64 w-64 rounded-full bg-[#ff6b5b]/15 blur-3xl" />
               <div className="pointer-events-none absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-indigo-500/15 blur-3xl" />
 
@@ -238,11 +232,11 @@ export default function Landing() {
                   type="email"
                   placeholder="isim@sirket.com"
                   aria-label="İş e-postası"
-                  className="min-h-9 flex-1 rounded-[3px] border border-white/15 bg-white/5 px-3 text-sm text-white placeholder:text-white/40 focus:border-[#ff6b5b] focus:outline-none"
+                  className="min-h-9 flex-1 rounded-[6px] border border-white/15 bg-white/5 px-3 text-sm text-white placeholder:text-white/40 focus:border-[#ff6b5b] focus:outline-none"
                 />
                 <Link
                   to="/signup"
-                  className="flex min-h-9 items-center rounded-[3px] bg-[#ff6b5b] px-4 text-sm font-semibold text-[#0d1b3a] transition-colors hover:bg-[#ff8577]"
+                  className="flex min-h-9 items-center rounded-[6px] bg-[#ff6b5b] px-4 text-sm font-semibold text-[#0d1b3a] transition-colors hover:bg-[#ff8577]"
                 >
                   Kayıt ol
                 </Link>
