@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Building2, ChevronDown, ChevronRight, FolderKanban, ListTodo, Plus, Search, Users2 } from "lucide-react";
 import { useAuth } from "../lib/AuthContext";
 import { apiFetch } from "../lib/apiClient";
+import { supabase } from "../lib/supabaseClient";
 import type { Organization, Project, Task, TaskPriority, TaskStatus } from "../types/api";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
@@ -111,6 +112,34 @@ export default function Workspace() {
       .finally(() => setTasksLoading(false));
   }, [selectedProjectId]);
 
+  useEffect(() => {
+    if (!selectedProjectId) return;
+
+    const channel = supabase
+      .channel(`tasks:project:${selectedProjectId}`)
+      .on<Task>(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tasks", filter: `project_id=eq.${selectedProjectId}` },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            const newTask = payload.new;
+            setTasks((prev) => (prev.some((task) => task.id === newTask.id) ? prev : [...prev, newTask]));
+          } else if (payload.eventType === "UPDATE") {
+            const updatedTask = payload.new;
+            setTasks((prev) => prev.map((task) => (task.id === updatedTask.id ? updatedTask : task)));
+          } else if (payload.eventType === "DELETE") {
+            const deletedId = payload.old.id;
+            if (deletedId) setTasks((prev) => prev.filter((task) => task.id !== deletedId));
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [selectedProjectId]);
+
   async function handleCreateOrg(event: FormEvent) {
     event.preventDefault();
     setError(null);
@@ -180,7 +209,7 @@ export default function Workspace() {
   }
 
   async function handleStatusChange(taskId: string, status: TaskStatus) {
-    const previousTasks = tasks;
+    const previousTask = tasks.find((task) => task.id === taskId);
     setTasks((prev) => prev.map((task) => (task.id === taskId ? { ...task, status } : task)));
     setError(null);
     try {
@@ -189,7 +218,9 @@ export default function Workspace() {
         body: JSON.stringify({ status }),
       });
     } catch (err) {
-      setTasks(previousTasks);
+      if (previousTask) {
+        setTasks((prev) => prev.map((task) => (task.id === taskId ? previousTask : task)));
+      }
       setError(errorMessage(err));
     }
   }
