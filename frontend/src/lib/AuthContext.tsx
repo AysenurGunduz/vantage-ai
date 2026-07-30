@@ -31,8 +31,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   async function signUp(email: string, password: string) {
-    const { error } = await supabase.auth.signUp({ email, password });
-    return { error: error?.message ?? null };
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error) {
+      return { error: error.message };
+    }
+    if (data.user && data.user.identities && data.user.identities.length === 0) {
+      return { error: "Bu e-posta adresi zaten kayıtlı." };
+    }
+    return { error: null };
   }
 
   async function signIn(email: string, password: string) {
