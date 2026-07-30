@@ -12,6 +12,7 @@ import type {
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PageNav } from "@/components/PageNav";
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : "Beklenmeyen bir hata oluştu";
@@ -141,14 +142,17 @@ export default function TeamMembers() {
   return (
     <div className="dark-theme animated-gradient min-h-screen text-white">
       <div className="page-fade-in mx-auto max-w-screen-2xl px-8 py-8">
-        <div className="mb-8">
-          <Logo />
-          <Link
-            to="/dashboard/workspace"
-            className="mt-2 block text-sm text-white/50 transition-colors hover:text-[#ff6b5b]"
-          >
-            ← Çalışma alanına dön
-          </Link>
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <Logo />
+            <Link
+              to="/dashboard/workspace"
+              className="mt-2 block text-sm text-white/50 transition-colors hover:text-[#ff6b5b]"
+            >
+              ← Çalışma alanına dön
+            </Link>
+          </div>
+          <PageNav />
         </div>
 
         <div className="mb-6 flex items-center gap-2 text-sm text-white/50">

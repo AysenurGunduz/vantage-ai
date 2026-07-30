@@ -13,6 +13,7 @@ import { TaskDetailModal } from "@/components/kanban/TaskDetailModal";
 import { PanelSkeleton, SidebarListSkeleton } from "@/components/Skeleton";
 import { Reveal } from "@/components/Reveal";
 import { NetworkBackground } from "@/components/NetworkBackground";
+import { PageNav } from "@/components/PageNav";
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : "Beklenmeyen bir hata oluştu";
@@ -252,19 +253,15 @@ export default function Workspace() {
       <div className="floating-blob-reverse pointer-events-none absolute top-1/2 -right-32 h-96 w-96 rounded-full bg-indigo-500/10 blur-3xl" />
 
       <div className="page-fade-in relative z-10 mx-auto max-w-screen-2xl px-8 py-8">
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div>
             <Logo />
-            <div className="mt-2 flex items-center gap-3 text-sm text-white/50">
-              <Link to="/dashboard" className="transition-colors hover:text-[#ff6b5b]">
-                ← Panele dön
-              </Link>
-              <Link to="/dashboard/overview" className="transition-colors hover:text-[#ff6b5b]">
-                Genel Bakış
-              </Link>
-            </div>
+            <Link to="/dashboard" className="mt-2 block text-sm text-white/50 transition-colors hover:text-[#ff6b5b]">
+              ← Panele dön
+            </Link>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <PageNav />
             <span
               title={user?.email}
               className="flex size-9 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white"

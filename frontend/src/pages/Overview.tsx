@@ -11,16 +11,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import {
-  AlertTriangle,
-  CalendarClock,
-  CheckCircle2,
-  ChevronRight,
-  Clock3,
-  FolderKanban,
-  History,
-  ListTodo,
-} from "lucide-react";
+import { AlertTriangle, CalendarClock, CheckCircle2, Clock3, FolderKanban, ListTodo } from "lucide-react";
 import { useAuth } from "../lib/AuthContext";
 import { apiFetch } from "../lib/apiClient";
 import type { DashboardStats, DashboardTaskSummary } from "../types/api";
@@ -29,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { PanelSkeleton } from "@/components/Skeleton";
 import { Reveal } from "@/components/Reveal";
 import { NetworkBackground } from "@/components/NetworkBackground";
+import { PageNav } from "@/components/PageNav";
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : "Beklenmeyen bir hata oluştu";
@@ -200,7 +192,8 @@ export default function Overview() {
               ← Panele dön
             </Link>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <PageNav />
             <span
               title={user?.email}
               className="flex size-9 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white"
@@ -217,17 +210,7 @@ export default function Overview() {
           </div>
         </div>
 
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-2xl font-semibold">Genel Bakış</h1>
-          <Link
-            to="/dashboard/activity"
-            className="flex items-center gap-2 rounded-[6px] border border-[var(--surface-border)] bg-[var(--surface)] px-3 py-1.5 text-sm text-[var(--text-secondary)] transition-colors hover:border-[var(--surface-border-hover)] hover:text-white"
-          >
-            <History className="size-4 text-[var(--accent)]" />
-            Son Aktiviteler
-            <ChevronRight className="size-4" />
-          </Link>
-        </div>
+        <h1 className="mb-4 text-2xl font-semibold">Genel Bakış</h1>
 
         <div className="mb-6 flex gap-1 border-b border-[var(--surface-border)]">
           {TABS.map((tab) => (
