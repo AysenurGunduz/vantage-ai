@@ -33,7 +33,7 @@ export function TaskCard({
   };
 
   const isOverdue =
-    task.due_date !== null && task.status !== "done" && new Date(task.due_date) < new Date(new Date().toDateString());
+    task.due_date !== null && task.status !== "done" && task.due_date < new Date().toISOString().slice(0, 10);
 
   return (
     <div

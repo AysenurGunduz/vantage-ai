@@ -93,11 +93,21 @@ export default function Workspace() {
       setProjects([]);
       return;
     }
+    let cancelled = false;
     setProjectsLoading(true);
     apiFetch<Project[]>(`/api/organizations/${selectedOrgId}/projects`)
-      .then(setProjects)
-      .catch((err: unknown) => setError(errorMessage(err)))
-      .finally(() => setProjectsLoading(false));
+      .then((data) => {
+        if (!cancelled) setProjects(data);
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) setError(errorMessage(err));
+      })
+      .finally(() => {
+        if (!cancelled) setProjectsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [selectedOrgId]);
 
   useEffect(() => {
@@ -105,11 +115,21 @@ export default function Workspace() {
       setTasks([]);
       return;
     }
+    let cancelled = false;
     setTasksLoading(true);
     apiFetch<Task[]>(`/api/projects/${selectedProjectId}/tasks`)
-      .then(setTasks)
-      .catch((err: unknown) => setError(errorMessage(err)))
-      .finally(() => setTasksLoading(false));
+      .then((data) => {
+        if (!cancelled) setTasks(data);
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) setError(errorMessage(err));
+      })
+      .finally(() => {
+        if (!cancelled) setTasksLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [selectedProjectId]);
 
   useEffect(() => {
@@ -188,7 +208,7 @@ export default function Workspace() {
             .filter(Boolean),
         }),
       });
-      setTasks((prev) => [...prev, task]);
+      setTasks((prev) => (prev.some((t) => t.id === task.id) ? prev : [...prev, task]));
       setNewTaskTitle("");
       setNewTaskPriority("medium");
       setNewTaskDueDate("");

@@ -225,6 +225,24 @@ describe("tasks routes", () => {
     expect(res.body).toEqual(updatedTask);
   });
 
+  it("does not log a tags activity entry when the tags haven't actually changed", async () => {
+    const taskRow = { id: "task-1", project_id: "project-1", title: "Design schema", tags: ["review", "design"] };
+    const updatedTask = { ...taskRow, title: "Design schema v2" };
+    membership = { role_in_project: "member" };
+    taskResponses = [
+      chain({ maybeSingle: { data: taskRow, error: null } }),
+      chain({ single: { data: updatedTask, error: null } }),
+    ];
+    vi.mocked(supabase.from).mockClear();
+
+    await request(app)
+      .patch("/api/tasks/task-1")
+      .set("Authorization", "Bearer valid-token")
+      .send({ title: "Design schema v2", tags: ["design", "review"] });
+
+    expect(vi.mocked(supabase.from)).not.toHaveBeenCalledWith("task_activity_log");
+  });
+
   it("returns 404 for a task's activity when the task doesn't exist", async () => {
     taskResponses = [chain({ maybeSingle: { data: null, error: null } })];
 

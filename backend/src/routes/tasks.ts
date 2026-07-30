@@ -16,6 +16,13 @@ function stringifyValue(value: unknown): string | null {
   return String(value);
 }
 
+function valuesEqual(a: unknown, b: unknown): boolean {
+  if (Array.isArray(a) && Array.isArray(b)) {
+    return JSON.stringify([...a].sort()) === JSON.stringify([...b].sort());
+  }
+  return a === b;
+}
+
 async function logActivity(taskId: string, userId: string, actionType: string, fromValue: unknown, toValue: unknown) {
   const { error } = await supabase.from("task_activity_log").insert({
     task_id: taskId,
@@ -189,7 +196,7 @@ taskRouter.patch("/:taskId", async (req, res) => {
   }
 
   for (const field of LOGGED_FIELDS) {
-    if (field in updates && updates[field] !== task[field]) {
+    if (field in updates && !valuesEqual(updates[field], task[field])) {
       await logActivity(taskId, req.user!.id, field, task[field], updates[field]);
     }
   }
