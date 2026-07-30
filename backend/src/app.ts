@@ -6,6 +6,7 @@ import { projectsRouter } from "./routes/projects.js";
 import { projectTasksRouter, taskRouter } from "./routes/tasks.js";
 import { organizationMembersRouter } from "./routes/organizationMembers.js";
 import { organizationInvitationsRouter, invitationsRouter } from "./routes/invitations.js";
+import { dashboardRouter } from "./routes/dashboard.js";
 
 export const app = express();
 
@@ -28,3 +29,4 @@ app.use("/api/organizations/:orgId/invitations", organizationInvitationsRouter);
 app.use("/api/invitations", invitationsRouter);
 app.use("/api/projects/:projectId/tasks", projectTasksRouter);
 app.use("/api/tasks", taskRouter);
+app.use("/api/dashboard", dashboardRouter);

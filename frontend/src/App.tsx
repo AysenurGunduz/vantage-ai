@@ -2,6 +2,8 @@ import { Routes, Route } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Home from "./pages/Home";
 import Workspace from "./pages/Workspace";
+import Overview from "./pages/Overview";
+import Activity from "./pages/Activity";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import InviteAccept from "./pages/InviteAccept";
@@ -26,6 +28,22 @@ function App() {
         element={
           <ProtectedRoute>
             <Workspace />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/overview"
+        element={
+          <ProtectedRoute>
+            <Overview />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/activity"
+        element={
+          <ProtectedRoute>
+            <Activity />
           </ProtectedRoute>
         }
       />
