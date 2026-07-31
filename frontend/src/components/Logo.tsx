@@ -1,3 +1,10 @@
+import { TrendingUp } from "lucide-react";
+
 export function Logo({ className = "" }: { className?: string }) {
-  return <img src="/logo.png" alt="Vantage" className={`-ml-4 h-8 w-auto brightness-0 invert ${className}`} />;
+  return (
+    <span className={`inline-flex items-center gap-2 ${className}`}>
+      <TrendingUp className="size-6 shrink-0 text-[#ff6b5b]" strokeWidth={2.75} />
+      <span className="text-xl font-bold tracking-tight text-white">Vantage</span>
+    </span>
+  );
 }
