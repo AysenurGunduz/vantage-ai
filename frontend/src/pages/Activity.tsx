@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { PanelSkeleton } from "@/components/Skeleton";
 import { Reveal } from "@/components/Reveal";
 import { NetworkBackground } from "@/components/NetworkBackground";
+import { PageNav } from "@/components/PageNav";
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : "Beklenmeyen bir hata oluştu";
@@ -88,7 +89,8 @@ export default function Activity() {
               ← Genel Bakış'a dön
             </Link>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <PageNav />
             <span
               title={user?.email}
               className="flex size-9 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white"

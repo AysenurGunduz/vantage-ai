@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Building2, ChevronDown, ChevronRight, FolderKanban, ListTodo, Plus, Search, Users2 } from "lucide-react";
 import { useAuth } from "../lib/AuthContext";
 import { apiFetch } from "../lib/apiClient";
+import { supabase } from "../lib/supabaseClient";
 import type { Organization, Project, Task, TaskPriority, TaskStatus } from "../types/api";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import { TaskDetailModal } from "@/components/kanban/TaskDetailModal";
 import { PanelSkeleton, SidebarListSkeleton } from "@/components/Skeleton";
 import { Reveal } from "@/components/Reveal";
 import { NetworkBackground } from "@/components/NetworkBackground";
+import { PageNav } from "@/components/PageNav";
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : "Beklenmeyen bir hata oluştu";
@@ -92,11 +94,21 @@ export default function Workspace() {
       setProjects([]);
       return;
     }
+    let cancelled = false;
     setProjectsLoading(true);
     apiFetch<Project[]>(`/api/organizations/${selectedOrgId}/projects`)
-      .then(setProjects)
-      .catch((err: unknown) => setError(errorMessage(err)))
-      .finally(() => setProjectsLoading(false));
+      .then((data) => {
+        if (!cancelled) setProjects(data);
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) setError(errorMessage(err));
+      })
+      .finally(() => {
+        if (!cancelled) setProjectsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [selectedOrgId]);
 
   useEffect(() => {
@@ -104,11 +116,49 @@ export default function Workspace() {
       setTasks([]);
       return;
     }
+    let cancelled = false;
     setTasksLoading(true);
     apiFetch<Task[]>(`/api/projects/${selectedProjectId}/tasks`)
-      .then(setTasks)
-      .catch((err: unknown) => setError(errorMessage(err)))
-      .finally(() => setTasksLoading(false));
+      .then((data) => {
+        if (!cancelled) setTasks(data);
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) setError(errorMessage(err));
+      })
+      .finally(() => {
+        if (!cancelled) setTasksLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedProjectId]);
+
+  useEffect(() => {
+    if (!selectedProjectId) return;
+
+    const channel = supabase
+      .channel(`tasks:project:${selectedProjectId}`)
+      .on<Task>(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tasks", filter: `project_id=eq.${selectedProjectId}` },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            const newTask = payload.new;
+            setTasks((prev) => (prev.some((task) => task.id === newTask.id) ? prev : [...prev, newTask]));
+          } else if (payload.eventType === "UPDATE") {
+            const updatedTask = payload.new;
+            setTasks((prev) => prev.map((task) => (task.id === updatedTask.id ? updatedTask : task)));
+          } else if (payload.eventType === "DELETE") {
+            const deletedId = payload.old.id;
+            if (deletedId) setTasks((prev) => prev.filter((task) => task.id !== deletedId));
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [selectedProjectId]);
 
   async function handleCreateOrg(event: FormEvent) {
@@ -159,7 +209,7 @@ export default function Workspace() {
             .filter(Boolean),
         }),
       });
-      setTasks((prev) => [...prev, task]);
+      setTasks((prev) => (prev.some((t) => t.id === task.id) ? prev : [...prev, task]));
       setNewTaskTitle("");
       setNewTaskPriority("medium");
       setNewTaskDueDate("");
@@ -180,7 +230,7 @@ export default function Workspace() {
   }
 
   async function handleStatusChange(taskId: string, status: TaskStatus) {
-    const previousTasks = tasks;
+    const previousTask = tasks.find((task) => task.id === taskId);
     setTasks((prev) => prev.map((task) => (task.id === taskId ? { ...task, status } : task)));
     setError(null);
     try {
@@ -189,7 +239,9 @@ export default function Workspace() {
         body: JSON.stringify({ status }),
       });
     } catch (err) {
-      setTasks(previousTasks);
+      if (previousTask) {
+        setTasks((prev) => prev.map((task) => (task.id === taskId ? previousTask : task)));
+      }
       setError(errorMessage(err));
     }
   }
@@ -201,19 +253,15 @@ export default function Workspace() {
       <div className="floating-blob-reverse pointer-events-none absolute top-1/2 -right-32 h-96 w-96 rounded-full bg-indigo-500/10 blur-3xl" />
 
       <div className="page-fade-in relative z-10 mx-auto max-w-screen-2xl px-8 py-8">
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div>
             <Logo />
-            <div className="mt-2 flex items-center gap-3 text-sm text-white/50">
-              <Link to="/dashboard" className="transition-colors hover:text-[#ff6b5b]">
-                ← Panele dön
-              </Link>
-              <Link to="/dashboard/overview" className="transition-colors hover:text-[#ff6b5b]">
-                Genel Bakış
-              </Link>
-            </div>
+            <Link to="/dashboard" className="mt-2 block text-sm text-white/50 transition-colors hover:text-[#ff6b5b]">
+              ← Panele dön
+            </Link>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <PageNav />
             <span
               title={user?.email}
               className="flex size-9 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white"

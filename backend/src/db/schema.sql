@@ -110,6 +110,23 @@ create index idx_tasks_project_id on tasks (project_id);
 create index idx_tasks_assignee_id on tasks (assignee_id);
 create index idx_tasks_due_date on tasks (due_date);
 
+-- Realtime, RLS'siz bir tabloda tüm değişiklikleri tüm bağlı istemcilere yayınlar.
+-- Kanban panosunun canlı senkronu için bu yüzden önce satır düzeyi güvenlik (RLS)
+-- ekleniyor: bir kullanıcı yalnızca üyesi olduğu projenin görevlerini okuyabilir.
+alter table tasks enable row level security;
+
+create policy "Project members can read their tasks"
+on tasks for select
+using (
+  exists (
+    select 1 from project_members
+    where project_members.project_id = tasks.project_id
+      and project_members.user_id = auth.uid()
+  )
+);
+
+alter publication supabase_realtime add table tasks;
+
 create table task_comments (
   id uuid primary key default gen_random_uuid(),
   task_id uuid not null references tasks (id) on delete cascade,

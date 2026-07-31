@@ -16,6 +16,13 @@ function stringifyValue(value: unknown): string | null {
   return String(value);
 }
 
+function valuesEqual(a: unknown, b: unknown): boolean {
+  if (Array.isArray(a) && Array.isArray(b)) {
+    return JSON.stringify([...a].sort()) === JSON.stringify([...b].sort());
+  }
+  return a === b;
+}
+
 async function logActivity(taskId: string, userId: string, actionType: string, fromValue: unknown, toValue: unknown) {
   const { error } = await supabase.from("task_activity_log").insert({
     task_id: taskId,
@@ -189,12 +196,39 @@ taskRouter.patch("/:taskId", async (req, res) => {
   }
 
   for (const field of LOGGED_FIELDS) {
-    if (field in updates && updates[field] !== task[field]) {
+    if (field in updates && !valuesEqual(updates[field], task[field])) {
       await logActivity(taskId, req.user!.id, field, task[field], updates[field]);
     }
   }
 
   res.json(updated);
+});
+
+taskRouter.get("/:taskId/activity", async (req, res) => {
+  const { taskId } = req.params;
+  const { task, membership } = await getTaskWithMembership(taskId, req.user!.id);
+
+  if (!task) {
+    res.status(404).json({ error: "Task not found" });
+    return;
+  }
+  if (!membership) {
+    res.status(403).json({ error: "Not a member of this project" });
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("task_activity_log")
+    .select("id, action_type, from_value, to_value, created_at")
+    .eq("task_id", taskId)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    res.status(500).json({ error: error.message });
+    return;
+  }
+
+  res.json(data);
 });
 
 taskRouter.delete("/:taskId", async (req, res) => {

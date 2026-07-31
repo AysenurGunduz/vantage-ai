@@ -64,7 +64,7 @@ export default function InviteAccept() {
   return (
     <div className="dark-theme animated-gradient flex min-h-screen items-center justify-center px-6 text-center text-white">
       <div className="page-fade-in w-full max-w-md space-y-6 rounded-[8px] border border-white/10 bg-white/[0.04] p-8">
-        <Logo className="justify-center" />
+        <Logo />
 
         {loading && <p className="text-sm text-white/60">Davet kontrol ediliyor...</p>}
 

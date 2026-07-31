@@ -25,6 +25,7 @@ function chain(config: ChainConfig) {
 
 let membership: { role_in_project: string } | null = null;
 let taskResponses: ReturnType<typeof chain>[] = [];
+let activityLogQueue: ReturnType<typeof chain>[] = [];
 
 vi.mock("../lib/supabaseClient.js", () => ({
   supabase: {
@@ -43,7 +44,7 @@ vi.mock("../lib/supabaseClient.js", () => ({
         return taskResponses.shift();
       }
       if (table === "task_activity_log") {
-        return chain({ then: { error: null } });
+        return activityLogQueue.length > 0 ? activityLogQueue.shift() : chain({ then: { error: null } });
       }
       throw new Error(`Unexpected table: ${table}`);
     }),
@@ -56,6 +57,7 @@ const { supabase } = await import("../lib/supabaseClient.js");
 beforeEach(() => {
   membership = null;
   taskResponses = [];
+  activityLogQueue = [];
 });
 
 describe("tasks routes", () => {
@@ -221,6 +223,62 @@ describe("tasks routes", () => {
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual(updatedTask);
+  });
+
+  it("does not log a tags activity entry when the tags haven't actually changed", async () => {
+    const taskRow = { id: "task-1", project_id: "project-1", title: "Design schema", tags: ["review", "design"] };
+    const updatedTask = { ...taskRow, title: "Design schema v2" };
+    membership = { role_in_project: "member" };
+    taskResponses = [
+      chain({ maybeSingle: { data: taskRow, error: null } }),
+      chain({ single: { data: updatedTask, error: null } }),
+    ];
+    vi.mocked(supabase.from).mockClear();
+
+    await request(app)
+      .patch("/api/tasks/task-1")
+      .set("Authorization", "Bearer valid-token")
+      .send({ title: "Design schema v2", tags: ["design", "review"] });
+
+    expect(vi.mocked(supabase.from)).not.toHaveBeenCalledWith("task_activity_log");
+  });
+
+  it("returns 404 for a task's activity when the task doesn't exist", async () => {
+    taskResponses = [chain({ maybeSingle: { data: null, error: null } })];
+
+    const res = await request(app)
+      .get("/api/tasks/missing-task/activity")
+      .set("Authorization", "Bearer valid-token");
+
+    expect(res.status).toBe(404);
+  });
+
+  it("rejects a task's activity for a non-member", async () => {
+    const taskRow = { id: "task-1", project_id: "project-1", title: "Design schema" };
+    taskResponses = [chain({ maybeSingle: { data: taskRow, error: null } })];
+
+    const res = await request(app)
+      .get("/api/tasks/task-1/activity")
+      .set("Authorization", "Bearer valid-token");
+
+    expect(res.status).toBe(403);
+  });
+
+  it("returns a task's activity log for a project member", async () => {
+    const taskRow = { id: "task-1", project_id: "project-1", title: "Design schema" };
+    membership = { role_in_project: "member" };
+    taskResponses = [chain({ maybeSingle: { data: taskRow, error: null } })];
+    const logRows = [
+      { id: "log-1", action_type: "status", from_value: "todo", to_value: "in_progress", created_at: "2026-07-30T10:00:00.000Z" },
+    ];
+    activityLogQueue = [chain({ order: { data: logRows, error: null } })];
+
+    const res = await request(app)
+      .get("/api/tasks/task-1/activity")
+      .set("Authorization", "Bearer valid-token");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual(logRows);
   });
 
   it("rejects deleting another member's task for a plain member", async () => {

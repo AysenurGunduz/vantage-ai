@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { apiFetch } from "@/lib/apiClient";
 import type { Task, TaskPriority } from "@/types/api";
@@ -17,6 +17,47 @@ const priorityPillClass: Record<TaskPriority, string> = {
 const fieldClass =
   "w-full rounded-[6px] border border-white/15 bg-white/5 px-3 py-2 text-sm text-white outline-none focus-visible:border-[#ff6b5b] focus-visible:ring-2 focus-visible:ring-[#ff6b5b]/30";
 
+interface ActivityEntry {
+  id: string;
+  action_type: string;
+  from_value: string | null;
+  to_value: string | null;
+  created_at: string;
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  backlog: "Backlog",
+  todo: "Todo",
+  in_progress: "Devam Ediyor",
+  review: "İncelemede",
+  done: "Tamamlandı",
+};
+
+function formatActivityTime(createdAt: string) {
+  return new Date(createdAt).toLocaleString("tr-TR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+
+function describeActivity(entry: ActivityEntry): string {
+  switch (entry.action_type) {
+    case "created":
+      return "oluşturuldu";
+    case "status":
+      return `durum: ${STATUS_LABELS[entry.from_value ?? ""] ?? entry.from_value} → ${STATUS_LABELS[entry.to_value ?? ""] ?? entry.to_value}`;
+    case "priority":
+      return `öncelik: ${entry.from_value} → ${entry.to_value}`;
+    case "due_date":
+      return entry.to_value
+        ? `son tarih ${new Date(entry.to_value).toLocaleDateString("tr-TR", { day: "numeric", month: "short" })} olarak ayarlandı`
+        : "son tarih kaldırıldı";
+    case "tags":
+      return "etiketler güncellendi";
+    case "assignee_id":
+      return "atanan kişi değişti";
+    default:
+      return entry.action_type;
+  }
+}
+
 export function TaskDetailModal({
   task,
   onClose,
@@ -34,6 +75,15 @@ export function TaskDetailModal({
   const [tagInput, setTagInput] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activity, setActivity] = useState<ActivityEntry[]>([]);
+  const [activityLoading, setActivityLoading] = useState(true);
+
+  useEffect(() => {
+    apiFetch<ActivityEntry[]>(`/api/tasks/${task.id}/activity`)
+      .then(setActivity)
+      .catch(() => {})
+      .finally(() => setActivityLoading(false));
+  }, [task.id]);
 
   function addTag() {
     const value = tagInput.trim().toLowerCase();
@@ -160,6 +210,24 @@ export function TaskDetailModal({
             onChange={(e) => setDueDate(e.target.value)}
             className="rounded-[6px] border-white/15 bg-white/5 text-white focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
           />
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-white/50">Aktivite Geçmişi</label>
+          {activityLoading ? (
+            <p className="text-xs text-white/30">Yükleniyor...</p>
+          ) : activity.length === 0 ? (
+            <p className="text-xs text-white/30">Henüz bir aktivite yok.</p>
+          ) : (
+            <ul className="max-h-28 space-y-1 overflow-y-auto pr-1 text-xs text-white/60">
+              {activity.map((entry) => (
+                <li key={entry.id} className="flex items-center justify-between gap-2">
+                  <span className="min-w-0 flex-1 truncate">{describeActivity(entry)}</span>
+                  <span className="shrink-0 text-white/30">{formatActivityTime(entry.created_at)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         {error && <p className="text-sm text-[#ff6b5b]">{error}</p>}
