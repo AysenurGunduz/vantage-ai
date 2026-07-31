@@ -187,3 +187,7 @@ create table delay_risk_scores (
   computed_at timestamptz not null default now()
 );
 create index idx_delay_risk_scores_task_id on delay_risk_scores (task_id);
+
+-- Bir görev birine atanırken yöneticinin bırakabileceği not; ilgili
+-- "assignee_id" aktivite kaydına eklenir, geçmişte kalıcı olarak durur.
+alter table task_activity_log add column note text;

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { apiFetch } from "@/lib/apiClient";
-import type { Task, TaskPriority } from "@/types/api";
+import type { OrganizationMember, Task, TaskPriority } from "@/types/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -22,6 +22,7 @@ interface ActivityEntry {
   action_type: string;
   from_value: string | null;
   to_value: string | null;
+  note: string | null;
   created_at: string;
 }
 
@@ -37,7 +38,13 @@ function formatActivityTime(createdAt: string) {
   return new Date(createdAt).toLocaleString("tr-TR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 
-function describeActivity(entry: ActivityEntry): string {
+function memberLabel(members: OrganizationMember[], userId: string | null): string {
+  if (!userId) return "Atanmadı";
+  const member = members.find((m) => m.user_id === userId);
+  return member?.full_name ?? member?.email ?? "Bilinmeyen kullanıcı";
+}
+
+function describeActivity(entry: ActivityEntry, members: OrganizationMember[]): string {
   switch (entry.action_type) {
     case "created":
       return "oluşturuldu";
@@ -52,7 +59,7 @@ function describeActivity(entry: ActivityEntry): string {
     case "tags":
       return "etiketler güncellendi";
     case "assignee_id":
-      return "atanan kişi değişti";
+      return `atandı: ${memberLabel(members, entry.from_value)} → ${memberLabel(members, entry.to_value)}`;
     default:
       return entry.action_type;
   }
@@ -60,10 +67,12 @@ function describeActivity(entry: ActivityEntry): string {
 
 export function TaskDetailModal({
   task,
+  organizationId,
   onClose,
   onSave,
 }: {
   task: Task;
+  organizationId: string | null;
   onClose: () => void;
   onSave: (updated: Task) => void;
 }) {
@@ -73,6 +82,9 @@ export function TaskDetailModal({
   const [priority, setPriority] = useState<TaskPriority>(task.priority);
   const [tags, setTags] = useState<string[]>(task.tags);
   const [tagInput, setTagInput] = useState("");
+  const [assigneeId, setAssigneeId] = useState(task.assignee_id ?? "");
+  const [assigneeNote, setAssigneeNote] = useState("");
+  const [members, setMembers] = useState<OrganizationMember[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activity, setActivity] = useState<ActivityEntry[]>([]);
@@ -84,6 +96,13 @@ export function TaskDetailModal({
       .catch(() => {})
       .finally(() => setActivityLoading(false));
   }, [task.id]);
+
+  useEffect(() => {
+    if (!organizationId) return;
+    apiFetch<OrganizationMember[]>(`/api/organizations/${organizationId}/members`)
+      .then(setMembers)
+      .catch(() => {});
+  }, [organizationId]);
 
   function addTag() {
     const value = tagInput.trim().toLowerCase();
@@ -109,6 +128,8 @@ export function TaskDetailModal({
           due_date: dueDate || null,
           priority,
           tags,
+          assignee_id: assigneeId || null,
+          assignee_note: assigneeNote.trim() || undefined,
         }),
       });
       onSave(updated);
@@ -213,17 +234,48 @@ export function TaskDetailModal({
         </div>
 
         <div className="space-y-1.5">
+          <label className="text-xs font-medium text-white/50">Atanan kişi</label>
+          <select
+            value={assigneeId}
+            onChange={(e) => setAssigneeId(e.target.value)}
+            className={`${fieldClass} appearance-none`}
+          >
+            <option value="" className="bg-[var(--surface)]">
+              Atanmadı
+            </option>
+            {members.map((member) => (
+              <option key={member.user_id} value={member.user_id} className="bg-[var(--surface)]">
+                {member.full_name ?? member.email ?? member.user_id}
+              </option>
+            ))}
+          </select>
+
+          {assigneeId !== (task.assignee_id ?? "") && (
+            <textarea
+              value={assigneeNote}
+              onChange={(e) => setAssigneeNote(e.target.value)}
+              rows={2}
+              placeholder="Atama ile ilgili bir not bırak (opsiyonel)"
+              className={`${fieldClass} resize-none`}
+            />
+          )}
+        </div>
+
+        <div className="space-y-1.5">
           <label className="text-xs font-medium text-white/50">Aktivite Geçmişi</label>
           {activityLoading ? (
             <p className="text-xs text-white/30">Yükleniyor...</p>
           ) : activity.length === 0 ? (
             <p className="text-xs text-white/30">Henüz bir aktivite yok.</p>
           ) : (
-            <ul className="max-h-28 space-y-1 overflow-y-auto pr-1 text-xs text-white/60">
+            <ul className="max-h-28 space-y-1.5 overflow-y-auto pr-1 text-xs text-white/60">
               {activity.map((entry) => (
-                <li key={entry.id} className="flex items-center justify-between gap-2">
-                  <span className="min-w-0 flex-1 truncate">{describeActivity(entry)}</span>
-                  <span className="shrink-0 text-white/30">{formatActivityTime(entry.created_at)}</span>
+                <li key={entry.id}>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="min-w-0 flex-1 truncate">{describeActivity(entry, members)}</span>
+                    <span className="shrink-0 text-white/30">{formatActivityTime(entry.created_at)}</span>
+                  </div>
+                  {entry.note && <p className="mt-0.5 pl-0 text-white/45 italic">"{entry.note}"</p>}
                 </li>
               ))}
             </ul>

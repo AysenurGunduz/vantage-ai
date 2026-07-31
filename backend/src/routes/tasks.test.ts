@@ -207,6 +207,46 @@ describe("tasks routes", () => {
     expect(vi.mocked(supabase.from)).toHaveBeenCalledWith("task_activity_log");
   });
 
+  it("logs an assignee_id activity entry with a note when one is provided", async () => {
+    const taskRow = { id: "task-1", project_id: "project-1", title: "Design schema", assignee_id: null };
+    const updatedTask = { ...taskRow, assignee_id: "user-2" };
+    membership = { role_in_project: "member" };
+    const activityChain = chain({ then: { error: null } });
+    taskResponses = [
+      chain({ maybeSingle: { data: taskRow, error: null } }),
+      chain({ single: { data: updatedTask, error: null } }),
+    ];
+    activityLogQueue = [activityChain];
+
+    await request(app)
+      .patch("/api/tasks/task-1")
+      .set("Authorization", "Bearer valid-token")
+      .send({ assignee_id: "user-2", assignee_note: "Bu hafta bitirebilir misin?" });
+
+    expect(activityChain.insert).toHaveBeenCalledWith(
+      expect.objectContaining({ action_type: "assignee_id", note: "Bu hafta bitirebilir misin?" }),
+    );
+  });
+
+  it("does not attach a note to a status activity entry even if assignee_note is sent", async () => {
+    const taskRow = { id: "task-1", project_id: "project-1", title: "Design schema", status: "todo" };
+    const updatedTask = { ...taskRow, status: "in_progress" };
+    membership = { role_in_project: "member" };
+    const activityChain = chain({ then: { error: null } });
+    taskResponses = [
+      chain({ maybeSingle: { data: taskRow, error: null } }),
+      chain({ single: { data: updatedTask, error: null } }),
+    ];
+    activityLogQueue = [activityChain];
+
+    await request(app)
+      .patch("/api/tasks/task-1")
+      .set("Authorization", "Bearer valid-token")
+      .send({ status: "in_progress", assignee_note: "should be ignored" });
+
+    expect(activityChain.insert).toHaveBeenCalledWith(expect.objectContaining({ action_type: "status", note: null }));
+  });
+
   it("updates a task's tags", async () => {
     const taskRow = { id: "task-1", project_id: "project-1", title: "Design schema", tags: [] };
     const updatedTask = { ...taskRow, tags: ["design", "review"] };
