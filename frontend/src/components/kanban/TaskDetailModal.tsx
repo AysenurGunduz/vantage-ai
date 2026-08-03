@@ -15,7 +15,7 @@ const priorityPillClass: Record<TaskPriority, string> = {
 };
 
 const fieldClass =
-  "w-full rounded-[6px] border border-white/15 bg-white/5 px-3 py-2 text-sm text-white outline-none focus-visible:border-[#ff6b5b] focus-visible:ring-2 focus-visible:ring-[#ff6b5b]/30";
+  "w-full rounded-[6px] border border-[var(--surface-border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none focus-visible:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)]/30";
 
 interface ActivityEntry {
   id: string;
@@ -68,11 +68,13 @@ function describeActivity(entry: ActivityEntry, members: OrganizationMember[]): 
 export function TaskDetailModal({
   task,
   organizationId,
+  theme = "dark",
   onClose,
   onSave,
 }: {
   task: Task;
   organizationId: string | null;
+  theme?: "dark" | "light";
   onClose: () => void;
   onSave: (updated: Task) => void;
 }) {
@@ -143,12 +145,12 @@ export function TaskDetailModal({
 
   return (
     <div
-      className="dark-theme fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+      className={`${theme}-theme fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm`}
       onClick={onClose}
     >
       <div
         onClick={(event) => event.stopPropagation()}
-        className="w-full max-w-md space-y-4 rounded-[8px] border border-[var(--surface-border)] bg-[var(--surface)] p-6 text-white shadow-2xl shadow-black/50"
+        className="w-full max-w-md space-y-4 rounded-[8px] border border-[var(--surface-border)] bg-[var(--surface)] p-6 text-[var(--text-primary)] shadow-2xl shadow-black/50"
       >
         <div className="flex items-start justify-between gap-3">
           <input
@@ -159,7 +161,7 @@ export function TaskDetailModal({
           <button
             onClick={onClose}
             aria-label="Kapat"
-            className="shrink-0 text-white/40 transition-colors hover:text-white"
+            className="shrink-0 text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]"
           >
             <X className="size-5" />
           </button>
@@ -171,8 +173,10 @@ export function TaskDetailModal({
               key={option}
               onClick={() => setPriority(option)}
               className={`rounded-[6px] px-2.5 py-1 text-xs transition-colors ${
-                priority === option ? priorityPillClass[option] : "bg-white/5 text-white/40 hover:bg-white/10"
-              } ${priority === option ? "ring-1 ring-inset ring-white/20" : ""}`}
+                priority === option
+                  ? priorityPillClass[option]
+                  : "bg-[var(--surface-hover)] text-[var(--text-muted)] hover:bg-[var(--surface-border)]"
+              } ${priority === option ? "ring-1 ring-inset ring-[var(--surface-border-hover)]" : ""}`}
             >
               {option}
             </button>
@@ -180,7 +184,7 @@ export function TaskDetailModal({
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-white/50">Açıklama</label>
+          <label className="text-xs font-medium text-[var(--text-secondary)]">Açıklama</label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -191,18 +195,18 @@ export function TaskDetailModal({
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-white/50">Etiketler</label>
+          <label className="text-xs font-medium text-[var(--text-secondary)]">Etiketler</label>
           <div className="flex flex-wrap gap-1.5">
             {tags.map((tag) => (
               <span
                 key={tag}
-                className="flex items-center gap-1 rounded-full bg-indigo-500/10 px-2.5 py-1 text-xs text-indigo-300"
+                className="flex items-center gap-1 rounded-full bg-[var(--tag-bg)] px-2.5 py-1 text-xs text-[var(--tag-text)]"
               >
                 #{tag}
                 <button
                   onClick={() => removeTag(tag)}
                   aria-label={`${tag} etiketini kaldır`}
-                  className="text-indigo-300/60 hover:text-indigo-200"
+                  className="text-[var(--tag-text)]/70 hover:text-[var(--tag-text)]"
                 >
                   <X className="size-3" />
                 </button>
@@ -219,22 +223,22 @@ export function TaskDetailModal({
               }
             }}
             placeholder="Etiket yaz, Enter'a bas"
-            className="rounded-[6px] border-white/15 bg-white/5 text-white focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
+            className="rounded-[6px] border-[var(--surface-border)] bg-[var(--surface)] text-[var(--text-primary)] focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
           />
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-white/50">Son tarih</label>
+          <label className="text-xs font-medium text-[var(--text-secondary)]">Son tarih</label>
           <Input
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className="rounded-[6px] border-white/15 bg-white/5 text-white focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
+            className="rounded-[6px] border-[var(--surface-border)] bg-[var(--surface)] text-[var(--text-primary)] focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
           />
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-white/50">Atanan kişi</label>
+          <label className="text-xs font-medium text-[var(--text-secondary)]">Atanan kişi</label>
           <select
             value={assigneeId}
             onChange={(e) => setAssigneeId(e.target.value)}
@@ -262,20 +266,20 @@ export function TaskDetailModal({
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-white/50">Aktivite Geçmişi</label>
+          <label className="text-xs font-medium text-[var(--text-secondary)]">Aktivite Geçmişi</label>
           {activityLoading ? (
-            <p className="text-xs text-white/30">Yükleniyor...</p>
+            <p className="text-xs text-[var(--text-muted)]">Yükleniyor...</p>
           ) : activity.length === 0 ? (
-            <p className="text-xs text-white/30">Henüz bir aktivite yok.</p>
+            <p className="text-xs text-[var(--text-muted)]">Henüz bir aktivite yok.</p>
           ) : (
-            <ul className="max-h-28 space-y-1.5 overflow-y-auto pr-1 text-xs text-white/60">
+            <ul className="max-h-28 space-y-1.5 overflow-y-auto pr-1 text-xs text-[var(--text-secondary)]">
               {activity.map((entry) => (
                 <li key={entry.id}>
                   <div className="flex items-center justify-between gap-2">
                     <span className="min-w-0 flex-1 truncate">{describeActivity(entry, members)}</span>
-                    <span className="shrink-0 text-white/30">{formatActivityTime(entry.created_at)}</span>
+                    <span className="shrink-0 text-[var(--text-muted)]">{formatActivityTime(entry.created_at)}</span>
                   </div>
-                  {entry.note && <p className="mt-0.5 pl-0 text-white/45 italic">"{entry.note}"</p>}
+                  {entry.note && <p className="mt-0.5 pl-0 text-[var(--text-secondary)] italic">"{entry.note}"</p>}
                 </li>
               ))}
             </ul>
@@ -288,7 +292,7 @@ export function TaskDetailModal({
           <Button
             variant="outline"
             onClick={onClose}
-            className="rounded-[6px] border-white/20 bg-transparent text-white hover:bg-white/5 hover:text-white"
+            className="rounded-[6px] border-[var(--surface-border)] bg-transparent text-[var(--text-primary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
           >
             Vazgeç
           </Button>

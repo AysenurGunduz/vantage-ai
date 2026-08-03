@@ -6,15 +6,17 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "@/components/ui/button";
 
 const fieldClass =
-  "w-full rounded-[6px] border border-white/15 bg-white/5 px-3 py-2 text-sm text-white outline-none focus-visible:border-[#ff6b5b] focus-visible:ring-2 focus-visible:ring-[#ff6b5b]/30";
+  "w-full rounded-[6px] border border-[var(--surface-border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none focus-visible:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)]/30";
 
 export function AITaskSplitDialog({
   projectId,
   open,
+  theme = "dark",
   onOpenChange,
 }: {
   projectId: string;
   open: boolean;
+  theme?: "dark" | "light";
   onOpenChange: (open: boolean) => void;
 }) {
   const [description, setDescription] = useState("");
@@ -87,7 +89,7 @@ export function AITaskSplitDialog({
         onOpenChange(next);
       }}
     >
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className={`sm:max-w-lg ${theme === "light" ? "light-theme" : ""}`}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
             <Sparkles className="size-4 text-[#ff6b5b]" />
@@ -115,7 +117,7 @@ export function AITaskSplitDialog({
                 type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
-                className="border-white/20 bg-transparent text-white hover:bg-white/5 hover:text-white"
+                className="border-[var(--surface-border)] bg-transparent text-[var(--text-primary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
               >
                 Vazgeç
               </Button>
@@ -157,19 +159,19 @@ export function AITaskSplitDialog({
                     type="button"
                     onClick={() => removeSubtask(index)}
                     aria-label="Alt görevi kaldır"
-                    className="shrink-0 text-white/40 hover:text-[#ff6b5b]"
+                    className="shrink-0 text-[var(--text-muted)] hover:text-[#ff6b5b]"
                   >
                     <Trash2 className="size-4" />
                   </button>
                 </div>
               ))}
-              {subtasks.length === 0 && <p className="text-xs text-white/40">Alt görev kalmadı, ekleyebilirsin.</p>}
+              {subtasks.length === 0 && <p className="text-xs text-[var(--text-muted)]">Alt görev kalmadı, ekleyebilirsin.</p>}
             </div>
 
             <button
               type="button"
               onClick={addSubtask}
-              className="flex items-center gap-1.5 self-start text-xs text-white/50 hover:text-white"
+              className="flex items-center gap-1.5 self-start text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             >
               <Plus className="size-3.5" />
               Alt görev ekle
@@ -183,7 +185,7 @@ export function AITaskSplitDialog({
                 variant="outline"
                 onClick={() => handleResolve("rejected")}
                 disabled={resolving}
-                className="border-white/20 bg-transparent text-white hover:bg-white/5 hover:text-white"
+                className="border-[var(--surface-border)] bg-transparent text-[var(--text-primary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
               >
                 Reddet
               </Button>

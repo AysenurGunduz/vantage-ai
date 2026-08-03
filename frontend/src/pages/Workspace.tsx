@@ -12,7 +12,6 @@ import { KanbanBoard } from "@/components/kanban/KanbanBoard";
 import { TaskDetailModal } from "@/components/kanban/TaskDetailModal";
 import { PanelSkeleton, SidebarListSkeleton } from "@/components/Skeleton";
 import { Reveal } from "@/components/Reveal";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { PageNav } from "@/components/PageNav";
 import { Breadcrumb, type BreadcrumbItem } from "@/components/Breadcrumb";
 import { ProfileMenu } from "@/components/ProfileMenu";
@@ -250,17 +249,13 @@ export default function Workspace() {
   }
 
   return (
-    <div className="dark-theme animated-gradient relative min-h-screen overflow-hidden text-white">
-      <NetworkBackground className="opacity-40" />
-      <div className="floating-blob pointer-events-none absolute -top-32 -left-32 h-96 w-96 rounded-full bg-[#ff6b5b]/8 blur-3xl" />
-      <div className="floating-blob-reverse pointer-events-none absolute top-1/2 -right-32 h-96 w-96 rounded-full bg-indigo-500/10 blur-3xl" />
-
+    <div className="light-theme relative min-h-screen overflow-hidden bg-[var(--bg-base)] text-[var(--text-primary)]">
       <div className="page-fade-in relative z-10 mx-auto max-w-screen-2xl px-8 py-8">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-          <Logo />
+          <Logo theme="light" />
           <div className="flex flex-wrap items-center gap-3">
             <PageNav />
-            <ProfileMenu email={user?.email} onSignOut={signOut} />
+            <ProfileMenu email={user?.email} onSignOut={signOut} theme="light" />
           </div>
         </div>
 
@@ -294,13 +289,13 @@ export default function Workspace() {
                           onClick={() => setSelectedOrgId(isOpen ? null : org.id)}
                           className={`flex w-full items-center justify-between gap-2 rounded-[6px] px-3 py-2.5 text-left text-sm transition-colors ${
                             isOpen
-                              ? "bg-[var(--accent)]/10 text-white"
-                              : "text-[var(--text-secondary)] hover:bg-white/5 hover:text-white"
+                              ? "bg-[var(--accent)]/10 text-[var(--text-primary)]"
+                              : "text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                           }`}
                         >
                           <span className="truncate">{org.name}</span>
                           <ChevronDown
-                            className={`size-4 shrink-0 text-white/40 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                            className={`size-4 shrink-0 text-[var(--text-muted)] transition-transform ${isOpen ? "rotate-180" : ""}`}
                           />
                         </button>
 
@@ -308,7 +303,7 @@ export default function Workspace() {
                           <div className="mt-1 mb-2 ml-3 space-y-1 border-l border-[var(--surface-border)] pl-3">
                             <Link
                               to={`/dashboard/organizations/${org.id}/team`}
-                              className="flex items-center gap-2 rounded-[6px] px-2 py-1.5 text-xs text-[var(--text-secondary)] transition-colors hover:bg-white/5 hover:text-[var(--accent)]"
+                              className="flex items-center gap-2 rounded-[6px] px-2 py-1.5 text-xs text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--accent)]"
                             >
                               <Users2 className="size-3.5" />
                               Ekip Üyeleri
@@ -324,8 +319,8 @@ export default function Workspace() {
                                     onClick={() => setSelectedProjectId(project.id)}
                                     className={`flex w-full items-center gap-2 rounded-[6px] border-l-2 px-2 py-1.5 text-left text-xs transition-colors ${
                                       selectedProjectId === project.id
-                                        ? "border-[var(--accent)] bg-[var(--accent)]/10 text-white"
-                                        : "border-transparent text-[var(--text-secondary)] hover:border-white/20 hover:bg-white/5 hover:text-white"
+                                        ? "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--text-primary)]"
+                                        : "border-transparent text-[var(--text-secondary)] hover:border-[var(--surface-border-hover)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                                     }`}
                                   >
                                     <FolderKanban className="size-3 shrink-0" />
@@ -333,14 +328,14 @@ export default function Workspace() {
                                   </button>
                                 ))}
                                 {projects.length === 0 && (
-                                  <p className="px-2 py-1.5 text-xs text-white/30">Henüz proje yok.</p>
+                                  <p className="px-2 py-1.5 text-xs text-[var(--text-muted)]">Henüz proje yok.</p>
                                 )}
                               </>
                             )}
 
                             <button
                               onClick={() => setCreateProjectOrgId(org.id)}
-                              className="mt-1 flex w-full items-center gap-1.5 rounded-[6px] px-2 py-1.5 text-left text-xs text-[var(--text-secondary)] transition-colors hover:bg-white/5 hover:text-white"
+                              className="mt-1 flex w-full items-center gap-1.5 rounded-[6px] px-2 py-1.5 text-left text-xs text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                             >
                               <Plus className="size-3.5 shrink-0" />
                               Yeni proje
@@ -502,7 +497,7 @@ export default function Workspace() {
                           setSortBy("created");
                           setSearchQuery("");
                         }}
-                        className="text-xs text-white/50 underline underline-offset-4 hover:text-[#ff6b5b]"
+                        className="text-xs text-[var(--text-secondary)] underline underline-offset-4 hover:text-[var(--accent)]"
                       >
                         Filtreleri temizle
                       </button>
@@ -524,7 +519,7 @@ export default function Workspace() {
             ) : (
               <Reveal
                 delayMs={120}
-                className="flex h-72 items-center justify-center rounded-[8px] border border-dashed border-white/15 px-6"
+                className="flex h-72 items-center justify-center rounded-[8px] border border-dashed border-[var(--surface-border)] px-6"
               >
                 <EmptyState
                   icon={ListTodo}
@@ -541,6 +536,7 @@ export default function Workspace() {
         <TaskDetailModal
           task={selectedTask}
           organizationId={selectedOrgId}
+          theme="light"
           onClose={() => setSelectedTask(null)}
           onSave={(updated) => {
             setTasks((prev) => prev.map((task) => (task.id === updated.id ? updated : task)));
@@ -551,6 +547,7 @@ export default function Workspace() {
       <CreateProjectDialog
         organizationId={createProjectOrgId}
         open={createProjectOrgId !== null}
+        theme="light"
         onOpenChange={(next) => {
           if (!next) setCreateProjectOrgId(null);
         }}
@@ -558,7 +555,12 @@ export default function Workspace() {
       />
 
       {selectedProjectId && (
-        <AITaskSplitDialog projectId={selectedProjectId} open={aiDialogOpen} onOpenChange={setAiDialogOpen} />
+        <AITaskSplitDialog
+          projectId={selectedProjectId}
+          open={aiDialogOpen}
+          theme="light"
+          onOpenChange={setAiDialogOpen}
+        />
       )}
     </div>
   );

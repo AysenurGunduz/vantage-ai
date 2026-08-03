@@ -4,7 +4,7 @@ import type { Task, TaskStatus } from "@/types/api";
 import { TaskCard } from "./TaskCard";
 
 const statusDotClass: Record<TaskStatus, string> = {
-  backlog: "bg-white/30",
+  backlog: "bg-[var(--text-muted)]",
   todo: "bg-sky-400",
   in_progress: "bg-amber-400",
   review: "bg-purple-400",
@@ -40,7 +40,7 @@ export function KanbanColumn({
           <span className={`size-1.5 rounded-full ${statusDotClass[id]}`} />
           {label}
         </h3>
-        <span className="rounded-full bg-white/5 px-1.5 py-0.5 text-xs text-[var(--text-muted)]">
+        <span className="rounded-full bg-[var(--surface-hover)] px-1.5 py-0.5 text-xs text-[var(--text-muted)]">
           {tasks.length}
         </span>
       </div>
