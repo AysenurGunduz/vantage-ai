@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { Building2, ChevronDown, FolderKanban, ListTodo, Plus, Search, Users2 } from "lucide-react";
+import { Building2, ChevronDown, FolderKanban, ListTodo, Plus, Search, Sparkles, Users2 } from "lucide-react";
 import { useAuth } from "../lib/AuthContext";
 import { apiFetch } from "../lib/apiClient";
 import { supabase } from "../lib/supabaseClient";
@@ -18,6 +18,7 @@ import { Breadcrumb, type BreadcrumbItem } from "@/components/Breadcrumb";
 import { ProfileMenu } from "@/components/ProfileMenu";
 import { CreateProjectDialog } from "@/components/CreateProjectDialog";
 import { EmptyState } from "@/components/EmptyState";
+import { AITaskSplitDialog } from "@/components/AITaskSplitDialog";
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : "Beklenmeyen bir hata oluştu";
@@ -43,6 +44,8 @@ export default function Workspace() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [createProjectOrgId, setCreateProjectOrgId] = useState<string | null>(null);
+
+  const [aiDialogOpen, setAiDialogOpen] = useState(false);
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState("");
@@ -419,6 +422,15 @@ export default function Workspace() {
                     <Plus className="size-4" />
                     Ekle
                   </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setAiDialogOpen(true)}
+                    className="gap-1.5 rounded-[6px] border-[var(--accent)]/30 bg-[var(--accent)]/10 text-[var(--accent)] hover:bg-[var(--accent)]/20 hover:text-[var(--accent)]"
+                  >
+                    <Sparkles className="size-4" />
+                    AI ile Öner
+                  </Button>
                 </form>
 
                 {tasks.length > 0 && (
@@ -544,6 +556,10 @@ export default function Workspace() {
         }}
         onCreated={handleProjectCreated}
       />
+
+      {selectedProjectId && (
+        <AITaskSplitDialog projectId={selectedProjectId} open={aiDialogOpen} onOpenChange={setAiDialogOpen} />
+      )}
     </div>
   );
 }

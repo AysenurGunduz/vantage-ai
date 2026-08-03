@@ -73,6 +73,23 @@ export interface DashboardStats {
   byProject: Array<{ project_id: string; project_name: string; count: number }>;
 }
 
+export interface SuggestedSubtask {
+  title: string;
+  estimated_hours?: number;
+}
+
+export type AITaskSuggestionStatus = "pending" | "accepted" | "rejected";
+
+export interface AITaskSuggestion {
+  id: string;
+  project_id: string;
+  source_description: string;
+  suggested_tasks: { subtasks: SuggestedSubtask[] };
+  status: AITaskSuggestionStatus;
+  created_by: string;
+  created_at: string;
+}
+
 export type InvitationStatus = "pending" | "accepted" | "revoked" | "expired";
 
 export interface OrganizationInvitation {
