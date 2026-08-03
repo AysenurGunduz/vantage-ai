@@ -23,7 +23,7 @@ function valuesEqual(a: unknown, b: unknown): boolean {
   return a === b;
 }
 
-async function logActivity(
+export async function logActivity(
   taskId: string,
   userId: string,
   actionType: string,
