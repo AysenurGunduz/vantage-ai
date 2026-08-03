@@ -29,16 +29,18 @@ const createProjectSchema = z.object({
 type CreateProjectForm = z.infer<typeof createProjectSchema>;
 
 const fieldClass =
-  "w-full rounded-[6px] border border-white/15 bg-white/5 px-3 py-2 text-sm text-white outline-none focus-visible:border-[#ff6b5b] focus-visible:ring-2 focus-visible:ring-[#ff6b5b]/30";
+  "w-full rounded-[6px] border border-[var(--surface-border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none focus-visible:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)]/30";
 
 export function CreateProjectDialog({
   organizationId,
   open,
+  theme = "dark",
   onOpenChange,
   onCreated,
 }: {
   organizationId: string | null;
   open: boolean;
+  theme?: "dark" | "light";
   onOpenChange: (open: boolean) => void;
   onCreated: (project: Project) => void;
 }) {
@@ -77,7 +79,7 @@ export function CreateProjectDialog({
         onOpenChange(next);
       }}
     >
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className={`sm:max-w-md ${theme === "light" ? "light-theme" : ""}`}>
         <DialogHeader>
           <DialogTitle className="text-base">Yeni proje oluştur</DialogTitle>
           <DialogDescription>Projeye bir ad ver, açıklama eklemek istersen isteğe bağlı.</DialogDescription>
@@ -85,7 +87,7 @@ export function CreateProjectDialog({
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div>
-            <label htmlFor="project-name" className="mb-1.5 block text-xs font-medium text-white/60">
+            <label htmlFor="project-name" className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">
               Proje adı
             </label>
             <input
@@ -99,8 +101,11 @@ export function CreateProjectDialog({
           </div>
 
           <div>
-            <label htmlFor="project-description" className="mb-1.5 block text-xs font-medium text-white/60">
-              Açıklama <span className="text-white/30">(isteğe bağlı)</span>
+            <label
+              htmlFor="project-description"
+              className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]"
+            >
+              Açıklama <span className="text-[var(--text-muted)]">(isteğe bağlı)</span>
             </label>
             <textarea
               id="project-description"
@@ -119,7 +124,7 @@ export function CreateProjectDialog({
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="border-white/20 bg-transparent text-white hover:bg-white/5 hover:text-white"
+              className="border-[var(--surface-border)] bg-transparent text-[var(--text-primary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
             >
               Vazgeç
             </Button>

@@ -41,7 +41,7 @@ export default function Login() {
         <h2 className="text-2xl font-semibold tracking-tight">Tekrar hoş geldin</h2>
       </Reveal>
       <Reveal delayMs={80}>
-        <p className="mt-1 text-sm text-white/60">Devam etmek için hesabına giriş yap</p>
+        <p className="mt-1 text-sm text-[var(--text-secondary)]">Devam etmek için hesabına giriş yap</p>
       </Reveal>
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-5">
@@ -50,7 +50,7 @@ export default function Login() {
         )}
 
         <Reveal delayMs={160} className="space-y-1.5">
-          <Label htmlFor="email" className="text-white/70">
+          <Label htmlFor="email" className="text-[var(--text-secondary)]">
             E-posta
           </Label>
           <Input
@@ -59,12 +59,12 @@ export default function Login() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="rounded-[6px] border-white/15 bg-white/5 text-white focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
+            className="rounded-[6px] border-[var(--surface-border)] bg-[var(--surface)] text-[var(--text-primary)] focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
           />
         </Reveal>
 
         <Reveal delayMs={240} className="space-y-1.5">
-          <Label htmlFor="password" className="text-white/70">
+          <Label htmlFor="password" className="text-[var(--text-secondary)]">
             Şifre
           </Label>
           <Input
@@ -73,7 +73,7 @@ export default function Login() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="rounded-[6px] border-white/15 bg-white/5 text-white focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
+            className="rounded-[6px] border-[var(--surface-border)] bg-[var(--surface)] text-[var(--text-primary)] focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
           />
         </Reveal>
 
@@ -89,7 +89,7 @@ export default function Login() {
         </Reveal>
 
         <Reveal delayMs={400}>
-          <p className="text-center text-sm text-white/60">
+          <p className="text-center text-sm text-[var(--text-secondary)]">
             Hesabın yok mu?{" "}
             <Link to="/signup" className="font-medium text-[#ff6b5b] underline underline-offset-4">
               Kayıt ol

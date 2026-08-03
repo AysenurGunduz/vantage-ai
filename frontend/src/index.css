@@ -151,6 +151,30 @@
   --priority-medium: #818cf8;
   --priority-high: #ff6b5b;
   --priority-urgent: #ff3b30;
+  --tag-bg: rgb(99 102 241 / 0.1);
+  --tag-text: #a5b4fc;
+}
+
+.light-theme {
+  font-family: "Poppins", sans-serif;
+  --bg-base: #eaf5f6;
+  --bg-accent: #dff0f2;
+  --surface: #ffffff;
+  --surface-hover: #f2f9fa;
+  --surface-border: #d7e6e8;
+  --surface-border-hover: #bcd2d5;
+  --text-primary: #16213a;
+  --text-secondary: #5b6472;
+  --text-muted: #8891a0;
+  --accent: #ff6b5b;
+  --accent-hover: #ff8a7a;
+  --accent-active: #e85a4a;
+  --priority-low: #64748b;
+  --priority-medium: #6366f1;
+  --priority-high: #ff6b5b;
+  --priority-urgent: #dc2626;
+  --tag-bg: rgb(99 102 241 / 0.1);
+  --tag-text: #4f46e5;
 }
 
 html {

@@ -2,25 +2,36 @@ import { LogOut } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function ProfileMenu({ email, onSignOut }: { email?: string | null; onSignOut: () => void }) {
+export function ProfileMenu({
+  email,
+  onSignOut,
+  theme = "dark",
+}: {
+  email?: string | null;
+  onSignOut: () => void;
+  theme?: "dark" | "light";
+}) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className="flex size-9 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white outline-none transition-colors hover:bg-white/15 focus-visible:ring-2 focus-visible:ring-[var(--accent)]/50"
+        className="flex size-9 items-center justify-center rounded-full bg-[var(--accent)] text-sm font-semibold text-white outline-none transition-colors hover:bg-[var(--accent-hover)] focus-visible:ring-2 focus-visible:ring-[var(--accent)]/50"
         title={email ?? undefined}
       >
         {email?.[0]?.toUpperCase() ?? "?"}
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" sideOffset={8} className="min-w-52">
-        <DropdownMenuLabel className="truncate px-2 py-1.5 text-xs font-normal text-[var(--text-secondary)]">
-          {email ?? "Hesabım"}
-        </DropdownMenuLabel>
+      <DropdownMenuContent align="end" sideOffset={8} className={`min-w-52 ${theme === "light" ? "light-theme" : ""}`}>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="truncate px-2 py-1.5 text-xs font-normal text-[var(--text-secondary)]">
+            {email ?? "Hesabım"}
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           variant="destructive"
