@@ -6,7 +6,6 @@ import type { DashboardActivityEntry } from "../types/api";
 import { Logo } from "@/components/Logo";
 import { PanelSkeleton } from "@/components/Skeleton";
 import { Reveal } from "@/components/Reveal";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { PageNav } from "@/components/PageNav";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { ProfileMenu } from "@/components/ProfileMenu";
@@ -58,7 +57,7 @@ function describeActivity(entry: DashboardActivityEntry): string {
 }
 
 const STATUS_DOT: Record<string, string> = {
-  backlog: "bg-white/30",
+  backlog: "bg-[var(--text-muted)]",
   todo: "bg-sky-400",
   in_progress: "bg-amber-400",
   review: "bg-purple-400",
@@ -79,16 +78,16 @@ function ActivityDescription({ entry }: { entry: DashboardActivityEntry }) {
     const from = entry.from_value ?? "";
     const to = entry.to_value ?? "";
     return (
-      <span className="flex flex-wrap items-center gap-1.5 text-sm text-white/60">
-        <span className={`size-1.5 shrink-0 rounded-full ${STATUS_DOT[from] ?? "bg-white/30"}`} />
+      <span className="flex flex-wrap items-center gap-1.5 text-sm text-[var(--text-secondary)]">
+        <span className={`size-1.5 shrink-0 rounded-full ${STATUS_DOT[from] ?? "bg-[var(--text-muted)]"}`} />
         {STATUS_LABELS[from] ?? from}
-        <span className="text-white/30">→</span>
-        <span className={`size-1.5 shrink-0 rounded-full ${STATUS_DOT[to] ?? "bg-white/30"}`} />
+        <span className="text-[var(--text-muted)]">→</span>
+        <span className={`size-1.5 shrink-0 rounded-full ${STATUS_DOT[to] ?? "bg-[var(--text-muted)]"}`} />
         {STATUS_LABELS[to] ?? to}
       </span>
     );
   }
-  return <span className="text-sm text-white/60">{describeActivity(entry)}</span>;
+  return <span className="text-sm text-[var(--text-secondary)]">{describeActivity(entry)}</span>;
 }
 
 export default function Activity() {
@@ -105,17 +104,13 @@ export default function Activity() {
   }, []);
 
   return (
-    <div className="dark-theme animated-gradient relative min-h-screen overflow-hidden text-white">
-      <NetworkBackground className="opacity-40" />
-      <div className="floating-blob pointer-events-none absolute -top-32 -left-32 h-96 w-96 rounded-full bg-[#ff6b5b]/8 blur-3xl" />
-      <div className="floating-blob-reverse pointer-events-none absolute top-1/2 -right-32 h-96 w-96 rounded-full bg-indigo-500/10 blur-3xl" />
-
+    <div className="light-theme relative min-h-screen overflow-hidden bg-[var(--bg-base)] text-[var(--text-primary)]">
       <div className="page-fade-in relative z-10 mx-auto max-w-screen-2xl px-8 py-8">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <Logo />
+          <Logo theme="light" />
           <div className="flex flex-wrap items-center gap-3">
             <PageNav />
-            <ProfileMenu email={user?.email} onSignOut={signOut} />
+            <ProfileMenu email={user?.email} onSignOut={signOut} theme="light" />
           </div>
         </div>
 
@@ -135,22 +130,22 @@ export default function Activity() {
         ) : (
           <Reveal as="section" className={panelClass}>
             {activity.length === 0 ? (
-              <p className="text-sm text-white/40">Henüz bir aktivite yok.</p>
+              <p className="text-sm text-[var(--text-muted)]">Henüz bir aktivite yok.</p>
             ) : (
-              <ul className="divide-y divide-white/5">
+              <ul className="divide-y divide-[var(--surface-border)]">
                 {activity.map((entry) => {
                   const Icon = ACTION_ICONS[entry.action_type] ?? History;
                   return (
                     <li key={entry.id} className="flex items-start gap-4 py-4 first:pt-0 last:pb-0">
-                      <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-white/5 text-[var(--accent)]">
+                      <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--surface-hover)] text-[var(--accent)]">
                         <Icon className="size-4" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-semibold text-white">{entry.task_title}</p>
+                        <p className="truncate text-sm font-semibold text-[var(--text-primary)]">{entry.task_title}</p>
                         <div className="mt-1">
                           <ActivityDescription entry={entry} />
                         </div>
-                        {entry.note && <p className="mt-1 text-sm text-white/45 italic">"{entry.note}"</p>}
+                        {entry.note && <p className="mt-1 text-sm text-[var(--text-muted)] italic">"{entry.note}"</p>}
                       </div>
                       <span className="shrink-0 pt-1.5 text-xs text-[var(--text-muted)]">
                         {formatActivityTime(entry.created_at)}

@@ -17,7 +17,6 @@ import type { DashboardStats, DashboardTaskSummary } from "../types/api";
 import { Logo } from "@/components/Logo";
 import { PanelSkeleton } from "@/components/Skeleton";
 import { Reveal } from "@/components/Reveal";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { PageNav } from "@/components/PageNav";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { ProfileMenu } from "@/components/ProfileMenu";
@@ -96,7 +95,7 @@ function TaskAlertList({
   emptyText: string;
 }) {
   if (tasks.length === 0) {
-    return <p className="text-sm text-white/40">{emptyText}</p>;
+    return <p className="text-sm text-[var(--text-muted)]">{emptyText}</p>;
   }
 
   return (
@@ -176,17 +175,13 @@ export default function Overview() {
     : [];
 
   return (
-    <div className="dark-theme animated-gradient relative min-h-screen overflow-hidden text-white">
-      <NetworkBackground className="opacity-40" />
-      <div className="floating-blob pointer-events-none absolute -top-32 -left-32 h-96 w-96 rounded-full bg-[#ff6b5b]/8 blur-3xl" />
-      <div className="floating-blob-reverse pointer-events-none absolute top-1/2 -right-32 h-96 w-96 rounded-full bg-indigo-500/10 blur-3xl" />
-
+    <div className="light-theme relative min-h-screen overflow-hidden bg-[var(--bg-base)] text-[var(--text-primary)]">
       <div className="page-fade-in relative z-10 mx-auto max-w-screen-2xl px-8 py-8">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <Logo />
+          <Logo theme="light" />
           <div className="flex flex-wrap items-center gap-3">
             <PageNav />
-            <ProfileMenu email={user?.email} onSignOut={signOut} />
+            <ProfileMenu email={user?.email} onSignOut={signOut} theme="light" />
           </div>
         </div>
 
@@ -203,8 +198,8 @@ export default function Overview() {
               onClick={() => setActiveTab(tab.id)}
               className={`border-b-2 px-3 py-2 text-sm font-medium transition-colors ${
                 activeTab === tab.id
-                  ? "border-[var(--accent)] text-white"
-                  : "border-transparent text-[var(--text-muted)] hover:text-white"
+                  ? "border-[var(--accent)] text-[var(--text-primary)]"
+                  : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)]"
               }`}
             >
               {tab.label}
@@ -410,7 +405,7 @@ export default function Overview() {
                       Proje Bazında Dağılım
                     </h2>
                     {stats.byProject.length === 0 ? (
-                      <p className="text-sm text-white/40">
+                      <p className="text-sm text-[var(--text-muted)]">
                         Henüz bir projeye ait görev yok.
                       </p>
                     ) : (
@@ -429,7 +424,7 @@ export default function Overview() {
                               <span className="w-40 shrink-0 truncate text-[var(--text-secondary)]">
                                 {project.project_name}
                               </span>
-                              <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/5">
+                              <div className="h-2 flex-1 overflow-hidden rounded-full bg-[var(--surface-hover)]">
                                 <div
                                   className="h-full rounded-full bg-[var(--accent)]"
                                   style={{ width: `${widthPct}%` }}

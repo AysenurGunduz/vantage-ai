@@ -38,7 +38,7 @@ export default function Signup() {
       {success ? (
         <Reveal className="space-y-4">
           <h2 className="text-2xl font-semibold tracking-tight">E-postanı kontrol et</h2>
-          <p className="text-sm text-white/60">
+          <p className="text-sm text-[var(--text-secondary)]">
             Hesabını onaylamak için gönderdiğimiz bağlantıya tıkla.
           </p>
           <Link to="/login" className="inline-block text-sm font-medium text-[#ff6b5b] underline underline-offset-4">
@@ -51,7 +51,7 @@ export default function Signup() {
             <h2 className="text-2xl font-semibold tracking-tight">Hesabını oluştur</h2>
           </Reveal>
           <Reveal delayMs={80}>
-            <p className="mt-1 text-sm text-white/60">Vantage'ı kullanmaya hemen başla</p>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">Vantage'ı kullanmaya hemen başla</p>
           </Reveal>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
@@ -60,7 +60,7 @@ export default function Signup() {
             )}
 
             <Reveal delayMs={160} className="space-y-1.5">
-              <Label htmlFor="email" className="text-white/70">
+              <Label htmlFor="email" className="text-[var(--text-secondary)]">
                 E-posta
               </Label>
               <Input
@@ -69,12 +69,12 @@ export default function Signup() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="rounded-[6px] border-white/15 bg-white/5 text-white focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
+                className="rounded-[6px] border-[var(--surface-border)] bg-[var(--surface)] text-[var(--text-primary)] focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
               />
             </Reveal>
 
             <Reveal delayMs={240} className="space-y-1.5">
-              <Label htmlFor="password" className="text-white/70">
+              <Label htmlFor="password" className="text-[var(--text-secondary)]">
                 Şifre
               </Label>
               <Input
@@ -84,7 +84,7 @@ export default function Signup() {
                 minLength={6}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="rounded-[6px] border-white/15 bg-white/5 text-white focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
+                className="rounded-[6px] border-[var(--surface-border)] bg-[var(--surface)] text-[var(--text-primary)] focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
               />
             </Reveal>
 
@@ -100,7 +100,7 @@ export default function Signup() {
             </Reveal>
 
             <Reveal delayMs={400}>
-              <p className="text-center text-sm text-white/60">
+              <p className="text-center text-sm text-[var(--text-secondary)]">
                 Zaten hesabın var mı?{" "}
                 <Link to="/login" className="font-medium text-[#ff6b5b] underline underline-offset-4">
                   Giriş yap
