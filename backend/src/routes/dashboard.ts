@@ -145,7 +145,7 @@ dashboardRouter.get("/activity", async (req, res) => {
 
   const { data: activity, error: activityError } = await supabase
     .from("task_activity_log")
-    .select("id, task_id, action_type, from_value, to_value, created_at")
+    .select("id, task_id, action_type, from_value, to_value, note, created_at")
     .in("task_id", taskIds)
     .order("created_at", { ascending: false })
     .limit(ACTIVITY_LIMIT);

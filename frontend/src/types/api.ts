@@ -60,6 +60,7 @@ export interface DashboardActivityEntry {
   action_type: string;
   from_value: string | null;
   to_value: string | null;
+  note: string | null;
   created_at: string;
 }
 
