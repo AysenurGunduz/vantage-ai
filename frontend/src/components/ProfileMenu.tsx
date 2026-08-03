@@ -2,6 +2,7 @@ import { LogOut } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -26,9 +27,11 @@ export function ProfileMenu({
         {email?.[0]?.toUpperCase() ?? "?"}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={8} className={`min-w-52 ${theme === "light" ? "light-theme" : ""}`}>
-        <DropdownMenuLabel className="truncate px-2 py-1.5 text-xs font-normal text-[var(--text-secondary)]">
-          {email ?? "Hesabım"}
-        </DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="truncate px-2 py-1.5 text-xs font-normal text-[var(--text-secondary)]">
+            {email ?? "Hesabım"}
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           variant="destructive"
