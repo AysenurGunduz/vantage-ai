@@ -60,6 +60,96 @@ const trustedByLogos = ["Northwind", "Globex", "Initech", "Umbrella Co.", "Hooli
 
 const aiSubtasks = ["Onboarding formu tasarımı", "API şema taslağı", "Kullanıcı testi planı"];
 
+const kanbanPreviewColumns = [
+  {
+    label: "Yapılacak",
+    count: 3,
+    cards: [
+      { title: "Onboarding ekranı tasarımı", priority: "medium" as const, meta: "Mert K. · 2 Ağu" },
+      { title: "Bildirim tercihleri ekranı", priority: "low" as const, meta: "Elif Y. · 8 Ağu" },
+      { title: "Görsel kırpma bileşeni", ai: true, meta: "Atanmadı · 12 Ağu" },
+    ],
+  },
+  {
+    label: "Devam Ediyor",
+    count: 2,
+    cards: [
+      { title: "Profil fotoğrafı yükleme UI'ı", priority: "high" as const, meta: "Ahmet Y. · 28 Tem" },
+      { title: "API rate-limit testleri", priority: "high" as const, meta: "Ahmet Y. · 4 gün gecikti", overdue: true },
+    ],
+  },
+  {
+    label: "Tamamlandı",
+    count: 3,
+    cards: [
+      { title: "Auth akışı (kayıt/giriş)", priority: "medium" as const, meta: "Elif Y. · tamamlandı" },
+      { title: "Supabase Storage entegrasyonu", priority: "high" as const, meta: "Mert K. · tamamlandı" },
+    ],
+  },
+];
+
+const kanbanPriorityClass: Record<string, string> = {
+  low: "bg-slate-400/15 text-slate-500",
+  medium: "bg-indigo-400/15 text-indigo-500",
+  high: "bg-[#ff6b5b]/15 text-[#ff6b5b]",
+};
+
+const kanbanPriorityLabel: Record<string, string> = {
+  low: "Düşük Öncelik",
+  medium: "Orta Öncelik",
+  high: "Yüksek Öncelik",
+};
+
+function KanbanPreviewMockup() {
+  return (
+    <div className="rounded-[10px] border border-[var(--surface-border)] bg-[var(--bg-accent)] p-4 sm:p-5">
+      <div className="mb-4 flex items-center justify-between">
+        <h4 className="text-lg font-semibold tracking-tight">Kanban</h4>
+        <span className="rounded-[6px] bg-[#ff6b5b] px-3 py-1.5 text-xs font-semibold text-[#0d1b3a]">
+          + Yeni Görev
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        {kanbanPreviewColumns.map((column) => (
+          <div key={column.label}>
+            <p className="mb-2 text-[11px] font-semibold tracking-[0.08em] text-[var(--text-muted)] uppercase">
+              {column.label} · {column.count}
+            </p>
+            <div className="space-y-2">
+              {column.cards.map((card) => (
+                <div
+                  key={card.title}
+                  className={`rounded-[6px] border p-2.5 text-xs ${
+                    card.ai
+                      ? "border-[#ff6b5b]/25 bg-[#ff6b5b]/[0.06]"
+                      : "border-[var(--surface-border)] bg-[var(--surface)]"
+                  }`}
+                >
+                  {card.ai ? (
+                    <span className="mb-1 inline-flex items-center gap-1 rounded-[4px] bg-[#ff6b5b]/15 px-1.5 py-0.5 text-[10px] font-semibold text-[#ff6b5b]">
+                      <Sparkles className="size-2.5" />
+                      AI Önerisi
+                    </span>
+                  ) : (
+                    <span
+                      className={`mb-1 inline-block rounded-[4px] px-1.5 py-0.5 text-[10px] font-medium ${kanbanPriorityClass[card.priority!]}`}
+                    >
+                      {kanbanPriorityLabel[card.priority!]}
+                    </span>
+                  )}
+                  <p className="mt-1 leading-snug font-medium text-[var(--text-primary)]">{card.title}</p>
+                  <p className={`mt-1 ${card.overdue ? "text-[#ff6b5b]" : "text-[var(--text-muted)]"}`}>{card.meta}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function HeroProductMockup() {
   return (
     <div className="relative mx-auto max-w-md lg:mx-0">
@@ -155,7 +245,7 @@ export default function Landing() {
       </nav>
 
       <section className="relative overflow-hidden">
-        <div className="page-fade-in relative mx-auto grid max-w-7xl gap-16 px-6 py-16 sm:px-10 sm:py-24 lg:grid-cols-2 lg:items-center lg:gap-12">
+        <div className="page-fade-in relative mx-auto grid max-w-7xl gap-16 px-6 py-16 sm:px-10 sm:py-24 lg:grid-cols-2 lg:items-start lg:gap-12">
           <div>
             <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#ff6b5b]/30 bg-[#ff6b5b]/10 px-4 py-1.5 text-sm font-medium text-[#ff6b5b] shadow-[0_0_24px_-4px_rgba(255,107,91,0.4)]">
               <span className="size-1.5 rounded-full bg-[#ff6b5b]" />
@@ -278,11 +368,7 @@ export default function Landing() {
                   <span className="size-2.5 rounded-full bg-amber-400/60" />
                   <span className="size-2.5 rounded-full bg-emerald-400/60" />
                 </div>
-                <img
-                  src="/mockups/kanban-board.png"
-                  alt="Vantage Kanban panosu ekran görüntüsü"
-                  className="block w-full"
-                />
+                <KanbanPreviewMockup />
               </div>
             </figure>
           </Reveal>
