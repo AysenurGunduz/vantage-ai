@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { Building2, ChevronDown, FolderKanban, ListTodo, Plus, Search, Sparkles, Users2 } from "lucide-react";
+import { Building2, ChevronDown, FileText, FolderKanban, ListTodo, Plus, Search, Sparkles, Users2 } from "lucide-react";
 import { useAuth } from "../lib/AuthContext";
 import { apiFetch } from "../lib/apiClient";
 import { supabase } from "../lib/supabaseClient";
@@ -18,6 +18,7 @@ import { ProfileMenu } from "@/components/ProfileMenu";
 import { CreateProjectDialog } from "@/components/CreateProjectDialog";
 import { EmptyState } from "@/components/EmptyState";
 import { AITaskSplitDialog } from "@/components/AITaskSplitDialog";
+import { SprintSummaryDialog } from "@/components/SprintSummaryDialog";
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : "Beklenmeyen bir hata oluştu";
@@ -45,6 +46,7 @@ export default function Workspace() {
   const [createProjectOrgId, setCreateProjectOrgId] = useState<string | null>(null);
 
   const [aiDialogOpen, setAiDialogOpen] = useState(false);
+  const [sprintSummaryOpen, setSprintSummaryOpen] = useState(false);
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState("");
@@ -426,6 +428,15 @@ export default function Workspace() {
                     <Sparkles className="size-4" />
                     AI ile Öner
                   </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setSprintSummaryOpen(true)}
+                    className="gap-1.5 rounded-[6px] border-[var(--accent)]/30 bg-[var(--accent)]/10 text-[var(--accent)] hover:bg-[var(--accent)]/20 hover:text-[var(--accent)]"
+                  >
+                    <FileText className="size-4" />
+                    Sprint Özeti
+                  </Button>
                 </form>
 
                 {tasks.length > 0 && (
@@ -560,6 +571,15 @@ export default function Workspace() {
           open={aiDialogOpen}
           theme="light"
           onOpenChange={setAiDialogOpen}
+        />
+      )}
+
+      {selectedProjectId && (
+        <SprintSummaryDialog
+          projectId={selectedProjectId}
+          open={sprintSummaryOpen}
+          theme="light"
+          onOpenChange={setSprintSummaryOpen}
         />
       )}
     </div>

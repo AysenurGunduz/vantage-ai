@@ -90,6 +90,12 @@ export interface AITaskSuggestion {
   created_at: string;
 }
 
+export interface SprintSummaryResult {
+  summary: string | null;
+  taskCount: number;
+  periodDays: number;
+}
+
 export type InvitationStatus = "pending" | "accepted" | "revoked" | "expired";
 
 export interface OrganizationInvitation {
