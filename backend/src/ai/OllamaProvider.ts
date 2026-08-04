@@ -4,6 +4,7 @@ export class OllamaProvider implements AIProvider {
   constructor(
     private readonly host: string,
     private readonly model: string,
+    private readonly temperature: number = 0.3,
   ) {}
 
   private async generate(prompt: string, jsonMode: boolean): Promise<string> {
@@ -14,6 +15,7 @@ export class OllamaProvider implements AIProvider {
         model: this.model,
         prompt,
         stream: false,
+        options: { temperature: this.temperature },
         ...(jsonMode ? { format: "json" } : {}),
       }),
     });

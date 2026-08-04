@@ -19,7 +19,12 @@ describe("OllamaProvider", () => {
       "http://localhost:11434/api/generate",
       expect.objectContaining({
         method: "POST",
-        body: JSON.stringify({ model: "llama3.2:3b", prompt: "selam", stream: false }),
+        body: JSON.stringify({
+          model: "llama3.2:3b",
+          prompt: "selam",
+          stream: false,
+          options: { temperature: 0.3 },
+        }),
       }),
     );
     expect(result).toBe("merhaba");
@@ -37,7 +42,13 @@ describe("OllamaProvider", () => {
     expect(fetch).toHaveBeenCalledWith(
       "http://localhost:11434/api/generate",
       expect.objectContaining({
-        body: JSON.stringify({ model: "llama3.2:3b", prompt: "selam", stream: false, format: "json" }),
+        body: JSON.stringify({
+          model: "llama3.2:3b",
+          prompt: "selam",
+          stream: false,
+          options: { temperature: 0.3 },
+          format: "json",
+        }),
       }),
     );
     expect(result).toEqual({ ok: true });

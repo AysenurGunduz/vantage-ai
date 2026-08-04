@@ -5,7 +5,7 @@ const host = process.env.OLLAMA_HOST ?? "http://localhost:11434";
 
 export const interactiveAI: AIProvider = new OllamaProvider(
   host,
-  process.env.OLLAMA_MODEL_INTERACTIVE ?? "llama3.2:3b",
+  process.env.OLLAMA_MODEL_INTERACTIVE ?? "qwen2.5:3b-instruct-q4_K_M",
 );
 
 export const backgroundAI: AIProvider = new OllamaProvider(
