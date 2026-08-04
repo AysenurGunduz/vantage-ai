@@ -1,4 +1,5 @@
-import { LogOut } from "lucide-react";
+import { LogOut, Moon, Sun } from "lucide-react";
+import { useTheme } from "@/lib/ThemeContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +19,8 @@ export function ProfileMenu({
   onSignOut: () => void;
   theme?: "dark" | "light";
 }) {
+  const { theme: activeTheme, toggleTheme } = useTheme();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -32,6 +35,11 @@ export function ProfileMenu({
             {email ?? "Hesabım"}
           </DropdownMenuLabel>
         </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={toggleTheme} className="px-2 py-1.5 text-[13px]">
+          {activeTheme === "light" ? <Moon className="size-4" /> : <Sun className="size-4" />}
+          {activeTheme === "light" ? "Koyu Tema" : "Açık Tema"}
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           variant="destructive"

@@ -18,6 +18,7 @@ import { Logo } from "@/components/Logo";
 import { PanelSkeleton } from "@/components/Skeleton";
 import { Reveal } from "@/components/Reveal";
 import { PageNav } from "@/components/PageNav";
+import { useTheme } from "@/lib/ThemeContext";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { ProfileMenu } from "@/components/ProfileMenu";
 
@@ -146,6 +147,7 @@ function StatTile({
 
 export default function Overview() {
   const { user, signOut } = useAuth();
+  const { theme } = useTheme();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -175,13 +177,13 @@ export default function Overview() {
     : [];
 
   return (
-    <div className="light-theme relative min-h-screen overflow-hidden bg-[var(--bg-base)] text-[var(--text-primary)]">
+    <div className={`${theme}-theme relative min-h-screen overflow-hidden bg-[var(--bg-base)] text-[var(--text-primary)]`}>
       <div className="page-fade-in relative z-10 mx-auto max-w-screen-2xl px-8 py-8">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <Logo theme="light" />
+          <Logo theme={theme} />
           <div className="flex flex-wrap items-center gap-3">
             <PageNav />
-            <ProfileMenu email={user?.email} onSignOut={signOut} theme="light" />
+            <ProfileMenu email={user?.email} onSignOut={signOut} theme={theme} />
           </div>
         </div>
 

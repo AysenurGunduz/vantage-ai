@@ -19,6 +19,7 @@ import { CreateProjectDialog } from "@/components/CreateProjectDialog";
 import { EmptyState } from "@/components/EmptyState";
 import { AITaskSplitDialog } from "@/components/AITaskSplitDialog";
 import { SprintSummaryDialog } from "@/components/SprintSummaryDialog";
+import { useTheme } from "@/lib/ThemeContext";
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : "Beklenmeyen bir hata oluştu";
@@ -36,6 +37,7 @@ const selectClass =
 
 export default function Workspace() {
   const { user, signOut } = useAuth();
+  const { theme } = useTheme();
 
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
@@ -251,13 +253,13 @@ export default function Workspace() {
   }
 
   return (
-    <div className="light-theme relative min-h-screen overflow-hidden bg-[var(--bg-base)] text-[var(--text-primary)]">
+    <div className={`${theme}-theme relative min-h-screen overflow-hidden bg-[var(--bg-base)] text-[var(--text-primary)]`}>
       <div className="page-fade-in relative z-10 mx-auto max-w-screen-2xl px-8 py-8">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-          <Logo theme="light" />
+          <Logo theme={theme} />
           <div className="flex flex-wrap items-center gap-3">
             <PageNav />
-            <ProfileMenu email={user?.email} onSignOut={signOut} theme="light" />
+            <ProfileMenu email={user?.email} onSignOut={signOut} theme={theme} />
           </div>
         </div>
 
@@ -547,7 +549,7 @@ export default function Workspace() {
         <TaskDetailModal
           task={selectedTask}
           organizationId={selectedOrgId}
-          theme="light"
+          theme={theme}
           onClose={() => setSelectedTask(null)}
           onSave={(updated) => {
             setTasks((prev) => prev.map((task) => (task.id === updated.id ? updated : task)));
@@ -558,7 +560,7 @@ export default function Workspace() {
       <CreateProjectDialog
         organizationId={createProjectOrgId}
         open={createProjectOrgId !== null}
-        theme="light"
+        theme={theme}
         onOpenChange={(next) => {
           if (!next) setCreateProjectOrgId(null);
         }}
@@ -569,7 +571,7 @@ export default function Workspace() {
         <AITaskSplitDialog
           projectId={selectedProjectId}
           open={aiDialogOpen}
-          theme="light"
+          theme={theme}
           onOpenChange={setAiDialogOpen}
         />
       )}
@@ -578,7 +580,7 @@ export default function Workspace() {
         <SprintSummaryDialog
           projectId={selectedProjectId}
           open={sprintSummaryOpen}
-          theme="light"
+          theme={theme}
           onOpenChange={setSprintSummaryOpen}
         />
       )}

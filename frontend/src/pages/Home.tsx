@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, LogOut } from "lucide-react";
+import { ArrowRight, LogOut, Moon, Sun } from "lucide-react";
 import { useAuth } from "../lib/AuthContext";
+import { useTheme } from "../lib/ThemeContext";
 import { Logo } from "@/components/Logo";
 
 export default function Home() {
   const { user, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -20,7 +22,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="light-theme relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[var(--bg-base)] px-6 text-center text-[var(--text-primary)]">
+    <div className={`${theme}-theme relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[var(--bg-base)] px-6 text-center text-[var(--text-primary)]`}>
       <div ref={menuRef} className="absolute top-6 right-6 z-20">
         <button
           onClick={() => setMenuOpen((prev) => !prev)}
@@ -32,6 +34,15 @@ export default function Home() {
         {menuOpen && (
           <div className="absolute right-0 mt-2 w-52 rounded-[8px] border border-[var(--surface-border)] bg-[var(--surface)] p-1.5 text-left text-sm shadow-2xl shadow-black/10">
             <p className="truncate px-2.5 py-1.5 text-xs text-[var(--text-muted)]">{user?.email}</p>
+            <div className="my-1 h-px bg-[var(--surface-border)]" />
+            <button
+              onClick={toggleTheme}
+              className="flex w-full items-center gap-2 rounded-[6px] px-2.5 py-2 text-left text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+            >
+              {theme === "light" ? <Moon className="size-4" /> : <Sun className="size-4" />}
+              {theme === "light" ? "Koyu Tema" : "Açık Tema"}
+            </button>
+            <div className="my-1 h-px bg-[var(--surface-border)]" />
             <button
               onClick={() => signOut()}
               className="flex w-full items-center gap-2 rounded-[6px] px-2.5 py-2 text-left text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
@@ -43,7 +54,7 @@ export default function Home() {
         )}
       </div>
 
-      <Logo className="page-fade-in relative z-10 scale-125" theme="light" />
+      <Logo className="page-fade-in relative z-10 scale-125" theme={theme} />
 
       <span className="page-fade-in relative z-10 mt-8 rounded-full bg-[#ff6b5b]/10 px-4 py-1.5 text-sm font-medium text-[#ff6b5b]">
         Yapay Zeka Destekli Proje Yönetimi

@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { PageNav } from "@/components/PageNav";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { ProfileMenu } from "@/components/ProfileMenu";
+import { useTheme } from "@/lib/ThemeContext";
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : "Beklenmeyen bir hata oluştu";
@@ -44,6 +45,7 @@ function initials(name: string | null, email: string | null) {
 
 export default function TeamMembers() {
   const { orgId } = useParams<{ orgId: string }>();
+  const { theme } = useTheme();
 
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [members, setMembers] = useState<OrganizationMember[]>([]);
@@ -142,13 +144,13 @@ export default function TeamMembers() {
   }
 
   return (
-    <div className="light-theme min-h-screen bg-[var(--bg-base)] text-[var(--text-primary)]">
+    <div className={`${theme}-theme min-h-screen bg-[var(--bg-base)] text-[var(--text-primary)]`}>
       <div className="page-fade-in mx-auto max-w-screen-2xl px-8 py-8">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-          <Logo theme="light" />
+          <Logo theme={theme} />
           <div className="flex flex-wrap items-center gap-3">
             <PageNav />
-            <ProfileMenu email={currentUser?.email} onSignOut={signOut} theme="light" />
+            <ProfileMenu email={currentUser?.email} onSignOut={signOut} theme={theme} />
           </div>
         </div>
 

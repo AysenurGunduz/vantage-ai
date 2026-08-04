@@ -9,6 +9,7 @@ import { Reveal } from "@/components/Reveal";
 import { PageNav } from "@/components/PageNav";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { ProfileMenu } from "@/components/ProfileMenu";
+import { useTheme } from "@/lib/ThemeContext";
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : "Beklenmeyen bir hata oluştu";
@@ -92,6 +93,7 @@ function ActivityDescription({ entry }: { entry: DashboardActivityEntry }) {
 
 export default function Activity() {
   const { user, signOut } = useAuth();
+  const { theme } = useTheme();
   const [activity, setActivity] = useState<DashboardActivityEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -104,13 +106,13 @@ export default function Activity() {
   }, []);
 
   return (
-    <div className="light-theme relative min-h-screen overflow-hidden bg-[var(--bg-base)] text-[var(--text-primary)]">
+    <div className={`${theme}-theme relative min-h-screen overflow-hidden bg-[var(--bg-base)] text-[var(--text-primary)]`}>
       <div className="page-fade-in relative z-10 mx-auto max-w-screen-2xl px-8 py-8">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <Logo theme="light" />
+          <Logo theme={theme} />
           <div className="flex flex-wrap items-center gap-3">
             <PageNav />
-            <ProfileMenu email={user?.email} onSignOut={signOut} theme="light" />
+            <ProfileMenu email={user?.email} onSignOut={signOut} theme={theme} />
           </div>
         </div>
 

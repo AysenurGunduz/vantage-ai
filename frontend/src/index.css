@@ -135,15 +135,15 @@
 
 .dark-theme {
   font-family: "Poppins", sans-serif;
-  --bg-base: #0b1220;
-  --bg-accent: #13213b;
-  --surface: #121b30;
-  --surface-hover: #16223c;
-  --surface-border: #24304a;
-  --surface-border-hover: #32405e;
+  --bg-base: #0a1330;
+  --bg-accent: #101d44;
+  --surface: #14224c;
+  --surface-hover: #182853;
+  --surface-border: #263764;
+  --surface-border-hover: #34477c;
   --text-primary: #f5f7fa;
-  --text-secondary: #9aa5b8;
-  --text-muted: #6b7686;
+  --text-secondary: #a7b4d1;
+  --text-muted: #7683a8;
   --accent: #ff6b5b;
   --accent-hover: #ff8a7a;
   --accent-active: #e85a4a;
