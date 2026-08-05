@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { supabase } from "../lib/supabaseClient.js";
 import { requireAuth } from "../middleware/requireAuth.js";
+import { interactiveAI } from "../ai/index.js";
+import { calculateDelayRisk, calculateProjectVelocity, type RiskScoreResult } from "../services/riskScore.js";
 
 export const projectTasksRouter = Router({ mergeParams: true });
 export const taskRouter = Router();
@@ -240,6 +242,52 @@ taskRouter.get("/:taskId/activity", async (req, res) => {
   }
 
   res.json(data);
+});
+
+function buildRiskExplanationPrompt(taskTitle: string, risk: RiskScoreResult): string {
+  return `Sen bir proje yöneticisi asistanısın. "${taskTitle}" adlı görevin gecikme riski kural tabanlı bir motorla hesaplandı: risk skoru ${risk.score}/100, risk seviyesi "${risk.level}". Alt faktörler (0-100 arası): son tarihe yakınlık ${risk.factors.deadline}, beklenen ilerlemeye göre gecikme ${risk.factors.progress}, projenin geçmiş tamamlama hızına göre risk ${risk.factors.velocity}. Bu sayıları tekrar etme; kullanıcıya bu durumu 2-3 cümlelik kısa, doğal bir Türkçe açıklamayla anlat: görev neden riskli (ya da değilse neden değil) ve varsa kısa bir öneri ver.`;
+}
+
+taskRouter.post("/:taskId/risk-explanation", async (req, res) => {
+  const { taskId } = req.params;
+  const { task, membership } = await getTaskWithMembership(taskId, req.user!.id);
+
+  if (!task) {
+    res.status(404).json({ error: "Task not found" });
+    return;
+  }
+  if (!membership) {
+    res.status(403).json({ error: "Not a member of this project" });
+    return;
+  }
+
+  const { data: doneTasks, error: doneTasksError } = await supabase
+    .from("tasks")
+    .select("created_at, updated_at")
+    .eq("project_id", task.project_id)
+    .eq("status", "done");
+
+  if (doneTasksError) {
+    res.status(500).json({ error: doneTasksError.message });
+    return;
+  }
+
+  const risk = calculateDelayRisk({
+    status: task.status,
+    dueDate: task.due_date,
+    createdAt: task.created_at,
+    projectAvgCompletionDays: calculateProjectVelocity(doneTasks ?? []),
+  });
+
+  let explanation: string;
+  try {
+    explanation = await interactiveAI.generateText(buildRiskExplanationPrompt(task.title, risk));
+  } catch {
+    res.status(502).json({ error: "Risk açıklaması üretilemedi, tekrar dener misin?" });
+    return;
+  }
+
+  res.status(200).json({ score: risk.score, level: risk.level, factors: risk.factors, explanation });
 });
 
 taskRouter.delete("/:taskId", async (req, res) => {
