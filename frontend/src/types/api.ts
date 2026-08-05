@@ -28,9 +28,24 @@ export interface Task {
   status: TaskStatus;
   priority: TaskPriority;
   assignee_id: string | null;
+  estimated_hours: number | null;
   due_date: string | null;
   tags: string[];
   created_at: string;
+}
+
+export interface TimeEntry {
+  id: string;
+  user_id: string;
+  minutes: number;
+  note: string | null;
+  logged_at: string;
+}
+
+export interface TaskTimeEntriesResponse {
+  entries: TimeEntry[];
+  totalMinutes: number;
+  estimatedHours: number | null;
 }
 
 export type OrganizationRole = "owner" | "admin" | "member";
@@ -93,6 +108,7 @@ export interface RiskExplanation {
     deadline: number;
     progress: number;
     velocity: number;
+    effort: number;
   };
   explanation: string;
 }

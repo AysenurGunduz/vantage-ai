@@ -186,7 +186,7 @@ dashboardRouter.get("/risk", async (req, res) => {
 
   const { data: tasks, error: tasksError } = await supabase
     .from("tasks")
-    .select("id, title, status, priority, due_date, project_id, created_at, updated_at")
+    .select("id, title, status, priority, due_date, project_id, created_at, updated_at, estimated_hours")
     .in("project_id", projectIds);
 
   if (tasksError) {
@@ -207,14 +207,35 @@ dashboardRouter.get("/risk", async (req, res) => {
     velocityByProject.set(projectId, calculateProjectVelocity(doneTasksByProject.get(projectId) ?? []));
   }
 
+  const openTaskIds = tasks.filter((task) => task.status !== "done").map((task) => task.id);
+  const spentMinutesByTask = new Map<string, number>();
+  if (openTaskIds.length > 0) {
+    const { data: timeEntries, error: timeEntriesError } = await supabase
+      .from("task_time_entries")
+      .select("task_id, minutes")
+      .in("task_id", openTaskIds);
+
+    if (timeEntriesError) {
+      res.status(500).json({ error: timeEntriesError.message });
+      return;
+    }
+
+    for (const entry of timeEntries) {
+      spentMinutesByTask.set(entry.task_id, (spentMinutesByTask.get(entry.task_id) ?? 0) + entry.minutes);
+    }
+  }
+
   const risky = tasks
     .filter((task) => task.status !== "done")
     .map((task) => {
+      const spentMinutes = spentMinutesByTask.get(task.id);
       const risk = calculateDelayRisk({
         status: task.status as (typeof STATUSES)[number],
         dueDate: task.due_date,
         createdAt: task.created_at,
         projectAvgCompletionDays: velocityByProject.get(task.project_id) ?? null,
+        estimatedHours: task.estimated_hours,
+        spentHours: spentMinutes !== undefined ? spentMinutes / 60 : null,
       });
 
       return {

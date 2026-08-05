@@ -6,6 +6,8 @@ export interface RiskScoreInput {
   dueDate: string | null;
   createdAt: string;
   projectAvgCompletionDays: number | null;
+  estimatedHours?: number | null;
+  spentHours?: number | null;
   now?: Date;
 }
 
@@ -16,6 +18,7 @@ export interface RiskScoreResult {
     deadline: number;
     progress: number;
     velocity: number;
+    effort: number;
   };
 }
 
@@ -32,6 +35,11 @@ const PROGRESS_BY_STATUS: Record<RiskTaskStatus, number> = {
 const DEADLINE_WEIGHT = 0.4;
 const PROGRESS_WEIGHT = 0.35;
 const VELOCITY_WEIGHT = 0.25;
+
+// Harcanan süre / tahmini süre verisi olduğunda devreye giren bonus ağırlık.
+// Veri yoksa toplam ağırlık 1.0'da kalır (eski davranış birebir korunur);
+// veri varsa payda büyür ve efor faktörü orantılı olarak skora karışır.
+const EFFORT_WEIGHT = 0.3;
 
 // Son tarihe 14 gün ve altı kalan görevler için deadline riski 0'dan 100'e doğrusal artar.
 const DEADLINE_RAMP_DAYS = 14;
@@ -52,7 +60,7 @@ function scoreToLevel(score: number): RiskLevel {
 
 export function calculateDelayRisk(input: RiskScoreInput): RiskScoreResult {
   if (input.status === "done") {
-    return { score: 0, level: "low", factors: { deadline: 0, progress: 0, velocity: 0 } };
+    return { score: 0, level: "low", factors: { deadline: 0, progress: 0, velocity: 0, effort: 0 } };
   }
 
   const now = input.now ?? new Date();
@@ -91,11 +99,20 @@ export function calculateDelayRisk(input: RiskScoreInput): RiskScoreResult {
     velocity = clamp((ratio - 1) * 100, 0, 100);
   }
 
-  const score = clamp(
-    Math.round(deadline * DEADLINE_WEIGHT + progress * PROGRESS_WEIGHT + velocity * VELOCITY_WEIGHT),
-    0,
-    100,
-  );
+  // Harcanan süre tahmini aşmışsa (ratio > 1) risk artar; veri yoksa bu
+  // faktör tamamen devre dışı kalır (ağırlığı toplama katılmaz).
+  let effort = 0;
+  let effortWeight = 0;
+  if (input.estimatedHours != null && input.estimatedHours > 0 && input.spentHours != null) {
+    const ratio = input.spentHours / input.estimatedHours;
+    effort = clamp((ratio - 1) * 100, 0, 100);
+    effortWeight = EFFORT_WEIGHT;
+  }
+
+  const totalWeight = DEADLINE_WEIGHT + PROGRESS_WEIGHT + VELOCITY_WEIGHT + effortWeight;
+  const rawScore =
+    deadline * DEADLINE_WEIGHT + progress * PROGRESS_WEIGHT + velocity * VELOCITY_WEIGHT + effort * effortWeight;
+  const score = clamp(Math.round(rawScore / totalWeight), 0, 100);
 
   return {
     score,
@@ -104,6 +121,7 @@ export function calculateDelayRisk(input: RiskScoreInput): RiskScoreResult {
       deadline: Math.round(deadline),
       progress: Math.round(progress),
       velocity: Math.round(velocity),
+      effort: Math.round(effort),
     },
   };
 }

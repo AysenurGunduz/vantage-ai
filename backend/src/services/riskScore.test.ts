@@ -13,7 +13,11 @@ describe("calculateDelayRisk", () => {
       now: NOW,
     });
 
-    expect(result).toEqual({ score: 0, level: "low", factors: { deadline: 0, progress: 0, velocity: 0 } });
+    expect(result).toEqual({
+      score: 0,
+      level: "low",
+      factors: { deadline: 0, progress: 0, velocity: 0, effort: 0 },
+    });
   });
 
   it("gives low risk to a fresh task with a far due date and no history", () => {
@@ -82,6 +86,57 @@ describe("calculateDelayRisk", () => {
 
     expect(slow.factors.velocity).toBeGreaterThan(fast.factors.velocity);
     expect(slow.score).toBeGreaterThan(fast.score);
+  });
+
+  it("ignores the effort factor entirely when there's no time-tracking data", () => {
+    const withoutData = calculateDelayRisk({
+      status: "in_progress",
+      dueDate: "2026-08-10",
+      createdAt: "2026-08-01",
+      projectAvgCompletionDays: null,
+      now: NOW,
+    });
+
+    expect(withoutData.factors.effort).toBe(0);
+  });
+
+  it("raises risk when the time already spent has exceeded the estimate", () => {
+    const withinEstimate = calculateDelayRisk({
+      status: "in_progress",
+      dueDate: "2026-08-10",
+      createdAt: "2026-08-01",
+      projectAvgCompletionDays: null,
+      estimatedHours: 10,
+      spentHours: 5,
+      now: NOW,
+    });
+    const overEstimate = calculateDelayRisk({
+      status: "in_progress",
+      dueDate: "2026-08-10",
+      createdAt: "2026-08-01",
+      projectAvgCompletionDays: null,
+      estimatedHours: 10,
+      spentHours: 20,
+      now: NOW,
+    });
+
+    expect(withinEstimate.factors.effort).toBe(0);
+    expect(overEstimate.factors.effort).toBeGreaterThan(0);
+    expect(overEstimate.score).toBeGreaterThan(withinEstimate.score);
+  });
+
+  it("doesn't lower the achievable score just because time-tracking data is missing", () => {
+    // Same inputs as the "high risk overdue backlog" case above, minus effort data:
+    // the score should be identical to before the effort factor existed.
+    const result = calculateDelayRisk({
+      status: "backlog",
+      dueDate: "2026-07-31",
+      createdAt: "2026-07-21",
+      projectAvgCompletionDays: null,
+      now: NOW,
+    });
+
+    expect(result.level).toBe("high");
   });
 
   it("treats a task with no due date as having no deadline or velocity risk", () => {
