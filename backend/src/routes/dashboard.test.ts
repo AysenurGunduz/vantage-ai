@@ -205,6 +205,43 @@ describe("dashboard routes", () => {
     expect(scoreWithOverrun).toBeGreaterThan(scoreWithoutOverrun);
   });
 
+  it("filters the risk list to a single project when projectId is given", async () => {
+    membershipRows = [
+      { project_id: "project-1", projects: { name: "Website Yenileme" } },
+      { project_id: "project-2", projects: { name: "Mobil Uygulama" } },
+    ];
+    taskRows = [
+      {
+        id: "task-1",
+        title: "Proje 1 görevi",
+        status: "backlog",
+        priority: "high",
+        due_date: "2020-01-01",
+        project_id: "project-1",
+        created_at: "2019-12-01T00:00:00.000Z",
+        updated_at: "2019-12-01T00:00:00.000Z",
+      },
+      {
+        id: "task-2",
+        title: "Proje 2 görevi",
+        status: "backlog",
+        priority: "high",
+        due_date: "2020-01-01",
+        project_id: "project-2",
+        created_at: "2019-12-01T00:00:00.000Z",
+        updated_at: "2019-12-01T00:00:00.000Z",
+      },
+    ];
+
+    const res = await request(app)
+      .get("/api/dashboard/risk?projectId=project-2")
+      .set("Authorization", "Bearer valid-token");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveLength(1);
+    expect(res.body[0].id).toBe("task-2");
+  });
+
   it("returns the recent activity feed with task titles attached", async () => {
     membershipRows = [{ project_id: "project-1", projects: { name: "Website Yenileme" } }];
     taskRows = [{ id: "task-1", title: "Design schema", status: "todo", priority: "medium", due_date: null, project_id: "project-1" }];

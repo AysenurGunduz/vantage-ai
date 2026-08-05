@@ -230,17 +230,22 @@ export default function Overview() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabId>("genel");
   const [riskTasks, setRiskTasks] = useState<DashboardRiskTask[] | null>(null);
+  const [riskProjectFilter, setRiskProjectFilter] = useState("");
 
   useEffect(() => {
     apiFetch<DashboardStats>("/api/dashboard/stats")
       .then(setStats)
       .catch((err: unknown) => setError(errorMessage(err)))
       .finally(() => setLoading(false));
+  }, []);
 
-    apiFetch<DashboardRiskTask[]>("/api/dashboard/risk")
+  useEffect(() => {
+    const query = riskProjectFilter ? `?projectId=${riskProjectFilter}` : "";
+    setRiskTasks(null);
+    apiFetch<DashboardRiskTask[]>(`/api/dashboard/risk${query}`)
       .then(setRiskTasks)
       .catch(() => setRiskTasks([]));
-  }, []);
+  }, [riskProjectFilter]);
 
   const statusData = stats
     ? Object.entries(stats.byStatus).map(([status, value]) => ({
@@ -484,10 +489,26 @@ export default function Overview() {
                   </div>
 
                   <Reveal delayMs={160} as="section" className={panelClass}>
-                    <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-[var(--text-secondary)]">
-                      <Sparkles className="size-4 text-[var(--accent)]" />
-                      Gecikme Riski En Yüksek Görevler
-                    </h2>
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                      <h2 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-secondary)]">
+                        <Sparkles className="size-4 text-[var(--accent)]" />
+                        Gecikme Riski En Yüksek Görevler
+                      </h2>
+                      {stats && stats.byProject.length > 1 && (
+                        <select
+                          value={riskProjectFilter}
+                          onChange={(e) => setRiskProjectFilter(e.target.value)}
+                          className="rounded-[6px] border border-[var(--surface-border)] bg-[var(--surface)] px-2 py-1 text-xs text-[var(--text-secondary)] outline-none focus-visible:border-[var(--accent)]"
+                        >
+                          <option value="">Tüm projeler</option>
+                          {stats.byProject.map((project) => (
+                            <option key={project.project_id} value={project.project_id}>
+                              {project.project_name}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
                     {riskTasks ? (
                       <RiskTaskList tasks={riskTasks} />
                     ) : (

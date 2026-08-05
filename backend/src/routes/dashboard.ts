@@ -167,6 +167,8 @@ dashboardRouter.get("/activity", async (req, res) => {
 const RISK_LIST_LIMIT = 10;
 
 dashboardRouter.get("/risk", async (req, res) => {
+  const { projectId: projectIdFilter } = req.query as { projectId?: string };
+
   const { data: memberships, error: membershipError } = await supabase
     .from("project_members")
     .select("project_id")
@@ -227,6 +229,7 @@ dashboardRouter.get("/risk", async (req, res) => {
 
   const risky = tasks
     .filter((task) => task.status !== "done")
+    .filter((task) => !projectIdFilter || task.project_id === projectIdFilter)
     .map((task) => {
       const spentMinutes = spentMinutesByTask.get(task.id);
       const risk = calculateDelayRisk({
