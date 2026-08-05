@@ -10,10 +10,10 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { AlertTriangle, CalendarClock, CheckCircle2, Clock3, FolderKanban, ListTodo } from "lucide-react";
+import { AlertTriangle, CalendarClock, CheckCircle2, Clock3, FolderKanban, ListTodo, Sparkles } from "lucide-react";
 import { useAuth } from "../lib/AuthContext";
 import { apiFetch } from "../lib/apiClient";
-import type { DashboardStats, DashboardTaskSummary } from "../types/api";
+import type { DashboardRiskTask, DashboardStats, DashboardTaskSummary, RiskExplanation } from "../types/api";
 import { Logo } from "@/components/Logo";
 import { PanelSkeleton } from "@/components/Skeleton";
 import { Reveal } from "@/components/Reveal";
@@ -63,6 +63,18 @@ const PRIORITY_COLORS: Record<string, string> = {
 
 const CRITICAL_COLOR = "#d03b3b";
 const WARNING_COLOR = "#fab219";
+
+const RISK_LEVEL_LABELS: Record<string, string> = {
+  low: "Düşük",
+  medium: "Orta",
+  high: "Yüksek",
+};
+
+const RISK_LEVEL_COLORS: Record<string, string> = {
+  low: "#94a3b8",
+  medium: WARNING_COLOR,
+  high: CRITICAL_COLOR,
+};
 
 const chartTickStyle = { fill: "var(--text-muted)", fontSize: 12 };
 const tooltipContentStyle = {
@@ -118,6 +130,71 @@ function TaskAlertList({
   );
 }
 
+function RiskTaskList({ tasks }: { tasks: DashboardRiskTask[] }) {
+  const [explanations, setExplanations] = useState<
+    Record<string, { loading: boolean; error: string | null; data: RiskExplanation | null }>
+  >({});
+
+  async function explain(taskId: string) {
+    setExplanations((prev) => ({ ...prev, [taskId]: { loading: true, error: null, data: null } }));
+    try {
+      const result = await apiFetch<RiskExplanation>(`/api/tasks/${taskId}/risk-explanation`, {
+        method: "POST",
+      });
+      setExplanations((prev) => ({ ...prev, [taskId]: { loading: false, error: null, data: result } }));
+    } catch (err: unknown) {
+      setExplanations((prev) => ({ ...prev, [taskId]: { loading: false, error: errorMessage(err), data: null } }));
+    }
+  }
+
+  if (tasks.length === 0) {
+    return <p className="text-sm text-[var(--text-muted)]">Şu an gecikme riski taşıyan bir görev yok.</p>;
+  }
+
+  return (
+    <ul className="space-y-2">
+      {tasks.map((task) => {
+        const color = RISK_LEVEL_COLORS[task.risk_level];
+        const state = explanations[task.id];
+
+        return (
+          <li
+            key={task.id}
+            className="rounded-[6px] border-l-2 px-3 py-2 text-sm"
+            style={{ borderColor: color, backgroundColor: `${color}14` }}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <span className="min-w-0 flex-1 truncate">{task.title}</span>
+              <span className="flex shrink-0 items-center gap-3 text-xs text-[var(--text-muted)]">
+                <span style={{ color }}>
+                  {RISK_LEVEL_LABELS[task.risk_level]} risk · {task.risk_score}/100
+                </span>
+                {task.due_date && <span>{formatDueDate(task.due_date)}</span>}
+              </span>
+            </div>
+            <div className="mt-1">
+              {!state && (
+                <button
+                  onClick={() => explain(task.id)}
+                  className="inline-flex items-center gap-1 text-xs text-[var(--accent)] hover:underline"
+                >
+                  <Sparkles className="size-3" />
+                  Neden riskli, AI&apos;a sor
+                </button>
+              )}
+              {state?.loading && <p className="text-xs text-[var(--text-muted)]">Açıklama üretiliyor...</p>}
+              {state?.error && <p className="text-xs text-[#ff6b5b]">{state.error}</p>}
+              {state?.data && (
+                <p className="mt-1 text-xs text-[var(--text-secondary)]">{state.data.explanation}</p>
+              )}
+            </div>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 function StatTile({
   icon,
   label,
@@ -152,12 +229,17 @@ export default function Overview() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabId>("genel");
+  const [riskTasks, setRiskTasks] = useState<DashboardRiskTask[] | null>(null);
 
   useEffect(() => {
     apiFetch<DashboardStats>("/api/dashboard/stats")
       .then(setStats)
       .catch((err: unknown) => setError(errorMessage(err)))
       .finally(() => setLoading(false));
+
+    apiFetch<DashboardRiskTask[]>("/api/dashboard/risk")
+      .then(setRiskTasks)
+      .catch(() => setRiskTasks([]));
   }, []);
 
   const statusData = stats
@@ -402,6 +484,18 @@ export default function Overview() {
                   </div>
 
                   <Reveal delayMs={160} as="section" className={panelClass}>
+                    <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-[var(--text-secondary)]">
+                      <Sparkles className="size-4 text-[var(--accent)]" />
+                      Gecikme Riski En Yüksek Görevler
+                    </h2>
+                    {riskTasks ? (
+                      <RiskTaskList tasks={riskTasks} />
+                    ) : (
+                      <p className="text-sm text-[var(--text-muted)]">Yükleniyor...</p>
+                    )}
+                  </Reveal>
+
+                  <Reveal delayMs={220} as="section" className={panelClass}>
                     <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-[var(--text-secondary)]">
                       <FolderKanban className="size-4 text-[var(--accent)]" />
                       Proje Bazında Dağılım

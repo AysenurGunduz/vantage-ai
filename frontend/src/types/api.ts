@@ -73,6 +73,30 @@ export interface DashboardStats {
   byProject: Array<{ project_id: string; project_name: string; count: number }>;
 }
 
+export type RiskLevel = "low" | "medium" | "high";
+
+export interface DashboardRiskTask {
+  id: string;
+  title: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  due_date: string | null;
+  project_id: string;
+  risk_score: number;
+  risk_level: RiskLevel;
+}
+
+export interface RiskExplanation {
+  score: number;
+  level: RiskLevel;
+  factors: {
+    deadline: number;
+    progress: number;
+    velocity: number;
+  };
+  explanation: string;
+}
+
 export interface SuggestedSubtask {
   title: string;
   estimated_hours?: number;

@@ -21,6 +21,8 @@ let taskRows: {
   priority: string;
   due_date: string | null;
   project_id: string;
+  created_at?: string;
+  updated_at?: string;
 }[] = [];
 let activityRows: {
   id: string;
@@ -120,6 +122,57 @@ describe("dashboard routes", () => {
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual([]);
+  });
+
+  it("returns an empty risk list when the user has no projects", async () => {
+    const res = await request(app).get("/api/dashboard/risk").set("Authorization", "Bearer valid-token");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([]);
+  });
+
+  it("scores non-done tasks by delay risk and sorts them highest-risk first", async () => {
+    membershipRows = [{ project_id: "project-1", projects: { name: "Website Yenileme" } }];
+    taskRows = [
+      {
+        id: "task-1",
+        title: "Overdue and untouched",
+        status: "backlog",
+        priority: "high",
+        due_date: "2020-01-01",
+        project_id: "project-1",
+        created_at: "2019-12-01T00:00:00.000Z",
+        updated_at: "2019-12-01T00:00:00.000Z",
+      },
+      {
+        id: "task-2",
+        title: "Fresh task, far deadline",
+        status: "todo",
+        priority: "low",
+        due_date: daysFromToday(60),
+        project_id: "project-1",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      {
+        id: "task-3",
+        title: "Already done",
+        status: "done",
+        priority: "medium",
+        due_date: "2020-01-01",
+        project_id: "project-1",
+        created_at: "2019-12-01T00:00:00.000Z",
+        updated_at: "2019-12-15T00:00:00.000Z",
+      },
+    ];
+
+    const res = await request(app).get("/api/dashboard/risk").set("Authorization", "Bearer valid-token");
+
+    expect(res.status).toBe(200);
+    expect(res.body.every((task: { status: string }) => task.status !== "done")).toBe(true);
+    expect(res.body[0].id).toBe("task-1");
+    expect(res.body[0].risk_level).toBe("high");
+    expect(res.body.map((task: { id: string }) => task.id)).not.toContain("task-3");
   });
 
   it("returns the recent activity feed with task titles attached", async () => {
