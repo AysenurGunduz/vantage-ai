@@ -3,7 +3,7 @@ import { supabase } from "../lib/supabaseClient.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { interactiveAI } from "../ai/index.js";
 import { taskSplitSchema, type TaskSplitPayload } from "../ai/schemas.js";
-import { parseAIResponse } from "../ai/parseAIResponse.js";
+import { parseAIResponse, AISchemaError } from "../ai/parseAIResponse.js";
 import { logActivity } from "./tasks.js";
 
 export const projectAITaskSplitsRouter = Router({ mergeParams: true });
@@ -25,6 +25,27 @@ Açıklama: "${description}"
 
 SADECE şu JSON şemasına uyan, tek satırlık bir çıktı ver — başka açıklama, markdown ya da kod bloğu ekleme:
 {"subtasks": [{"title": "string", "estimated_hours": number}]}`;
+}
+
+// Model şemaya uymayan bir JSON üretirse, aynı isteği tekrar göndermek yerine
+// hatanın ne olduğunu modele söyleyip bir kez daha deneriz. Ağ/timeout gibi
+// geçici hatalarda ise bunun faydası yok, direkt yukarı fırlatılır.
+async function generateTaskSplitSuggestion(description: string): Promise<TaskSplitPayload> {
+  const prompt = buildTaskSplitPrompt(description);
+
+  try {
+    const raw = await interactiveAI.generateJSON<unknown>(prompt);
+    return parseAIResponse(taskSplitSchema, raw);
+  } catch (err) {
+    if (!(err instanceof AISchemaError)) {
+      throw err;
+    }
+
+    console.warn("AI task split response failed schema validation, retrying once with a correction prompt:", err.message);
+    const correctionPrompt = `${prompt}\n\nÖnceki cevabın bu şemaya uymadı: ${err.message}\nLütfen SADECE düzeltilmiş, şemaya tam uyan JSON'ı ver.`;
+    const raw = await interactiveAI.generateJSON<unknown>(correctionPrompt);
+    return parseAIResponse(taskSplitSchema, raw);
+  }
 }
 
 async function getProjectMembership(projectId: string, userId: string) {
@@ -55,8 +76,7 @@ projectAITaskSplitsRouter.post("/", async (req, res) => {
 
   let suggestion: TaskSplitPayload;
   try {
-    const raw = await interactiveAI.generateJSON<unknown>(buildTaskSplitPrompt(description.trim()));
-    suggestion = parseAIResponse(taskSplitSchema, raw);
+    suggestion = await generateTaskSplitSuggestion(description.trim());
   } catch (err) {
     console.error("AI task split validation failed:", err);
     res.status(502).json({ error: "AI görev önerisi üretilemedi, tekrar dener misin?" });
