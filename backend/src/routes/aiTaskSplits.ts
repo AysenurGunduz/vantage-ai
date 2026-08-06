@@ -2,6 +2,8 @@ import { Router } from "express";
 import { supabase } from "../lib/supabaseClient.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { interactiveAI } from "../ai/index.js";
+import { taskSplitSchema, type TaskSplitPayload } from "../ai/schemas.js";
+import { parseAIResponse } from "../ai/parseAIResponse.js";
 import { logActivity } from "./tasks.js";
 
 export const projectAITaskSplitsRouter = Router({ mergeParams: true });
@@ -9,27 +11,6 @@ export const aiTaskSplitRouter = Router();
 
 projectAITaskSplitsRouter.use(requireAuth);
 aiTaskSplitRouter.use(requireAuth);
-
-interface SuggestedSubtask {
-  title: string;
-  estimated_hours?: number;
-}
-
-interface SuggestedTasksPayload {
-  subtasks: SuggestedSubtask[];
-}
-
-function isValidSuggestion(value: unknown): value is SuggestedTasksPayload {
-  if (typeof value !== "object" || value === null) return false;
-  const subtasks = (value as { subtasks?: unknown }).subtasks;
-  if (!Array.isArray(subtasks) || subtasks.length === 0) return false;
-  return subtasks.every((item) => {
-    if (typeof item !== "object" || item === null) return false;
-    const { title, estimated_hours } = item as SuggestedSubtask;
-    if (typeof title !== "string" || !title.trim()) return false;
-    return estimated_hours === undefined || typeof estimated_hours === "number";
-  });
-}
 
 function buildTaskSplitPrompt(description: string): string {
   return `Sen bir proje yönetimi asistanısın. Aşağıdaki görev/proje açıklamasını, gerçekten uygulanabilir 2 ile 6 arasında alt göreve böl.
@@ -72,14 +53,12 @@ projectAITaskSplitsRouter.post("/", async (req, res) => {
     return;
   }
 
-  let suggestion: SuggestedTasksPayload;
+  let suggestion: TaskSplitPayload;
   try {
     const raw = await interactiveAI.generateJSON<unknown>(buildTaskSplitPrompt(description.trim()));
-    if (!isValidSuggestion(raw)) {
-      throw new Error("Model response did not match the expected schema");
-    }
-    suggestion = raw;
-  } catch {
+    suggestion = parseAIResponse(taskSplitSchema, raw);
+  } catch (err) {
+    console.error("AI task split validation failed:", err);
     res.status(502).json({ error: "AI görev önerisi üretilemedi, tekrar dener misin?" });
     return;
   }
@@ -138,13 +117,14 @@ aiTaskSplitRouter.patch("/:id", async (req, res) => {
     return;
   }
 
-  let finalTasks = suggestionRow.suggested_tasks as SuggestedTasksPayload;
+  let finalTasks = suggestionRow.suggested_tasks as TaskSplitPayload;
   if (status === "accepted" && editedTasks !== undefined) {
-    if (!isValidSuggestion(editedTasks)) {
-      res.status(400).json({ error: "suggested_tasks does not match the expected schema" });
+    try {
+      finalTasks = parseAIResponse(taskSplitSchema, editedTasks);
+    } catch (err) {
+      res.status(400).json({ error: err instanceof Error ? err.message : "suggested_tasks does not match the expected schema" });
       return;
     }
-    finalTasks = editedTasks;
   }
 
   if (status === "accepted") {
