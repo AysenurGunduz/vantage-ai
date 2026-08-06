@@ -228,7 +228,7 @@ export function TaskDetailModal({
     >
       <div
         onClick={(event) => event.stopPropagation()}
-        className="w-full max-w-md space-y-4 rounded-[8px] border border-[var(--surface-border)] bg-[var(--surface)] p-6 text-[var(--text-primary)] shadow-2xl shadow-black/50"
+        className="max-h-[90vh] w-full max-w-2xl space-y-4 overflow-y-auto rounded-[8px] border border-[var(--surface-border)] bg-[var(--surface)] p-6 text-[var(--text-primary)] shadow-2xl shadow-black/50"
       >
         <div className="flex items-start justify-between gap-3">
           <input
@@ -245,220 +245,229 @@ export function TaskDetailModal({
           </button>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          {PRIORITIES.map((option) => (
-            <button
-              key={option}
-              onClick={() => setPriority(option)}
-              className={`rounded-[6px] px-2.5 py-1 text-xs transition-colors ${
-                priority === option
-                  ? priorityPillClass[option]
-                  : "bg-[var(--surface-hover)] text-[var(--text-muted)] hover:bg-[var(--surface-border)]"
-              } ${priority === option ? "ring-1 ring-inset ring-[var(--surface-border-hover)]" : ""}`}
-            >
-              {option}
-            </button>
-          ))}
-        </div>
+        <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-[3fr_2fr]">
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-[var(--text-secondary)]">Açıklama</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={4}
+                placeholder="Görev hakkında detay ekle..."
+                className={`${fieldClass} resize-none`}
+              />
+            </div>
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[var(--text-secondary)]">Açıklama</label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={4}
-            placeholder="Görev hakkında detay ekle..."
-            className={`${fieldClass} resize-none`}
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[var(--text-secondary)]">Etiketler</label>
-          <div className="flex flex-wrap gap-1.5">
-            {tags.map((tag) => (
-              <span
-                key={tag}
-                className="flex items-center gap-1 rounded-full bg-[var(--tag-bg)] px-2.5 py-1 text-xs text-[var(--tag-text)]"
-              >
-                #{tag}
-                <button
-                  onClick={() => removeTag(tag)}
-                  aria-label={`${tag} etiketini kaldır`}
-                  className="text-[var(--tag-text)]/70 hover:text-[var(--tag-text)]"
-                >
-                  <X className="size-3" />
-                </button>
-              </span>
-            ))}
-          </div>
-          <Input
-            value={tagInput}
-            onChange={(e) => setTagInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === ",") {
-                e.preventDefault();
-                addTag();
-              }
-            }}
-            placeholder="Etiket yaz, Enter'a bas"
-            className="rounded-[6px] border-[var(--surface-border)] bg-[var(--surface)] text-[var(--text-primary)] focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
-          />
-        </div>
-
-        <div className="flex gap-3">
-          <div className="flex-1 space-y-1.5">
-            <label className="text-xs font-medium text-[var(--text-secondary)]">Son tarih</label>
-            <Input
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="rounded-[6px] border-[var(--surface-border)] bg-[var(--surface)] text-[var(--text-primary)] focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
-            />
-          </div>
-          <div className="w-28 space-y-1.5">
-            <label className="text-xs font-medium text-[var(--text-secondary)]">Tahmini süre (saat)</label>
-            <Input
-              type="number"
-              min="0"
-              step="0.5"
-              value={estimatedHours}
-              onChange={(e) => setEstimatedHours(e.target.value)}
-              placeholder="—"
-              className="rounded-[6px] border-[var(--surface-border)] bg-[var(--surface)] text-[var(--text-primary)] focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
-            />
-          </div>
-        </div>
-
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[var(--text-secondary)]">Atanan kişi</label>
-          <select
-            value={assigneeId}
-            onChange={(e) => setAssigneeId(e.target.value)}
-            className={`${fieldClass} appearance-none`}
-          >
-            <option value="" className="bg-[var(--surface)]">
-              Atanmadı
-            </option>
-            {members.map((member) => (
-              <option key={member.user_id} value={member.user_id} className="bg-[var(--surface)]">
-                {member.full_name ?? member.email ?? member.user_id}
-              </option>
-            ))}
-          </select>
-
-          {assigneeId !== (task.assignee_id ?? "") && (
-            <textarea
-              value={assigneeNote}
-              onChange={(e) => setAssigneeNote(e.target.value)}
-              rows={2}
-              placeholder="Atama ile ilgili bir not bırak (opsiyonel)"
-              className={`${fieldClass} resize-none`}
-            />
-          )}
-        </div>
-
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <label className="text-xs font-medium text-[var(--text-secondary)]">Zaman Takibi</label>
-            {!timeLoading && (
-              <span
-                className={`text-xs ${
-                  task.estimated_hours != null && totalMinutes / 60 > task.estimated_hours
-                    ? "text-[#ff6b5b]"
-                    : "text-[var(--text-muted)]"
-                }`}
-              >
-                {task.estimated_hours != null ? `Tahmin: ${task.estimated_hours} sa · ` : ""}
-                Harcanan: {formatHours(totalMinutes)} sa
-              </span>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2">
-            {timerStartedAt === null ? (
-              <Button
-                type="button"
-                onClick={startTimer}
-                disabled={loggingTime}
-                className="flex items-center gap-1.5 rounded-[6px] bg-[var(--surface-hover)] px-2.5 py-1.5 text-xs text-[var(--text-primary)] hover:bg-[var(--surface-border)]"
-              >
-                <Play className="size-3" />
-                Sayacı başlat
-              </Button>
-            ) : (
-              <Button
-                type="button"
-                onClick={stopTimer}
-                disabled={loggingTime}
-                className="flex items-center gap-1.5 rounded-[6px] bg-[#ff6b5b] px-2.5 py-1.5 text-xs text-[#0d1b3a] hover:bg-[#ff8577]"
-              >
-                <Square className="size-3" />
-                Durdur · {formatElapsed(timerElapsedSec)}
-              </Button>
-            )}
-
-            <Input
-              type="number"
-              min="0"
-              step="0.25"
-              value={manualHours}
-              onChange={(e) => setManualHours(e.target.value)}
-              placeholder="Saat gir"
-              className="h-8 w-24 rounded-[6px] border-[var(--surface-border)] bg-[var(--surface)] text-xs text-[var(--text-primary)] focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
-            />
-            <Input
-              value={manualNote}
-              onChange={(e) => setManualNote(e.target.value)}
-              placeholder="Not (opsiyonel)"
-              className="h-8 flex-1 rounded-[6px] border-[var(--surface-border)] bg-[var(--surface)] text-xs text-[var(--text-primary)] focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
-            />
-            <Button
-              type="button"
-              onClick={handleManualLog}
-              disabled={loggingTime || !manualHours}
-              className="h-8 shrink-0 rounded-[6px] bg-[var(--surface-hover)] px-2.5 text-xs text-[var(--text-primary)] hover:bg-[var(--surface-border)]"
-            >
-              Ekle
-            </Button>
-          </div>
-
-          {timeLoading ? (
-            <p className="text-xs text-[var(--text-muted)]">Yükleniyor...</p>
-          ) : timeEntries.length === 0 ? (
-            <p className="text-xs text-[var(--text-muted)]">Henüz zaman kaydı yok.</p>
-          ) : (
-            <ul className="max-h-24 space-y-1 overflow-y-auto pr-1 text-xs text-[var(--text-secondary)]">
-              {timeEntries.map((entry) => (
-                <li key={entry.id} className="flex items-center justify-between gap-2">
-                  <span className="min-w-0 flex-1 truncate">
-                    {formatHours(entry.minutes)} sa{entry.note ? ` · ${entry.note}` : ""}
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-[var(--text-secondary)]">Etiketler</label>
+              <div className="flex flex-wrap gap-1.5">
+                {tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="flex items-center gap-1 rounded-full bg-[var(--tag-bg)] px-2.5 py-1 text-xs text-[var(--tag-text)]"
+                  >
+                    #{tag}
+                    <button
+                      onClick={() => removeTag(tag)}
+                      aria-label={`${tag} etiketini kaldır`}
+                      className="text-[var(--tag-text)]/70 hover:text-[var(--tag-text)]"
+                    >
+                      <X className="size-3" />
+                    </button>
                   </span>
-                  <span className="shrink-0 text-[var(--text-muted)]">{formatActivityTime(entry.logged_at)}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+                ))}
+              </div>
+              <Input
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === ",") {
+                    e.preventDefault();
+                    addTag();
+                  }
+                }}
+                placeholder="Etiket yaz, Enter'a bas"
+                className="rounded-[6px] border-[var(--surface-border)] bg-[var(--surface)] text-[var(--text-primary)] focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
+              />
+            </div>
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[var(--text-secondary)]">Aktivite Geçmişi</label>
-          {activityLoading ? (
-            <p className="text-xs text-[var(--text-muted)]">Yükleniyor...</p>
-          ) : activity.length === 0 ? (
-            <p className="text-xs text-[var(--text-muted)]">Henüz bir aktivite yok.</p>
-          ) : (
-            <ul className="max-h-28 space-y-1.5 overflow-y-auto pr-1 text-xs text-[var(--text-secondary)]">
-              {activity.map((entry) => (
-                <li key={entry.id}>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="min-w-0 flex-1 truncate">{describeActivity(entry, members)}</span>
-                    <span className="shrink-0 text-[var(--text-muted)]">{formatActivityTime(entry.created_at)}</span>
-                  </div>
-                  {entry.note && <p className="mt-0.5 pl-0 text-[var(--text-secondary)] italic">"{entry.note}"</p>}
-                </li>
-              ))}
-            </ul>
-          )}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium text-[var(--text-secondary)]">Zaman Takibi</label>
+                {!timeLoading && (
+                  <span
+                    className={`text-xs ${
+                      task.estimated_hours != null && totalMinutes / 60 > task.estimated_hours
+                        ? "text-[#ff6b5b]"
+                        : "text-[var(--text-muted)]"
+                    }`}
+                  >
+                    {task.estimated_hours != null ? `Tahmin: ${task.estimated_hours} sa · ` : ""}
+                    Harcanan: {formatHours(totalMinutes)} sa
+                  </span>
+                )}
+              </div>
+
+              {timerStartedAt === null ? (
+                <Button
+                  type="button"
+                  onClick={startTimer}
+                  disabled={loggingTime}
+                  className="flex w-full items-center justify-center gap-1.5 rounded-[6px] bg-[var(--surface-hover)] px-2.5 py-1.5 text-xs text-[var(--text-primary)] hover:bg-[var(--surface-border)]"
+                >
+                  <Play className="size-3" />
+                  Sayacı başlat
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  onClick={stopTimer}
+                  disabled={loggingTime}
+                  className="flex w-full items-center justify-center gap-1.5 rounded-[6px] bg-[#ff6b5b] px-2.5 py-1.5 text-xs text-[#0d1b3a] hover:bg-[#ff8577]"
+                >
+                  <Square className="size-3" />
+                  Durdur · {formatElapsed(timerElapsedSec)}
+                </Button>
+              )}
+
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.25"
+                  value={manualHours}
+                  onChange={(e) => setManualHours(e.target.value)}
+                  placeholder="Saat gir"
+                  className="h-8 w-24 shrink-0 rounded-[6px] border-[var(--surface-border)] bg-[var(--surface)] text-xs text-[var(--text-primary)] focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
+                />
+                <Input
+                  value={manualNote}
+                  onChange={(e) => setManualNote(e.target.value)}
+                  placeholder="Not (opsiyonel)"
+                  className="h-8 min-w-0 flex-1 rounded-[6px] border-[var(--surface-border)] bg-[var(--surface)] text-xs text-[var(--text-primary)] focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
+                />
+                <Button
+                  type="button"
+                  onClick={handleManualLog}
+                  disabled={loggingTime || !manualHours}
+                  className="h-8 shrink-0 rounded-[6px] bg-[var(--surface-hover)] px-2.5 text-xs text-[var(--text-primary)] hover:bg-[var(--surface-border)]"
+                >
+                  Ekle
+                </Button>
+              </div>
+
+              {timeLoading ? (
+                <p className="text-xs text-[var(--text-muted)]">Yükleniyor...</p>
+              ) : timeEntries.length === 0 ? (
+                <p className="text-xs text-[var(--text-muted)]">Henüz zaman kaydı yok.</p>
+              ) : (
+                <ul className="max-h-24 space-y-1 overflow-y-auto pr-1 text-xs text-[var(--text-secondary)]">
+                  {timeEntries.map((entry) => (
+                    <li key={entry.id} className="flex items-center justify-between gap-2">
+                      <span className="min-w-0 flex-1 truncate">
+                        {formatHours(entry.minutes)} sa{entry.note ? ` · ${entry.note}` : ""}
+                      </span>
+                      <span className="shrink-0 text-[var(--text-muted)]">{formatActivityTime(entry.logged_at)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-[var(--text-secondary)]">Öncelik</label>
+              <div className="flex flex-wrap gap-2">
+                {PRIORITIES.map((option) => (
+                  <button
+                    key={option}
+                    onClick={() => setPriority(option)}
+                    className={`rounded-[6px] px-2.5 py-1 text-xs transition-colors ${
+                      priority === option
+                        ? priorityPillClass[option]
+                        : "bg-[var(--surface-hover)] text-[var(--text-muted)] hover:bg-[var(--surface-border)]"
+                    } ${priority === option ? "ring-1 ring-inset ring-[var(--surface-border-hover)]" : ""}`}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <div className="flex-1 space-y-1.5">
+                <label className="text-xs font-medium text-[var(--text-secondary)]">Son tarih</label>
+                <Input
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  className="rounded-[6px] border-[var(--surface-border)] bg-[var(--surface)] text-[var(--text-primary)] focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
+                />
+              </div>
+              <div className="w-24 space-y-1.5">
+                <label className="text-xs font-medium text-[var(--text-secondary)]">Tahmini (sa)</label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={estimatedHours}
+                  onChange={(e) => setEstimatedHours(e.target.value)}
+                  placeholder="—"
+                  className="rounded-[6px] border-[var(--surface-border)] bg-[var(--surface)] text-[var(--text-primary)] focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-[var(--text-secondary)]">Atanan kişi</label>
+              <select
+                value={assigneeId}
+                onChange={(e) => setAssigneeId(e.target.value)}
+                className={`${fieldClass} appearance-none`}
+              >
+                <option value="" className="bg-[var(--surface)]">
+                  Atanmadı
+                </option>
+                {members.map((member) => (
+                  <option key={member.user_id} value={member.user_id} className="bg-[var(--surface)]">
+                    {member.full_name ?? member.email ?? member.user_id}
+                  </option>
+                ))}
+              </select>
+
+              {assigneeId !== (task.assignee_id ?? "") && (
+                <textarea
+                  value={assigneeNote}
+                  onChange={(e) => setAssigneeNote(e.target.value)}
+                  rows={2}
+                  placeholder="Atama ile ilgili bir not bırak (opsiyonel)"
+                  className={`${fieldClass} resize-none`}
+                />
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-[var(--text-secondary)]">Aktivite Geçmişi</label>
+              {activityLoading ? (
+                <p className="text-xs text-[var(--text-muted)]">Yükleniyor...</p>
+              ) : activity.length === 0 ? (
+                <p className="text-xs text-[var(--text-muted)]">Henüz bir aktivite yok.</p>
+              ) : (
+                <ul className="max-h-28 space-y-1.5 overflow-y-auto pr-1 text-xs text-[var(--text-secondary)]">
+                  {activity.map((entry) => (
+                    <li key={entry.id}>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="min-w-0 flex-1 truncate">{describeActivity(entry, members)}</span>
+                        <span className="shrink-0 text-[var(--text-muted)]">{formatActivityTime(entry.created_at)}</span>
+                      </div>
+                      {entry.note && <p className="mt-0.5 pl-0 text-[var(--text-secondary)] italic">"{entry.note}"</p>}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
         </div>
 
         {error && <p className="text-sm text-[#ff6b5b]">{error}</p>}
