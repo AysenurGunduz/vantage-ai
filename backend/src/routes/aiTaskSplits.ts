@@ -32,11 +32,17 @@ function isValidSuggestion(value: unknown): value is SuggestedTasksPayload {
 }
 
 function buildTaskSplitPrompt(description: string): string {
-  return `Sen bir proje yönetimi asistanısın. Aşağıdaki görev/proje açıklamasını mantıklı, uygulanabilir alt görevlere böl. Her alt görev kısa ve net bir başlık olsun, mümkünse tahmini süreyi saat cinsinden ekle.
+  return `Sen bir proje yönetimi asistanısın. Aşağıdaki görev/proje açıklamasını, gerçekten uygulanabilir 2 ile 6 arasında alt göreve böl.
+
+Kurallar:
+- Her başlık kısa (en fazla 8-10 kelime), Türkçe, eylem fiiliyle başlayan net bir iş tanımı olsun (örn. "Giriş formunu tasarla").
+- Açıklama belirsiz olsa bile elinden geldiğince makul alt görevler üret; "açıklama yetersiz" gibi bir şey yazma.
+- Mümkünse her alt görev için gerçekçi bir tahmini süre (saat, sayı) ekle; emin değilsen o alanı hiç ekleme.
+- Türkçe dışında hiçbir kelime kullanma.
 
 Açıklama: "${description}"
 
-SADECE şu JSON şemasına uyan bir çıktı ver, başka hiçbir açıklama ya da metin ekleme:
+SADECE şu JSON şemasına uyan, tek satırlık bir çıktı ver — başka açıklama, markdown ya da kod bloğu ekleme:
 {"subtasks": [{"title": "string", "estimated_hours": number}]}`;
 }
 

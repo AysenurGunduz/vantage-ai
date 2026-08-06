@@ -244,17 +244,30 @@ taskRouter.get("/:taskId/activity", async (req, res) => {
   res.json(data);
 });
 
+const LEVEL_LABELS_TR: Record<RiskScoreResult["level"], string> = {
+  low: "düşük",
+  medium: "orta",
+  high: "yüksek",
+};
+
+function describeFactor(value: number): string {
+  if (value >= 66) return "yüksek";
+  if (value >= 33) return "orta";
+  if (value > 0) return "düşük";
+  return "yok";
+}
+
 function buildRiskExplanationPrompt(
   taskTitle: string,
   risk: RiskScoreResult,
   effort: { estimatedHours: number; spentHours: number } | null,
 ): string {
   const effortLine = effort
-    ? `\nEfor karşılaştırması: tahmini süre ${effort.estimatedHours} saat, şu ana kadar harcanan süre ${effort.spentHours.toFixed(1)} saat.`
+    ? `\nEfor karşılaştırması: tahmini süre ${effort.estimatedHours} saat, şu ana kadar harcanan süre ${effort.spentHours.toFixed(1)} saat. Tahmini aşmışsa bundan kısaca bahset.`
     : "";
 
-  return `Sen bir proje yöneticisi asistanısın. "${taskTitle}" adlı görevin gecikme riski kural tabanlı bir motorla hesaplandı: risk skoru ${risk.score}/100, risk seviyesi "${risk.level}". Alt faktörler (0-100 arası): son tarihe yakınlık ${risk.factors.deadline}, beklenen ilerlemeye göre gecikme ${risk.factors.progress}, projenin geçmiş tamamlama hızına göre risk ${risk.factors.velocity}, harcanan/tahmini süre oranına göre risk ${risk.factors.effort}.${effortLine}
-Bu sayıları tekrar etme; kullanıcıya bu durumu 2-3 cümlelik kısa, doğal bir Türkçe açıklamayla anlat: görev neden riskli (ya da değilse neden değil) ve varsa kısa bir öneri ver. Efor karşılaştırması verilmişse ve tahmini aşmışsa bundan bahset.`;
+  return `Sen bir proje yöneticisi asistanısın. "${taskTitle}" adlı görevin gecikme riski kural tabanlı bir motorla ${LEVEL_LABELS_TR[risk.level]} olarak hesaplandı. Buna katkıda bulunan etkenler: son tarihe yakınlık ${describeFactor(risk.factors.deadline)}, beklenen ilerlemeye göre gecikme ${describeFactor(risk.factors.progress)}, projenin geçmiş tamamlama hızına göre risk ${describeFactor(risk.factors.velocity)}, harcanan/tahmini süre oranına göre risk ${describeFactor(risk.factors.effort)}.${effortLine}
+Kullanıcıya bu durumu 2-3 cümlelik kısa, doğal bir Türkçe açıklamayla anlat: görev neden bu kadar riskli (ya da değilse neden değil) ve varsa kısa bir öneri ver. Hiçbir sayı, yüzde ya da İngilizce kelime kullanma; sadece düz, sade Türkçe yaz.`;
 }
 
 taskRouter.post("/:taskId/risk-explanation", async (req, res) => {
