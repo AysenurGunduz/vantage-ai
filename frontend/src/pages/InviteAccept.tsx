@@ -62,24 +62,24 @@ export default function InviteAccept() {
   }
 
   return (
-    <div className="dark-theme animated-gradient flex min-h-screen items-center justify-center px-6 text-center text-white">
-      <div className="page-fade-in w-full max-w-md space-y-6 rounded-[8px] border border-white/10 bg-white/[0.04] p-8">
-        <Logo />
+    <div className="light-theme flex min-h-screen items-center justify-center bg-[var(--bg-base)] px-6 text-center text-[var(--text-primary)]">
+      <div className="page-fade-in w-full max-w-md space-y-6 rounded-[8px] border border-[var(--surface-border)] bg-[var(--surface)] p-8">
+        <Logo className="justify-center" theme="light" />
 
-        {loading && <p className="text-sm text-white/60">Davet kontrol ediliyor...</p>}
+        {loading && <p className="text-sm text-[var(--text-secondary)]">Davet kontrol ediliyor...</p>}
 
         {!loading && error && (
           <div className="space-y-4">
             <p className="rounded-[6px] bg-[#ff6b5b]/10 px-3 py-2 text-sm text-[#ff6b5b]">{error}</p>
             {user && (
-              <p className="text-xs text-white/40">
+              <p className="text-xs text-[var(--text-muted)]">
                 Şu an {user.email} ile giriş yapmış durumdasın.{" "}
                 <button onClick={() => signOut()} className="text-[#ff6b5b] underline underline-offset-4">
                   Çıkış yap
                 </button>
               </p>
             )}
-            <Link to="/dashboard" className="inline-block text-sm text-white/60 hover:text-white">
+            <Link to="/dashboard" className="inline-block text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
               Panele dön
             </Link>
           </div>
@@ -90,8 +90,8 @@ export default function InviteAccept() {
             <div className="flex flex-col items-center gap-2">
               <Building2 className="size-8 text-[#ff6b5b]" />
               <p className="text-lg font-semibold">{invitation.organization_name ?? "Bir organizasyon"}</p>
-              <p className="text-sm text-white/60">
-                seni <span className="text-white">{roleLabel[invitation.role] ?? invitation.role}</span> rolüyle davet
+              <p className="text-sm text-[var(--text-secondary)]">
+                seni <span className="text-[var(--text-primary)]">{roleLabel[invitation.role] ?? invitation.role}</span> rolüyle davet
                 etti.
               </p>
             </div>

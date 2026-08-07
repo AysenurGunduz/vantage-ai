@@ -60,6 +60,7 @@ export interface DashboardActivityEntry {
   action_type: string;
   from_value: string | null;
   to_value: string | null;
+  note: string | null;
   created_at: string;
 }
 
@@ -70,6 +71,29 @@ export interface DashboardStats {
   overdueTasks: DashboardTaskSummary[];
   dueSoonTasks: DashboardTaskSummary[];
   byProject: Array<{ project_id: string; project_name: string; count: number }>;
+}
+
+export interface SuggestedSubtask {
+  title: string;
+  estimated_hours?: number;
+}
+
+export type AITaskSuggestionStatus = "pending" | "accepted" | "rejected";
+
+export interface AITaskSuggestion {
+  id: string;
+  project_id: string;
+  source_description: string;
+  suggested_tasks: { subtasks: SuggestedSubtask[] };
+  status: AITaskSuggestionStatus;
+  created_by: string;
+  created_at: string;
+}
+
+export interface SprintSummaryResult {
+  summary: string | null;
+  taskCount: number;
+  periodDays: number;
 }
 
 export type InvitationStatus = "pending" | "accepted" | "revoked" | "expired";

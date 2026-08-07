@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { Building2, ChevronDown, ChevronRight, FolderKanban, ListTodo, Plus, Search, Users2 } from "lucide-react";
+import { Building2, ChevronDown, FileText, FolderKanban, ListTodo, Plus, Search, Sparkles, Users2 } from "lucide-react";
 import { useAuth } from "../lib/AuthContext";
 import { apiFetch } from "../lib/apiClient";
 import { supabase } from "../lib/supabaseClient";
@@ -12,8 +12,14 @@ import { KanbanBoard } from "@/components/kanban/KanbanBoard";
 import { TaskDetailModal } from "@/components/kanban/TaskDetailModal";
 import { PanelSkeleton, SidebarListSkeleton } from "@/components/Skeleton";
 import { Reveal } from "@/components/Reveal";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { PageNav } from "@/components/PageNav";
+import { Breadcrumb, type BreadcrumbItem } from "@/components/Breadcrumb";
+import { ProfileMenu } from "@/components/ProfileMenu";
+import { CreateProjectDialog } from "@/components/CreateProjectDialog";
+import { EmptyState } from "@/components/EmptyState";
+import { AITaskSplitDialog } from "@/components/AITaskSplitDialog";
+import { SprintSummaryDialog } from "@/components/SprintSummaryDialog";
+import { useTheme } from "@/lib/ThemeContext";
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : "Beklenmeyen bir hata oluştu";
@@ -31,6 +37,7 @@ const selectClass =
 
 export default function Workspace() {
   const { user, signOut } = useAuth();
+  const { theme } = useTheme();
 
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
@@ -38,7 +45,10 @@ export default function Workspace() {
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
-  const [newProjectName, setNewProjectName] = useState("");
+  const [createProjectOrgId, setCreateProjectOrgId] = useState<string | null>(null);
+
+  const [aiDialogOpen, setAiDialogOpen] = useState(false);
+  const [sprintSummaryOpen, setSprintSummaryOpen] = useState(false);
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState("");
@@ -60,6 +70,13 @@ export default function Workspace() {
 
   const selectedOrg = organizations.find((org) => org.id === selectedOrgId) ?? null;
   const selectedProject = projects.find((project) => project.id === selectedProjectId) ?? null;
+
+  const breadcrumbItems: BreadcrumbItem[] = [
+    { label: "Panel", href: "/dashboard" },
+    { label: "Çalışma Alanı", href: "/dashboard/workspace" },
+  ];
+  if (selectedOrg) breadcrumbItems.push({ label: selectedOrg.name });
+  if (selectedProject) breadcrumbItems.push({ label: selectedProject.name });
 
   const availableTags = Array.from(new Set(tasks.flatMap((task) => task.tags))).sort();
 
@@ -176,20 +193,9 @@ export default function Workspace() {
     }
   }
 
-  async function handleCreateProject(event: FormEvent) {
-    event.preventDefault();
-    if (!selectedOrgId) return;
-    setError(null);
-    try {
-      const project = await apiFetch<Project>(`/api/organizations/${selectedOrgId}/projects`, {
-        method: "POST",
-        body: JSON.stringify({ name: newProjectName }),
-      });
-      setProjects((prev) => [project, ...prev]);
-      setNewProjectName("");
-    } catch (err) {
-      setError(errorMessage(err));
-    }
+  function handleProjectCreated(project: Project) {
+    setProjects((prev) => [project, ...prev]);
+    setCreateProjectOrgId(null);
   }
 
   async function handleCreateTask(event: FormEvent) {
@@ -247,35 +253,18 @@ export default function Workspace() {
   }
 
   return (
-    <div className="dark-theme animated-gradient relative min-h-screen overflow-hidden text-white">
-      <NetworkBackground className="opacity-40" />
-      <div className="floating-blob pointer-events-none absolute -top-32 -left-32 h-96 w-96 rounded-full bg-[#ff6b5b]/8 blur-3xl" />
-      <div className="floating-blob-reverse pointer-events-none absolute top-1/2 -right-32 h-96 w-96 rounded-full bg-indigo-500/10 blur-3xl" />
-
+    <div className={`${theme}-theme relative min-h-screen overflow-hidden bg-[var(--bg-base)] text-[var(--text-primary)]`}>
       <div className="page-fade-in relative z-10 mx-auto max-w-screen-2xl px-8 py-8">
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <Logo />
-            <Link to="/dashboard" className="mt-2 block text-sm text-white/50 transition-colors hover:text-[#ff6b5b]">
-              ← Panele dön
-            </Link>
-          </div>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+          <Logo theme={theme} />
           <div className="flex flex-wrap items-center gap-3">
             <PageNav />
-            <span
-              title={user?.email}
-              className="flex size-9 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white"
-            >
-              {user?.email?.[0]?.toUpperCase() ?? "?"}
-            </span>
-            <Button
-              variant="outline"
-              onClick={() => signOut()}
-              className="rounded-[6px] border-white/20 bg-transparent text-white transition-colors hover:bg-white/5 hover:text-white"
-            >
-              Çıkış Yap
-            </Button>
+            <ProfileMenu email={user?.email} onSignOut={signOut} theme={theme} />
           </div>
+        </div>
+
+        <div className="mb-6">
+          <Breadcrumb items={breadcrumbItems} />
         </div>
 
         {error && (
@@ -304,13 +293,13 @@ export default function Workspace() {
                           onClick={() => setSelectedOrgId(isOpen ? null : org.id)}
                           className={`flex w-full items-center justify-between gap-2 rounded-[6px] px-3 py-2.5 text-left text-sm transition-colors ${
                             isOpen
-                              ? "bg-[var(--accent)]/10 text-white"
-                              : "text-[var(--text-secondary)] hover:bg-white/5 hover:text-white"
+                              ? "bg-[var(--accent)]/10 text-[var(--text-primary)]"
+                              : "text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                           }`}
                         >
                           <span className="truncate">{org.name}</span>
                           <ChevronDown
-                            className={`size-4 shrink-0 text-white/40 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                            className={`size-4 shrink-0 text-[var(--text-muted)] transition-transform ${isOpen ? "rotate-180" : ""}`}
                           />
                         </button>
 
@@ -318,7 +307,7 @@ export default function Workspace() {
                           <div className="mt-1 mb-2 ml-3 space-y-1 border-l border-[var(--surface-border)] pl-3">
                             <Link
                               to={`/dashboard/organizations/${org.id}/team`}
-                              className="flex items-center gap-2 rounded-[6px] px-2 py-1.5 text-xs text-[var(--text-secondary)] transition-colors hover:bg-white/5 hover:text-[var(--accent)]"
+                              className="flex items-center gap-2 rounded-[6px] px-2 py-1.5 text-xs text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--accent)]"
                             >
                               <Users2 className="size-3.5" />
                               Ekip Üyeleri
@@ -334,8 +323,8 @@ export default function Workspace() {
                                     onClick={() => setSelectedProjectId(project.id)}
                                     className={`flex w-full items-center gap-2 rounded-[6px] border-l-2 px-2 py-1.5 text-left text-xs transition-colors ${
                                       selectedProjectId === project.id
-                                        ? "border-[var(--accent)] bg-[var(--accent)]/10 text-white"
-                                        : "border-transparent text-[var(--text-secondary)] hover:border-white/20 hover:bg-white/5 hover:text-white"
+                                        ? "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--text-primary)]"
+                                        : "border-transparent text-[var(--text-secondary)] hover:border-[var(--surface-border-hover)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                                     }`}
                                   >
                                     <FolderKanban className="size-3 shrink-0" />
@@ -343,28 +332,18 @@ export default function Workspace() {
                                   </button>
                                 ))}
                                 {projects.length === 0 && (
-                                  <p className="px-2 py-1.5 text-xs text-white/30">Henüz proje yok.</p>
+                                  <p className="px-2 py-1.5 text-xs text-[var(--text-muted)]">Henüz proje yok.</p>
                                 )}
                               </>
                             )}
 
-                            <form onSubmit={handleCreateProject} className="mt-1 flex gap-1.5">
-                              <Input
-                                placeholder="Yeni proje"
-                                value={newProjectName}
-                                onChange={(e) => setNewProjectName(e.target.value)}
-                                required
-                                className={`${inputClass} h-8 text-xs`}
-                              />
-                              <Button
-                                type="submit"
-                                size="icon"
-                                className={`${submitButtonClass} h-8 w-8 shrink-0`}
-                                aria-label="Proje oluştur"
-                              >
-                                <Plus className="size-3.5" />
-                              </Button>
-                            </form>
+                            <button
+                              onClick={() => setCreateProjectOrgId(org.id)}
+                              className="mt-1 flex w-full items-center gap-1.5 rounded-[6px] px-2 py-1.5 text-left text-xs text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                            >
+                              <Plus className="size-3.5 shrink-0" />
+                              Yeni proje
+                            </button>
                           </div>
                         )}
                       </div>
@@ -372,11 +351,12 @@ export default function Workspace() {
                   })}
 
                   {organizations.length === 0 && (
-                    <div className="flex flex-col items-center gap-2 py-4 text-center">
-                      <Building2 className="size-6 text-white/20" />
-                      <p className="text-sm text-white/40">Henüz bir organizasyonun yok.</p>
-                      <p className="text-xs text-white/25">Aşağıdan ilkini oluşturarak başla.</p>
-                    </div>
+                    <EmptyState
+                      icon={Building2}
+                      title="Henüz bir organizasyonun yok."
+                      description="Aşağıdan ilkini oluşturarak başla."
+                      className="py-4"
+                    />
                   )}
                 </div>
               )}
@@ -399,11 +379,6 @@ export default function Workspace() {
           <main className="min-w-0 flex-1">
             {selectedProjectId ? (
               <Reveal as="section" delayMs={120} className={panelClass}>
-                <div className="mb-4 flex flex-wrap items-center gap-2 text-sm text-white/50">
-                  <span>{selectedOrg?.name}</span>
-                  <ChevronRight className="size-3.5" />
-                  <span className="font-semibold text-white">{selectedProject?.name}</span>
-                </div>
                 <form onSubmit={handleCreateTask} className="mb-5 flex flex-wrap gap-2">
                   <Input
                     placeholder="Yeni görev başlığı"
@@ -445,6 +420,24 @@ export default function Workspace() {
                   <Button type="submit" className={submitButtonClass}>
                     <Plus className="size-4" />
                     Ekle
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setAiDialogOpen(true)}
+                    className="gap-1.5 rounded-[6px] border-[var(--accent)]/30 bg-[var(--accent)]/10 text-[var(--accent)] hover:bg-[var(--accent)]/20 hover:text-[var(--accent)]"
+                  >
+                    <Sparkles className="size-4" />
+                    AI ile Öner
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setSprintSummaryOpen(true)}
+                    className="gap-1.5 rounded-[6px] border-[var(--accent)]/30 bg-[var(--accent)]/10 text-[var(--accent)] hover:bg-[var(--accent)]/20 hover:text-[var(--accent)]"
+                  >
+                    <FileText className="size-4" />
+                    Sprint Özeti
                   </Button>
                 </form>
 
@@ -517,7 +510,7 @@ export default function Workspace() {
                           setSortBy("created");
                           setSearchQuery("");
                         }}
-                        className="text-xs text-white/50 underline underline-offset-4 hover:text-[#ff6b5b]"
+                        className="text-xs text-[var(--text-secondary)] underline underline-offset-4 hover:text-[var(--accent)]"
                       >
                         Filtreleri temizle
                       </button>
@@ -539,12 +532,13 @@ export default function Workspace() {
             ) : (
               <Reveal
                 delayMs={120}
-                className="flex h-72 flex-col items-center justify-center gap-3 rounded-[8px] border border-dashed border-white/15 px-6 text-center"
+                className="flex h-72 items-center justify-center rounded-[8px] border border-dashed border-[var(--surface-border)] px-6"
               >
-                <ListTodo className="size-8 text-white/25" />
-                <p className="max-w-xs text-sm text-white/40">
-                  Görevleri görüntülemek için önce sol taraftan bir organizasyon ve proje seç.
-                </p>
+                <EmptyState
+                  icon={ListTodo}
+                  title="Henüz bir proje seçilmedi"
+                  description="Görevleri görüntülemek için önce sol taraftan bir organizasyon ve proje seç."
+                />
               </Reveal>
             )}
           </main>
@@ -554,10 +548,40 @@ export default function Workspace() {
       {selectedTask && (
         <TaskDetailModal
           task={selectedTask}
+          organizationId={selectedOrgId}
+          theme={theme}
           onClose={() => setSelectedTask(null)}
           onSave={(updated) => {
             setTasks((prev) => prev.map((task) => (task.id === updated.id ? updated : task)));
           }}
+        />
+      )}
+
+      <CreateProjectDialog
+        organizationId={createProjectOrgId}
+        open={createProjectOrgId !== null}
+        theme={theme}
+        onOpenChange={(next) => {
+          if (!next) setCreateProjectOrgId(null);
+        }}
+        onCreated={handleProjectCreated}
+      />
+
+      {selectedProjectId && (
+        <AITaskSplitDialog
+          projectId={selectedProjectId}
+          open={aiDialogOpen}
+          theme={theme}
+          onOpenChange={setAiDialogOpen}
+        />
+      )}
+
+      {selectedProjectId && (
+        <SprintSummaryDialog
+          projectId={selectedProjectId}
+          open={sprintSummaryOpen}
+          theme={theme}
+          onOpenChange={setSprintSummaryOpen}
         />
       )}
     </div>

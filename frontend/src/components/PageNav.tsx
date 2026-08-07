@@ -22,7 +22,7 @@ export function PageNav() {
             className={`flex items-center gap-1.5 rounded-[6px] px-3 py-1.5 text-sm font-medium transition-colors ${
               isActive
                 ? "bg-[var(--accent)] text-[var(--bg-base)]"
-                : "text-[var(--text-secondary)] hover:bg-white/5 hover:text-white"
+                : "text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
             }`}
           >
             <Icon className="size-4" />

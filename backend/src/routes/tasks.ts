@@ -23,13 +23,21 @@ function valuesEqual(a: unknown, b: unknown): boolean {
   return a === b;
 }
 
-async function logActivity(taskId: string, userId: string, actionType: string, fromValue: unknown, toValue: unknown) {
+export async function logActivity(
+  taskId: string,
+  userId: string,
+  actionType: string,
+  fromValue: unknown,
+  toValue: unknown,
+  note?: string | null,
+) {
   const { error } = await supabase.from("task_activity_log").insert({
     task_id: taskId,
     user_id: userId,
     action_type: actionType,
     from_value: stringifyValue(fromValue),
     to_value: stringifyValue(toValue),
+    note: note?.trim() || null,
   });
 
   if (error) {
@@ -170,6 +178,8 @@ taskRouter.patch("/:taskId", async (req, res) => {
     return;
   }
 
+  const { assignee_note: assigneeNote } = req.body as { assignee_note?: string };
+
   const updates: Record<string, unknown> = {};
   for (const field of UPDATABLE_FIELDS) {
     if (field in req.body) {
@@ -197,7 +207,8 @@ taskRouter.patch("/:taskId", async (req, res) => {
 
   for (const field of LOGGED_FIELDS) {
     if (field in updates && !valuesEqual(updates[field], task[field])) {
-      await logActivity(taskId, req.user!.id, field, task[field], updates[field]);
+      const note = field === "assignee_id" ? assigneeNote : undefined;
+      await logActivity(taskId, req.user!.id, field, task[field], updates[field], note);
     }
   }
 
@@ -219,7 +230,7 @@ taskRouter.get("/:taskId/activity", async (req, res) => {
 
   const { data, error } = await supabase
     .from("task_activity_log")
-    .select("id, action_type, from_value, to_value, created_at")
+    .select("id, action_type, from_value, to_value, note, created_at")
     .eq("task_id", taskId)
     .order("created_at", { ascending: false });
 

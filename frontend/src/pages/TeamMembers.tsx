@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Link, useParams } from "react-router-dom";
-import { Building2, Copy, Trash2, UserPlus } from "lucide-react";
+import { useParams } from "react-router-dom";
+import { Copy, Trash2, UserPlus } from "lucide-react";
 import { apiFetch } from "@/lib/apiClient";
 import { useAuth } from "../lib/AuthContext";
 import type {
@@ -13,6 +13,9 @@ import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PageNav } from "@/components/PageNav";
+import { Breadcrumb } from "@/components/Breadcrumb";
+import { ProfileMenu } from "@/components/ProfileMenu";
+import { useTheme } from "@/lib/ThemeContext";
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : "Beklenmeyen bir hata oluştu";
@@ -42,6 +45,7 @@ function initials(name: string | null, email: string | null) {
 
 export default function TeamMembers() {
   const { orgId } = useParams<{ orgId: string }>();
+  const { theme } = useTheme();
 
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [members, setMembers] = useState<OrganizationMember[]>([]);
@@ -54,7 +58,7 @@ export default function TeamMembers() {
   const [inviting, setInviting] = useState(false);
   const [inviteLink, setInviteLink] = useState<string | null>(null);
 
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, signOut } = useAuth();
   const myMembership = members.find((member) => member.user_id === currentUser?.id) ?? null;
   const canManage = myMembership?.role === "owner" || myMembership?.role === "admin";
 
@@ -140,26 +144,25 @@ export default function TeamMembers() {
   }
 
   return (
-    <div className="dark-theme animated-gradient min-h-screen text-white">
+    <div className={`${theme}-theme min-h-screen bg-[var(--bg-base)] text-[var(--text-primary)]`}>
       <div className="page-fade-in mx-auto max-w-screen-2xl px-8 py-8">
-        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <Logo />
-            <Link
-              to="/dashboard/workspace"
-              className="mt-2 block text-sm text-white/50 transition-colors hover:text-[#ff6b5b]"
-            >
-              ← Çalışma alanına dön
-            </Link>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+          <Logo theme={theme} />
+          <div className="flex flex-wrap items-center gap-3">
+            <PageNav />
+            <ProfileMenu email={currentUser?.email} onSignOut={signOut} theme={theme} />
           </div>
-          <PageNav />
         </div>
 
-        <div className="mb-6 flex items-center gap-2 text-sm text-white/50">
-          <Building2 className="size-4" />
-          <span>{organization?.name ?? "Organizasyon"}</span>
-          <span>/</span>
-          <span className="font-semibold text-white">Ekip Üyeleri</span>
+        <div className="mb-6">
+          <Breadcrumb
+            items={[
+              { label: "Panel", href: "/dashboard" },
+              { label: "Çalışma Alanı", href: "/dashboard/workspace" },
+              { label: organization?.name ?? "Organizasyon" },
+              { label: "Ekip Üyeleri" },
+            ]}
+          />
         </div>
 
         {error && (
@@ -167,7 +170,7 @@ export default function TeamMembers() {
         )}
 
         {loading ? (
-          <p className="text-sm text-white/50">Yükleniyor...</p>
+          <p className="text-sm text-[var(--text-muted)]">Yükleniyor...</p>
         ) : (
           <div className="space-y-6">
             {canManage && (
@@ -180,7 +183,7 @@ export default function TeamMembers() {
                   </span>
                   <div>
                     <h2 className="text-base font-semibold tracking-tight">Ekibine yeni birini davet et</h2>
-                    <p className="text-sm text-white/60">E-posta ve rol seç, davet linkini paylaş.</p>
+                    <p className="text-sm text-[var(--text-secondary)]">E-posta ve rol seç, davet linkini paylaş.</p>
                   </div>
                 </div>
 
@@ -191,12 +194,12 @@ export default function TeamMembers() {
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
                     required
-                    className={`${inputClass} min-w-[240px] flex-1 border-white/20 bg-white/10`}
+                    className={`${inputClass} min-w-[240px] flex-1`}
                   />
                   <select
                     value={inviteRole}
                     onChange={(e) => setInviteRole(e.target.value as "admin" | "member")}
-                    className={`${selectClass} border-white/20 bg-white/10`}
+                    className={selectClass}
                   >
                     <option value="member" className="bg-[var(--surface)] text-[var(--text-primary)]">
                       Üye
@@ -217,8 +220,8 @@ export default function TeamMembers() {
                 </form>
 
                 {inviteLink && (
-                  <div className="relative mt-4 flex items-center gap-2 rounded-[6px] border border-white/15 bg-[#0d1b3a]/60 px-3 py-2.5 text-sm">
-                    <span className="truncate text-white/70">{inviteLink}</span>
+                  <div className="relative mt-4 flex items-center gap-2 rounded-[6px] border border-[var(--surface-border)] bg-[var(--surface)] px-3 py-2.5 text-sm">
+                    <span className="truncate text-[var(--text-secondary)]">{inviteLink}</span>
                     <button
                       onClick={() => navigator.clipboard.writeText(inviteLink)}
                       className="ml-auto flex shrink-0 items-center gap-1 text-xs font-medium text-[#ff6b5b] hover:text-[#ff8577]"
@@ -236,7 +239,7 @@ export default function TeamMembers() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
                   <thead>
-                    <tr className="border-b border-white/10 text-xs text-white/40 uppercase">
+                    <tr className="border-b border-[var(--surface-border)] text-xs text-[var(--text-muted)] uppercase">
                       <th className="pb-2 font-medium">Üye</th>
                       <th className="pb-2 font-medium">E-posta</th>
                       <th className="pb-2 font-medium">Rol</th>
@@ -246,16 +249,16 @@ export default function TeamMembers() {
                   </thead>
                   <tbody>
                     {members.map((member) => (
-                      <tr key={member.user_id} className="border-b border-white/5">
+                      <tr key={member.user_id} className="border-b border-[var(--surface-border)]">
                         <td className="py-3">
                           <div className="flex items-center gap-2.5">
-                            <span className="flex size-7 items-center justify-center rounded-full bg-white/10 text-xs font-semibold">
+                            <span className="flex size-7 items-center justify-center rounded-full bg-[var(--surface-hover)] text-xs font-semibold">
                               {initials(member.full_name, member.email)}
                             </span>
                             {member.full_name ?? "İsimsiz kullanıcı"}
                           </div>
                         </td>
-                        <td className="py-3 text-white/70">{member.email ?? "—"}</td>
+                        <td className="py-3 text-[var(--text-secondary)]">{member.email ?? "—"}</td>
                         <td className="py-3">
                           {canManage && myMembership?.role === "owner" && member.user_id !== currentUser?.id ? (
                             <select
@@ -274,11 +277,11 @@ export default function TeamMembers() {
                               </option>
                             </select>
                           ) : (
-                            <span className="text-white/70">{roleLabel[member.role] ?? member.role}</span>
+                            <span className="text-[var(--text-secondary)]">{roleLabel[member.role] ?? member.role}</span>
                           )}
                         </td>
                         <td className="py-3">
-                          <span className="rounded-full bg-emerald-400/10 px-2.5 py-1 text-xs text-emerald-300">
+                          <span className="rounded-full bg-emerald-400/10 px-2.5 py-1 text-xs text-emerald-600">
                             Aktif
                           </span>
                         </td>
@@ -288,7 +291,7 @@ export default function TeamMembers() {
                               <button
                                 onClick={() => handleRemove(member.user_id)}
                                 aria-label="Üyeyi çıkar"
-                                className="text-white/30 transition-colors hover:text-[#ff6b5b]"
+                                className="text-[var(--text-muted)] transition-colors hover:text-[#ff6b5b]"
                               >
                                 <Trash2 className="size-4" />
                               </button>
@@ -311,16 +314,16 @@ export default function TeamMembers() {
                     .map((invitation) => (
                       <li
                         key={invitation.id}
-                        className="flex items-center justify-between gap-3 rounded-[6px] border border-white/10 bg-white/5 px-3 py-2 text-sm"
+                        className="flex items-center justify-between gap-3 rounded-[6px] border border-[var(--surface-border)] bg-[var(--surface-hover)] px-3 py-2 text-sm"
                       >
                         <span>{invitation.email}</span>
-                        <span className="text-xs text-white/40">{roleLabel[invitation.role]}</span>
-                        <span className="rounded-full bg-white/10 px-2.5 py-1 text-xs text-white/60">
+                        <span className="text-xs text-[var(--text-muted)]">{roleLabel[invitation.role]}</span>
+                        <span className="rounded-full bg-[var(--surface)] px-2.5 py-1 text-xs text-[var(--text-secondary)]">
                           Davet gönderildi
                         </span>
                         <button
                           onClick={() => handleRevoke(invitation.id)}
-                          className="text-white/30 transition-colors hover:text-[#ff6b5b]"
+                          className="text-[var(--text-muted)] transition-colors hover:text-[#ff6b5b]"
                           aria-label="Daveti iptal et"
                         >
                           <Trash2 className="size-4" />

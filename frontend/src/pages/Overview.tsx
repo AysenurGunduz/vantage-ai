@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import {
   Bar,
   BarChart,
@@ -16,11 +15,12 @@ import { useAuth } from "../lib/AuthContext";
 import { apiFetch } from "../lib/apiClient";
 import type { DashboardStats, DashboardTaskSummary } from "../types/api";
 import { Logo } from "@/components/Logo";
-import { Button } from "@/components/ui/button";
 import { PanelSkeleton } from "@/components/Skeleton";
 import { Reveal } from "@/components/Reveal";
-import { NetworkBackground } from "@/components/NetworkBackground";
 import { PageNav } from "@/components/PageNav";
+import { useTheme } from "@/lib/ThemeContext";
+import { Breadcrumb } from "@/components/Breadcrumb";
+import { ProfileMenu } from "@/components/ProfileMenu";
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : "Beklenmeyen bir hata oluştu";
@@ -96,7 +96,7 @@ function TaskAlertList({
   emptyText: string;
 }) {
   if (tasks.length === 0) {
-    return <p className="text-sm text-white/40">{emptyText}</p>;
+    return <p className="text-sm text-[var(--text-muted)]">{emptyText}</p>;
   }
 
   return (
@@ -147,6 +147,7 @@ function StatTile({
 
 export default function Overview() {
   const { user, signOut } = useAuth();
+  const { theme } = useTheme();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -176,38 +177,18 @@ export default function Overview() {
     : [];
 
   return (
-    <div className="dark-theme animated-gradient relative min-h-screen overflow-hidden text-white">
-      <NetworkBackground className="opacity-40" />
-      <div className="floating-blob pointer-events-none absolute -top-32 -left-32 h-96 w-96 rounded-full bg-[#ff6b5b]/8 blur-3xl" />
-      <div className="floating-blob-reverse pointer-events-none absolute top-1/2 -right-32 h-96 w-96 rounded-full bg-indigo-500/10 blur-3xl" />
-
+    <div className={`${theme}-theme relative min-h-screen overflow-hidden bg-[var(--bg-base)] text-[var(--text-primary)]`}>
       <div className="page-fade-in relative z-10 mx-auto max-w-screen-2xl px-8 py-8">
-        <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <Logo />
-            <Link
-              to="/dashboard"
-              className="mt-2 block text-sm text-white/50 transition-colors hover:text-[#ff6b5b]"
-            >
-              ← Panele dön
-            </Link>
-          </div>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <Logo theme={theme} />
           <div className="flex flex-wrap items-center gap-3">
             <PageNav />
-            <span
-              title={user?.email}
-              className="flex size-9 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white"
-            >
-              {user?.email?.[0]?.toUpperCase() ?? "?"}
-            </span>
-            <Button
-              variant="outline"
-              onClick={() => signOut()}
-              className="rounded-[6px] border-white/20 bg-transparent text-white transition-colors hover:bg-white/5 hover:text-white"
-            >
-              Çıkış Yap
-            </Button>
+            <ProfileMenu email={user?.email} onSignOut={signOut} theme={theme} />
           </div>
+        </div>
+
+        <div className="mb-6">
+          <Breadcrumb items={[{ label: "Panel", href: "/dashboard" }, { label: "Genel Bakış" }]} />
         </div>
 
         <h1 className="mb-4 text-2xl font-semibold">Genel Bakış</h1>
@@ -219,8 +200,8 @@ export default function Overview() {
               onClick={() => setActiveTab(tab.id)}
               className={`border-b-2 px-3 py-2 text-sm font-medium transition-colors ${
                 activeTab === tab.id
-                  ? "border-[var(--accent)] text-white"
-                  : "border-transparent text-[var(--text-muted)] hover:text-white"
+                  ? "border-[var(--accent)] text-[var(--text-primary)]"
+                  : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)]"
               }`}
             >
               {tab.label}
@@ -426,7 +407,7 @@ export default function Overview() {
                       Proje Bazında Dağılım
                     </h2>
                     {stats.byProject.length === 0 ? (
-                      <p className="text-sm text-white/40">
+                      <p className="text-sm text-[var(--text-muted)]">
                         Henüz bir projeye ait görev yok.
                       </p>
                     ) : (
@@ -445,7 +426,7 @@ export default function Overview() {
                               <span className="w-40 shrink-0 truncate text-[var(--text-secondary)]">
                                 {project.project_name}
                               </span>
-                              <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/5">
+                              <div className="h-2 flex-1 overflow-hidden rounded-full bg-[var(--surface-hover)]">
                                 <div
                                   className="h-full rounded-full bg-[var(--accent)]"
                                   style={{ width: `${widthPct}%` }}
