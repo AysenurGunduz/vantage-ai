@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { X, Play, Square } from "lucide-react";
 import { apiFetch } from "@/lib/apiClient";
-import type { OrganizationMember, Task, TaskPriority } from "@/types/api";
+import type { OrganizationMember, Task, TaskPriority, TaskTimeEntriesResponse, TimeEntry } from "@/types/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -36,6 +36,18 @@ const STATUS_LABELS: Record<string, string> = {
 
 function formatActivityTime(createdAt: string) {
   return new Date(createdAt).toLocaleString("tr-TR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+
+function formatHours(minutes: number): string {
+  return (minutes / 60).toFixed(1);
+}
+
+function formatElapsed(totalSeconds: number): string {
+  const minutes = Math.floor(totalSeconds / 60)
+    .toString()
+    .padStart(2, "0");
+  const seconds = (totalSeconds % 60).toString().padStart(2, "0");
+  return `${minutes}:${seconds}`;
 }
 
 function memberLabel(members: OrganizationMember[], userId: string | null): string {
@@ -86,11 +98,20 @@ export function TaskDetailModal({
   const [tagInput, setTagInput] = useState("");
   const [assigneeId, setAssigneeId] = useState(task.assignee_id ?? "");
   const [assigneeNote, setAssigneeNote] = useState("");
+  const [estimatedHours, setEstimatedHours] = useState(task.estimated_hours != null ? String(task.estimated_hours) : "");
   const [members, setMembers] = useState<OrganizationMember[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activity, setActivity] = useState<ActivityEntry[]>([]);
   const [activityLoading, setActivityLoading] = useState(true);
+  const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
+  const [totalMinutes, setTotalMinutes] = useState(0);
+  const [timeLoading, setTimeLoading] = useState(true);
+  const [manualHours, setManualHours] = useState("");
+  const [manualNote, setManualNote] = useState("");
+  const [loggingTime, setLoggingTime] = useState(false);
+  const [timerStartedAt, setTimerStartedAt] = useState<number | null>(null);
+  const [timerElapsedSec, setTimerElapsedSec] = useState(0);
 
   useEffect(() => {
     apiFetch<ActivityEntry[]>(`/api/tasks/${task.id}/activity`)
@@ -98,6 +119,62 @@ export function TaskDetailModal({
       .catch(() => {})
       .finally(() => setActivityLoading(false));
   }, [task.id]);
+
+  useEffect(() => {
+    apiFetch<TaskTimeEntriesResponse>(`/api/tasks/${task.id}/time-entries`)
+      .then((res) => {
+        setTimeEntries(res.entries);
+        setTotalMinutes(res.totalMinutes);
+      })
+      .catch(() => {})
+      .finally(() => setTimeLoading(false));
+  }, [task.id]);
+
+  useEffect(() => {
+    if (timerStartedAt === null) return;
+    const interval = setInterval(() => {
+      setTimerElapsedSec(Math.floor((Date.now() - timerStartedAt) / 1000));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [timerStartedAt]);
+
+  async function logTime(minutes: number, note: string | null) {
+    setLoggingTime(true);
+    setError(null);
+    try {
+      const entry = await apiFetch<TimeEntry>(`/api/tasks/${task.id}/time-entries`, {
+        method: "POST",
+        body: JSON.stringify({ minutes, note: note ?? undefined }),
+      });
+      setTimeEntries((prev) => [entry, ...prev]);
+      setTotalMinutes((prev) => prev + minutes);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Zaman kaydedilemedi");
+    } finally {
+      setLoggingTime(false);
+    }
+  }
+
+  async function handleManualLog() {
+    const minutes = Math.round(parseFloat(manualHours) * 60);
+    if (!minutes || minutes <= 0) return;
+    await logTime(minutes, manualNote.trim() || null);
+    setManualHours("");
+    setManualNote("");
+  }
+
+  function startTimer() {
+    setTimerElapsedSec(0);
+    setTimerStartedAt(Date.now());
+  }
+
+  async function stopTimer() {
+    if (timerStartedAt === null) return;
+    const minutes = Math.max(1, Math.round((Date.now() - timerStartedAt) / 60000));
+    setTimerStartedAt(null);
+    setTimerElapsedSec(0);
+    await logTime(minutes, "Sayaç ile kaydedildi");
+  }
 
   useEffect(() => {
     if (!organizationId) return;
@@ -132,6 +209,7 @@ export function TaskDetailModal({
           tags,
           assignee_id: assigneeId || null,
           assignee_note: assigneeNote.trim() || undefined,
+          estimated_hours: estimatedHours ? parseFloat(estimatedHours) : null,
         }),
       });
       onSave(updated);
@@ -227,14 +305,28 @@ export function TaskDetailModal({
           />
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-[var(--text-secondary)]">Son tarih</label>
-          <Input
-            type="date"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-            className="rounded-[6px] border-[var(--surface-border)] bg-[var(--surface)] text-[var(--text-primary)] focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
-          />
+        <div className="flex gap-3">
+          <div className="flex-1 space-y-1.5">
+            <label className="text-xs font-medium text-[var(--text-secondary)]">Son tarih</label>
+            <Input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              className="rounded-[6px] border-[var(--surface-border)] bg-[var(--surface)] text-[var(--text-primary)] focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
+            />
+          </div>
+          <div className="w-28 space-y-1.5">
+            <label className="text-xs font-medium text-[var(--text-secondary)]">Tahmini süre (saat)</label>
+            <Input
+              type="number"
+              min="0"
+              step="0.5"
+              value={estimatedHours}
+              onChange={(e) => setEstimatedHours(e.target.value)}
+              placeholder="—"
+              className="rounded-[6px] border-[var(--surface-border)] bg-[var(--surface)] text-[var(--text-primary)] focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
+            />
+          </div>
         </div>
 
         <div className="space-y-1.5">
@@ -262,6 +354,89 @@ export function TaskDetailModal({
               placeholder="Atama ile ilgili bir not bırak (opsiyonel)"
               className={`${fieldClass} resize-none`}
             />
+          )}
+        </div>
+
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-medium text-[var(--text-secondary)]">Zaman Takibi</label>
+            {!timeLoading && (
+              <span
+                className={`text-xs ${
+                  task.estimated_hours != null && totalMinutes / 60 > task.estimated_hours
+                    ? "text-[#ff6b5b]"
+                    : "text-[var(--text-muted)]"
+                }`}
+              >
+                {task.estimated_hours != null ? `Tahmin: ${task.estimated_hours} sa · ` : ""}
+                Harcanan: {formatHours(totalMinutes)} sa
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            {timerStartedAt === null ? (
+              <Button
+                type="button"
+                onClick={startTimer}
+                disabled={loggingTime}
+                className="flex items-center gap-1.5 rounded-[6px] bg-[var(--surface-hover)] px-2.5 py-1.5 text-xs text-[var(--text-primary)] hover:bg-[var(--surface-border)]"
+              >
+                <Play className="size-3" />
+                Sayacı başlat
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                onClick={stopTimer}
+                disabled={loggingTime}
+                className="flex items-center gap-1.5 rounded-[6px] bg-[#ff6b5b] px-2.5 py-1.5 text-xs text-[#0d1b3a] hover:bg-[#ff8577]"
+              >
+                <Square className="size-3" />
+                Durdur · {formatElapsed(timerElapsedSec)}
+              </Button>
+            )}
+
+            <Input
+              type="number"
+              min="0"
+              step="0.25"
+              value={manualHours}
+              onChange={(e) => setManualHours(e.target.value)}
+              placeholder="Saat gir"
+              className="h-8 w-24 rounded-[6px] border-[var(--surface-border)] bg-[var(--surface)] text-xs text-[var(--text-primary)] focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
+            />
+            <Input
+              value={manualNote}
+              onChange={(e) => setManualNote(e.target.value)}
+              placeholder="Not (opsiyonel)"
+              className="h-8 flex-1 rounded-[6px] border-[var(--surface-border)] bg-[var(--surface)] text-xs text-[var(--text-primary)] focus-visible:border-[#ff6b5b] focus-visible:ring-[#ff6b5b]/30"
+            />
+            <Button
+              type="button"
+              onClick={handleManualLog}
+              disabled={loggingTime || !manualHours}
+              className="h-8 shrink-0 rounded-[6px] bg-[var(--surface-hover)] px-2.5 text-xs text-[var(--text-primary)] hover:bg-[var(--surface-border)]"
+            >
+              Ekle
+            </Button>
+          </div>
+
+          {timeLoading ? (
+            <p className="text-xs text-[var(--text-muted)]">Yükleniyor...</p>
+          ) : timeEntries.length === 0 ? (
+            <p className="text-xs text-[var(--text-muted)]">Henüz zaman kaydı yok.</p>
+          ) : (
+            <ul className="max-h-24 space-y-1 overflow-y-auto pr-1 text-xs text-[var(--text-secondary)]">
+              {timeEntries.map((entry) => (
+                <li key={entry.id} className="flex items-center justify-between gap-2">
+                  <span className="min-w-0 flex-1 truncate">
+                    {formatHours(entry.minutes)} sa{entry.note ? ` · ${entry.note}` : ""}
+                  </span>
+                  <span className="shrink-0 text-[var(--text-muted)]">{formatActivityTime(entry.logged_at)}</span>
+                </li>
+              ))}
+            </ul>
           )}
         </div>
 
