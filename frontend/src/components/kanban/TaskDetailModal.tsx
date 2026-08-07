@@ -1,9 +1,31 @@
 import { useEffect, useState } from "react";
-import { X, Play, Square } from "lucide-react";
+import { X, Play, Square, Link2 } from "lucide-react";
 import { apiFetch } from "@/lib/apiClient";
-import type { OrganizationMember, Task, TaskPriority, TaskTimeEntriesResponse, TimeEntry } from "@/types/api";
+import type {
+  OrganizationMember,
+  Task,
+  TaskDependency,
+  TaskDependencyType,
+  TaskPriority,
+  TaskTimeEntriesResponse,
+  TimeEntry,
+} from "@/types/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
+const DEPENDENCY_TYPES: TaskDependencyType[] = ["blocked_by", "relates_to", "duplicates"];
+
+const DEPENDENCY_TYPE_LABELS: Record<TaskDependencyType, string> = {
+  blocked_by: "Bekliyor",
+  relates_to: "İlgili",
+  duplicates: "Kopyası",
+};
+
+function dependencyLabel(dep: TaskDependency): string {
+  if (dep.dependency_type === "blocked_by") return dep.direction === "outgoing" ? "Bekliyor" : "Bekletiyor";
+  if (dep.dependency_type === "duplicates") return dep.direction === "outgoing" ? "Kopyası" : "Bu görevin kopyası";
+  return "İlgili";
+}
 
 const PRIORITIES: TaskPriority[] = ["low", "medium", "high", "urgent"];
 
@@ -72,6 +94,8 @@ function describeActivity(entry: ActivityEntry, members: OrganizationMember[]): 
       return "etiketler güncellendi";
     case "assignee_id":
       return `atandı: ${memberLabel(members, entry.from_value)} → ${memberLabel(members, entry.to_value)}`;
+    case "dependency_added":
+      return `bağlantı eklendi (${entry.to_value})`;
     default:
       return entry.action_type;
   }
@@ -112,6 +136,12 @@ export function TaskDetailModal({
   const [loggingTime, setLoggingTime] = useState(false);
   const [timerStartedAt, setTimerStartedAt] = useState<number | null>(null);
   const [timerElapsedSec, setTimerElapsedSec] = useState(0);
+  const [dependencies, setDependencies] = useState<TaskDependency[]>([]);
+  const [dependenciesLoading, setDependenciesLoading] = useState(true);
+  const [projectTasks, setProjectTasks] = useState<Task[]>([]);
+  const [newDependencyType, setNewDependencyType] = useState<TaskDependencyType>("blocked_by");
+  const [newRelatedTaskId, setNewRelatedTaskId] = useState("");
+  const [addingDependency, setAddingDependency] = useState(false);
 
   useEffect(() => {
     apiFetch<ActivityEntry[]>(`/api/tasks/${task.id}/activity`)
@@ -129,6 +159,19 @@ export function TaskDetailModal({
       .catch(() => {})
       .finally(() => setTimeLoading(false));
   }, [task.id]);
+
+  useEffect(() => {
+    apiFetch<TaskDependency[]>(`/api/tasks/${task.id}/dependencies`)
+      .then(setDependencies)
+      .catch(() => {})
+      .finally(() => setDependenciesLoading(false));
+  }, [task.id]);
+
+  useEffect(() => {
+    apiFetch<Task[]>(`/api/projects/${task.project_id}/tasks`)
+      .then((tasks) => setProjectTasks(tasks.filter((t) => t.id !== task.id)))
+      .catch(() => {});
+  }, [task.id, task.project_id]);
 
   useEffect(() => {
     if (timerStartedAt === null) return;
@@ -174,6 +217,34 @@ export function TaskDetailModal({
     setTimerStartedAt(null);
     setTimerElapsedSec(0);
     await logTime(minutes, "Sayaç ile kaydedildi");
+  }
+
+  async function addDependency() {
+    if (!newRelatedTaskId) return;
+    setAddingDependency(true);
+    setError(null);
+    try {
+      const dependency = await apiFetch<TaskDependency>(`/api/tasks/${task.id}/dependencies`, {
+        method: "POST",
+        body: JSON.stringify({ dependency_type: newDependencyType, related_task_id: newRelatedTaskId }),
+      });
+      setDependencies((prev) => [...prev, dependency]);
+      setNewRelatedTaskId("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Bağlantı eklenemedi");
+    } finally {
+      setAddingDependency(false);
+    }
+  }
+
+  async function removeDependency(dependencyId: string) {
+    setError(null);
+    try {
+      await apiFetch(`/api/tasks/${task.id}/dependencies/${dependencyId}`, { method: "DELETE" });
+      setDependencies((prev) => prev.filter((d) => d.id !== dependencyId));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Bağlantı kaldırılamadı");
+    }
   }
 
   useEffect(() => {
@@ -372,6 +443,82 @@ export function TaskDetailModal({
                   ))}
                 </ul>
               )}
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)]">
+                <Link2 className="size-3.5" />
+                Bağlı Görevler
+              </label>
+
+              {dependenciesLoading ? (
+                <p className="text-xs text-[var(--text-muted)]">Yükleniyor...</p>
+              ) : dependencies.length === 0 ? (
+                <p className="text-xs text-[var(--text-muted)]">Henüz bağlı bir görev yok.</p>
+              ) : (
+                <ul className="space-y-1">
+                  {dependencies.map((dep) => (
+                    <li
+                      key={dep.id}
+                      className="flex items-center justify-between gap-2 rounded-[6px] bg-[var(--surface-hover)] px-2.5 py-1.5 text-xs"
+                    >
+                      <span className="min-w-0 flex-1 truncate">
+                        <span className="text-[var(--text-muted)]">{dependencyLabel(dep)}:</span>{" "}
+                        {dep.related_task?.title ?? "Silinmiş görev"}
+                        {dep.related_task && (
+                          <span className="text-[var(--text-muted)]"> · {STATUS_LABELS[dep.related_task.status]}</span>
+                        )}
+                      </span>
+                      <button
+                        onClick={() => removeDependency(dep.id)}
+                        aria-label="Bağlantıyı kaldır"
+                        className="shrink-0 text-[var(--text-muted)] hover:text-[#ff6b5b]"
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              <div className="flex items-center gap-2">
+                <select
+                  aria-label="Bağlantı türü"
+                  value={newDependencyType}
+                  onChange={(e) => setNewDependencyType(e.target.value as TaskDependencyType)}
+                  className="h-8 shrink-0 rounded-[6px] border border-[var(--surface-border)] bg-[var(--surface)] px-2 text-xs text-[var(--text-primary)] outline-none focus-visible:border-[#ff6b5b]"
+                >
+                  {DEPENDENCY_TYPES.map((type) => (
+                    <option key={type} value={type} className="bg-[var(--surface)]">
+                      {DEPENDENCY_TYPE_LABELS[type]}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  aria-label="Bağlanacak görev"
+                  value={newRelatedTaskId}
+                  onChange={(e) => setNewRelatedTaskId(e.target.value)}
+                  className="h-8 min-w-0 flex-1 rounded-[6px] border border-[var(--surface-border)] bg-[var(--surface)] px-2 text-xs text-[var(--text-primary)] outline-none focus-visible:border-[#ff6b5b]"
+                >
+                  <option value="" className="bg-[var(--surface)]">
+                    Görev seç...
+                  </option>
+                  {projectTasks.map((t) => (
+                    <option key={t.id} value={t.id} className="bg-[var(--surface)]">
+                      {t.title}
+                    </option>
+                  ))}
+                </select>
+                <Button
+                  type="button"
+                  aria-label="Bağlantı ekle"
+                  onClick={addDependency}
+                  disabled={addingDependency || !newRelatedTaskId}
+                  className="h-8 shrink-0 rounded-[6px] bg-[var(--surface-hover)] px-2.5 text-xs text-[var(--text-primary)] hover:bg-[var(--surface-border)]"
+                >
+                  Ekle
+                </Button>
+              </div>
             </div>
           </div>
 

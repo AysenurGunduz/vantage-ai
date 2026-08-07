@@ -136,6 +136,15 @@ export interface SprintSummaryResult {
   periodDays: number;
 }
 
+export type TaskDependencyType = "blocked_by" | "relates_to" | "duplicates";
+
+export interface TaskDependency {
+  id: string;
+  direction: "outgoing" | "incoming";
+  dependency_type: TaskDependencyType;
+  related_task: { id: string; title: string; status: TaskStatus } | null;
+}
+
 export type InvitationStatus = "pending" | "accepted" | "revoked" | "expired";
 
 export interface OrganizationInvitation {
