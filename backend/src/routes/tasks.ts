@@ -257,13 +257,21 @@ function describeFactor(value: number): string {
   return "yok";
 }
 
+function describeEffortOverrun(estimatedHours: number, spentHours: number): string {
+  const ratio = spentHours / estimatedHours;
+  if (ratio <= 1) return "harcanan süre tahminin içinde kalmış";
+  if (ratio <= 1.25) return "harcanan süre tahmini biraz aşmış";
+  if (ratio <= 1.75) return "harcanan süre tahmini belirgin şekilde aşmış";
+  return "harcanan süre tahmini ciddi ölçüde aşmış";
+}
+
 function buildRiskExplanationPrompt(
   taskTitle: string,
   risk: RiskScoreResult,
   effort: { estimatedHours: number; spentHours: number } | null,
 ): string {
   const effortLine = effort
-    ? `\nEfor karşılaştırması: tahmini süre ${effort.estimatedHours} saat, şu ana kadar harcanan süre ${effort.spentHours.toFixed(1)} saat. Tahmini aşmışsa bundan kısaca bahset.`
+    ? `\nEfor karşılaştırması: ${describeEffortOverrun(effort.estimatedHours, effort.spentHours)}. Bundan kısaca bahset.`
     : "";
 
   return `Sen bir proje yöneticisi asistanısın. "${taskTitle}" adlı görevin gecikme riski kural tabanlı bir motorla ${LEVEL_LABELS_TR[risk.level]} olarak hesaplandı. Buna katkıda bulunan etkenler: son tarihe yakınlık ${describeFactor(risk.factors.deadline)}, beklenen ilerlemeye göre gecikme ${describeFactor(risk.factors.progress)}, projenin geçmiş tamamlama hızına göre risk ${describeFactor(risk.factors.velocity)}, harcanan/tahmini süre oranına göre risk ${describeFactor(risk.factors.effort)}.${effortLine}

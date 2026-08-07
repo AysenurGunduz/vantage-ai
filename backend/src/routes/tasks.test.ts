@@ -412,7 +412,9 @@ describe("tasks routes", () => {
     const { interactiveAI } = await import("../ai/index.js");
     const promptArg = vi.mocked(interactiveAI.generateText).mock.calls.at(-1)?.[0] as string;
     expect(promptArg).toContain("Efor karşılaştırması");
-    expect(promptArg).toContain("6.0 saat");
+    expect(promptArg).toContain("harcanan süre tahmini belirgin şekilde aşmış");
+    expect(promptArg).not.toContain("4 saat");
+    expect(promptArg).not.toContain("6.0 saat");
   });
 
   it("returns 502 when the AI explanation call throws", async () => {
