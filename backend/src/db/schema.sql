@@ -204,3 +204,20 @@ create table task_time_entries (
   logged_at timestamptz not null default now()
 );
 create index idx_task_time_entries_task_id on task_time_entries (task_id);
+
+create type task_dependency_type as enum ('blocked_by', 'relates_to', 'duplicates');
+
+-- Yön: task_id, depends_on_task_id'ye bağımlı/ilişkili (örn. task_id "blocked_by"
+-- depends_on_task_id ise, depends_on_task_id bitmeden task_id tamamlanamaz).
+create table task_dependencies (
+  id uuid primary key default gen_random_uuid(),
+  task_id uuid not null references tasks (id) on delete cascade,
+  depends_on_task_id uuid not null references tasks (id) on delete cascade,
+  dependency_type task_dependency_type not null,
+  created_by uuid not null references profiles (id),
+  created_at timestamptz not null default now(),
+  check (task_id <> depends_on_task_id),
+  unique (task_id, depends_on_task_id, dependency_type)
+);
+create index idx_task_dependencies_task_id on task_dependencies (task_id);
+create index idx_task_dependencies_depends_on_task_id on task_dependencies (depends_on_task_id);
